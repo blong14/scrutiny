@@ -1,0 +1,16 @@
+scrutiny.local:8081
+
+log {
+    output stdout
+}
+
+route {
+    mercure {
+        publisher_jwt !ChangeMe!
+        subscriber_jwt !ChangeMe!
+        anonymous true
+        ui true
+    }
+    reverse_proxy web:8080
+    respond "Not Found" 404
+}

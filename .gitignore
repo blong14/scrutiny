@@ -1,0 +1,7 @@
+venv
+.coverage
+.deps
+.idea
+
+build
+*.sqlite3

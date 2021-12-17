@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block page_title %}<h1 class="lh-title ma0">Top Stories</h1>{% endblock %}
+{% block page_content %}
+    {% if items %}
+        <article class="p3">
+            {% include "news/_list.html" with items=items %}
+        </article>
+    {% else %}
+        <p>
+            No items.
+        </p>
+    {% endif %}
+{% endblock %}
+{% block page_right %}
+    {% if items %}
+        {% include "news/_detail.html" with items=items %}
+    {% endif %}
+{% endblock %}

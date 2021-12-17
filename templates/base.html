@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8"/>
+        <title>Scrutiny</title>
+        <link rel="stylesheet"
+              href="//unpkg.com/tachyons@4.12.0/css/tachyons.min.css"/>
+        <script src="//unpkg.com/@hotwired/turbo@7.1.0/dist/turbo.es2017-umd.js"
+                defer
+                data-turbo-track="reload"></script>
+    </head>
+    <body class="-debug-grid-16 sans-serif roboto" style="font-family: roboto;">
+        <main>
+            {% include "_header.html" %}
+            <section class="flex items-start ma4">
+                <div class="w-10 pa2">
+                    {% block page_title %}{% endblock %}
+                </div>
+                <div class="w-60 pa2">
+                    {% block page_content %}{% endblock %}
+                </div>
+                <div class="w-100 pa2">
+                    {% block page_right %}{% endblock %}
+                </div>
+            </section>
+            {% include "_footer.html" %}
+        </main>
+    </body>
+</html>

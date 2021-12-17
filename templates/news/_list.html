@@ -1,0 +1,9 @@
+{% extends "unordered_list.html" %}
+{% block content %}
+    {% for item in items %}
+        {% include "news/new_item.html" with item=item %}
+    {% endfor %}
+    {% if features %}
+        <script>{% include "news/list.js" %}</script>
+    {% endif %}
+{% endblock %}

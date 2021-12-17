@@ -1,0 +1,17 @@
+version: "3"
+
+services:
+    caddy:
+        image: dunglas/mercure
+        restart: unless-stopped
+        ports:
+            - "8081:8081"
+        volumes:
+            - ./Caddyfile:/etc/caddy/Caddyfile
+    web:
+        image: blong14/scrutiny
+        restart: unless-stopped
+        ports:
+            -   "8080:8080"
+        volumes:
+            - ./scrutiny/db.sqlite3:/app/scrutiny/db.sqlite3

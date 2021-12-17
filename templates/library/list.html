@@ -1,0 +1,5 @@
+{% extends "base.html" %}
+{% block page_title %}<h2 class="lh-title f3 b mt0">Library</h2>{% endblock %}
+{% block page_content %}
+    {% include "library/_list.html" with items=items %}
+{% endblock %}

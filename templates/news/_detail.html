@@ -1,0 +1,21 @@
+<turbo-frame id="news-detail">
+{% if items %}
+    <article class="pa3" data-slug="{{ items.0.slug }}">
+        <header>
+            <h2 class="lh-title mt0">
+                <a class="link dim blue underline" href="{{ items.0.story_url }}">{{ items.0.title }}</a>
+            </h2>
+        </header>
+        <div>
+            <p>
+                {{ items.0.score }}
+            </p>
+        </div>
+        <footer>
+            <p>
+                {{ items.0.posted_by }} on <time>{{ items.0.time }}</time>
+            </p>
+        </footer>
+    </article>
+{% endif %}
+</turbo-frame>

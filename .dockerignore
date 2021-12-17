@@ -1,0 +1,8 @@
+.deps
+.git
+.gitignore
+.idea
+venv
+vendor
+Dockerfile
+*.sqlite3
