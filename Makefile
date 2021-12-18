@@ -31,6 +31,7 @@ image: .deps/lint .dockerignore Dockerfile Makefile
 build:
 	@docker build -t blong14/scrutiny:latest .
 	@docker run --rm blong14/scrutiny pypy manage.py test --timing --settings=scrutiny.settings.spec
+	@touch Dockerfile
 
 check: .deps
 	@python manage.py check --settings=scrutiny.settings.dev

@@ -12,6 +12,14 @@ services:
         image: blong14/scrutiny
         restart: unless-stopped
         ports:
-            -   "8080:8080"
+            - "8080:8080"
         volumes:
             - ./scrutiny/db.sqlite3:/app/scrutiny/db.sqlite3
+    scrape:
+        image: blong14/scrutiny
+        restart: unless-stopped
+        ports:
+            - "9000:9000"
+        command:
+            - ./bin/scrutiny
+            - news

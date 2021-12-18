@@ -9,14 +9,11 @@ from scrutiny.wsgi import application
 
 
 class _Logger:
-
     def __init__(self, app, logger, style):
         self.application = app
         self.logger = logger
         self.style = style
-        self.formatter = (
-            "[{time}] '{REQUEST_METHOD} {REQUEST_URI} {HTTP_VERSION}' {status} {duration}s"
-        )
+        self.formatter = "[{time}] '{REQUEST_METHOD} {REQUEST_URI} {HTTP_VERSION}' {status} {duration}s"
 
     def __call__(self, environ, start_response):
         trace_start = time.perf_counter()
