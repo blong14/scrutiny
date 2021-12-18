@@ -15,14 +15,18 @@ class ScrutinyApiListView(ListCreateAPIView):
 
 class ScrutinyListView(generic.ListView):
     context_object_name = "items"
-    order = ["-time"]
+    order = ["-created_at"]
     paginate_by = 10
+
+    def get_model(self):
+        return
 
     def get_queryset(self):
         query = self.model.objects.all()
         slugs = self.request.GET.get("slugs")
         if slugs:
             query = query.filter(pk__in=[slug for slug in slugs.split(",")])
+        query = query.order_by(*self.order)
         return query
 
 
