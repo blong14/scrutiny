@@ -2,10 +2,14 @@
     <a class="link dim blue underline f6 f5-ns dib mr3"
        href="{% url 'news.list_view' %}"
        title="News">News</a>
-    <a class="link dim blue underline f6 f5-ns dib mr3"
-       href="{% url 'library.list_view' %}"
-       title="Library">Library</a>
-    <a class="link dim blue underline f6 f5-ns dib mr3"
-       href="{% url 'notes.list_view' %}"
-       title="Notes">Notes</a>
+    {% if features.library %}
+        <a class="link dim blue underline f6 f5-ns dib mr3"
+           href="{% url 'library.list_view' %}"
+           title="Library">Library</a>
+    {% endif %}
+    {% if features.notes %}
+        <a class="link dim blue underline f6 f5-ns dib mr3"
+           href="{% url 'notes.list_view' %}"
+           title="Notes">Notes</a>
+    {% endif %}
 </nav>
