@@ -3,7 +3,7 @@
     {% for item in items %}
         {% include "news/new_item.html" with item=item %}
     {% endfor %}
-    {% if features %}
+    {% if features.sse %}
         <script>{% include "news/list.js" %}</script>
     {% endif %}
 {% endblock %}

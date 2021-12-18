@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block page_title %}<h2 class="lh-title f3 b mt0">Projects</h2>{% endblock %}
-{% block page_content %}
-    {% include "notes/_list.html" with items=items %}
+{% block page_title %}<h1 class="lh-title">Projects</h1>{% endblock %}
+{% block page_right %}
+    <div class="w-100">{% include "notes/_list.html" with items=items %}</div>
 {% endblock %}

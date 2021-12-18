@@ -22,6 +22,7 @@ class Article(models.Model):
     """
 
     class Meta:
+        get_latest_by = "score"
         ordering = ["-time"]
 
     story_id = models.BigIntegerField()

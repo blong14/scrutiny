@@ -1,0 +1,33 @@
+<turbo-frame id="news-dashboard">
+<section class="mv5">
+    <article>
+        <h1 class="black-90">Hacker News Articles</h1>
+        <div class="cf">
+            <dl class="fl fn-l w-50 dib-l w-auto-l lh-title mr5">
+                <dd class="black-50 ml0">
+                    Total Articles
+                </dd>
+                <dd class="f3 fw6 ml0" data-total-value>
+                    {{ total }}
+                </dd>
+            </dl>
+            <dl class="fl fn-l w-50 dib-l w-auto-l lh-title mr5-l">
+                <dd class="black-50 ml0">
+                    New Today
+                </dd>
+                <dd class="f3 fw6 ml0" data-new-today>
+                    {{ new_today }}
+                </dd>
+            </dl>
+            <dl class="fl fn-l w-50 dib-l w-auto-l lh-title mr5-l">
+                <dd class="black-50 ml0">
+                    Highest Score
+                </dd>
+                <dd class="f3 fw6 ml0" data-max-score>
+                    {{ max_score }}
+                </dd>
+            </dl>
+        </div>
+    </article>
+</section>
+</turbo-frame>

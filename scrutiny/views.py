@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.views import generic
 from rest_framework.generics import ListCreateAPIView
 from rest_framework.response import Response
@@ -15,19 +16,12 @@ class ScrutinyApiListView(ListCreateAPIView):
 
 class ScrutinyListView(generic.ListView):
     context_object_name = "items"
-    order = ["-created_at"]
     paginate_by = 10
 
-    def get_model(self):
-        return
-
-    def get_queryset(self):
-        query = self.model.objects.all()
-        slugs = self.request.GET.get("slugs")
-        if slugs:
-            query = query.filter(pk__in=[slug for slug in slugs.split(",")])
-        query = query.order_by(*self.order)
-        return query
+    def get_context_data(self, *args, **kwargs):
+        context = super().get_context_data(*args, **kwargs)
+        context["features"] = getattr(settings, "FEATURES", {})
+        return context
 
 
 class ScrutinyDetailView(generic.DetailView):

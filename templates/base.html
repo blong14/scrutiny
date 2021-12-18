@@ -9,21 +9,22 @@
                 defer
                 data-turbo-track="reload"></script>
     </head>
-    <body class="-debug-grid-16 sans-serif roboto" style="font-family: roboto;">
-        <main>
-            {% include "_header.html" %}
-            <section class="flex items-start ma4">
-                <div class="w-10 pa2">
-                    {% block page_title %}{% endblock %}
-                </div>
-                <div class="w-60 pa2">
-                    {% block page_content %}{% endblock %}
-                </div>
-                <div class="w-100 pa2">
-                    {% block page_right %}{% endblock %}
-                </div>
+    <body class="-debug-grid-16 sans-serif roboto">
+        <header class="bb b--black-10">
+            {% include "_nav.html" %}
+        </header>
+        <main class="mh4">
+            {% block page_dashboard %}{% endblock %}
+            <header class="w-100 mv5">
+                {% block page_title %}{% endblock %}
+            </header>
+            <section class="flex">
+                {% block page_left %}{% endblock %}
+                {% block page_right %}{% endblock %}
             </section>
-            {% include "_footer.html" %}
         </main>
+        <footer class="bt b--black-10">
+            {% include "_nav.html" %}
+        </footer>
     </body>
 </html>

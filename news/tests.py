@@ -3,7 +3,7 @@ import uuid
 from typing import List
 
 from django.utils.datetime_safe import new_datetime
-from django.test import Client
+from django.test import Client, TestCase
 from django.urls import reverse
 from rest_framework.test import APIClient
 
@@ -17,17 +17,47 @@ def article(*args, **kwargs) -> Article:
     Saves single Article when called with pre-filled data
     TODO: Add proper test factories or fixtures
     """
+    score = kwargs.pop("score", 77)
     now = datetime.datetime.now()
     art = Article(
         posted_by="test_user",
-        score=77,
+        score=score,
         story_id=123,
         story_url="https://local.local",
         time=new_datetime(now),
         slug=str(uuid.uuid4()),
+        *args,
+        **kwargs,
     )
     art.save()
     return art
+
+
+class TestApiDashboardView(TestCase):
+    client_class = Client
+
+    def setUp(self) -> None:
+        self.url = reverse("news_api.dashboard")
+        self.items = [
+            article(title="hello", score=100),
+            article(title="hello again", score=50),
+        ]
+
+    def tearDown(self) -> None:
+        Article.objects.all().delete()
+
+    def test_get(self):
+        with self.assertNumQueries(3):
+            self.resp = self.client.get(self.url)
+        self.assertContains(self.resp, "Total")
+        self.assertEqual(self.resp.context["total"], len(self.items))
+        self.assertContains(self.resp, "data-total-value")
+        self.assertContains(self.resp, "New Today")
+        self.assertEqual(self.resp.context["new_today"], 2)
+        self.assertContains(self.resp, "data-new-today")
+        self.assertContains(self.resp, "Highest Score")
+        self.assertEqual(self.resp.context["max_score"], 100)
+        self.assertContains(self.resp, "data-max-score")
 
 
 class TestListViewWithDetails(ScrutinyTestListView):

@@ -1,7 +1,7 @@
 <turbo-stream action="prepend" target="news">
 <template>
-    <li>
-        <article class="bb b--black-10 pa3">
+    <li class="{% if forloop.last %}bb b--black-10{% endif %} pv2">
+        <article>
             <header>
                 <h3 class="lh-title mt0">{{ item.title }}</h3>
                 <small>{{ item.time }}</small>
@@ -11,14 +11,17 @@
                     score {{ item.score }}
                 </p>
             </div>
-            <footer class="flex items-end">
-                <div class="w-50">By {{ item.posted_by }}</div>
-                <div class="w-50 flex justify-center">
-                    <div class="w-25">
-                        <a class="link dim blue underline" href="{{ item.story_url }}">Link</a>
+            <footer class="flex">
+                <div class="w-75">By {{ item.posted_by }}</div>
+                <div class="w-25 flex items-end">
+                    <div class="w-100">
+                        <a class="link dim blue underline-hover"
+                           title="Read Article"
+                           href="{{ item.story_url }}">Link</a>
                     </div>
-                    <div class="w-25">
-                        <a class="link dim blue underline"
+                    <div class="w-100">
+                        <a class="link dim blue underline-hover"
+                           title="Read Comments"
                            href="{% url 'news.list_view' %}?slugs={{ item.slug }}"
                            data-turbo-frame="news-detail">
                             Comments

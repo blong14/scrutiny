@@ -1,14 +1,14 @@
-<nav class="pa3 pa4-ns">
-    <a class="link dim blue underline f6 f5-ns dib mr3"
+<nav class="pa3">
+    <a class="link dim blue underline-hover mr2"
        href="{% url 'news.list_view' %}"
        title="News">News</a>
     {% if features.library %}
-        <a class="link dim blue underline f6 f5-ns dib mr3"
+        <a class="link dim blue underline-hover mr2"
            href="{% url 'library.list_view' %}"
            title="Library">Library</a>
     {% endif %}
     {% if features.notes %}
-        <a class="link dim blue underline f6 f5-ns dib mr3"
+        <a class="link dim blue underline-hover mr2"
            href="{% url 'notes.list_view' %}"
            title="Notes">Notes</a>
     {% endif %}
