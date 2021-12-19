@@ -1,4 +1,5 @@
 import datetime
+import logging
 
 from django.utils.datetime_safe import new_datetime
 
@@ -7,14 +8,21 @@ from news.serializers import ArticleSerializer
 from scrutiny.views import ScrutinyApiListView, ScrutinyListView, ScrutinyTemplateView
 
 
+logger = logging.getLogger(__name__)
+
+
 class NewsApiDashboardView(ScrutinyTemplateView):
     template_name = "news/_dashboard.html"
 
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
         now = datetime.datetime.now()
+        try:
+            context["max_score"] = Article.objects.latest("score").score
+        except Article.DoesNotExist as e:
+            logger.error("unable to find max score %s", e)
+            context["max_score"] = 0
         context["total"] = Article.objects.count()
-        context["max_score"] = Article.objects.latest("score").score
         context["new_today"] = Article.objects.filter(
             created_at__gte=new_datetime(now).date()
         ).count()

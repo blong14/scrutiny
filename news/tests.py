@@ -46,6 +46,14 @@ class TestApiDashboardView(TestCase):
     def tearDown(self) -> None:
         Article.objects.all().delete()
 
+    def test_get_no_items(self):
+        self.tearDown()
+        with self.assertNumQueries(3):
+            self.resp = self.client.get(self.url)
+        self.assertEqual(self.resp.context["total"], 0)
+        self.assertEqual(self.resp.context["new_today"], 0)
+        self.assertEqual(self.resp.context["max_score"], 0)
+
     def test_get(self):
         with self.assertNumQueries(3):
             self.resp = self.client.get(self.url)
