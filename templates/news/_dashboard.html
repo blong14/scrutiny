@@ -20,7 +20,12 @@
             </dl>
             <dl class="fl fn-l w-50 dib-l w-auto-l lh-title mr5-l">
                 <dd class="black-50 ml0">
-                    Highest Score
+                    <a class="link dim blue underline-hover tc"
+                       title="Read Comments"
+                       href="{% url 'news.list_view' %}?slugs={{ max_score_slug }}"
+                       data-turbo-frame="news-detail">
+                        Highest Score
+                    </a>
                 </dd>
                 <dd class="f3 fw6 ml0" data-max-score>
                     {{ max_score }}

@@ -1,5 +1,6 @@
 import datetime
 import logging
+from typing import Optional
 
 from django.utils.datetime_safe import new_datetime
 
@@ -17,11 +18,13 @@ class NewsApiDashboardView(ScrutinyTemplateView):
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
         now = datetime.datetime.now()
+        article_with_max: Optional[Article] = None
         try:
-            context["max_score"] = Article.objects.latest("score").score
+            article_with_max = Article.objects.latest("score")
         except Article.DoesNotExist as e:
             logger.error("unable to find max score %s", e)
-            context["max_score"] = 0
+        context["max_score"] = article_with_max.score if article_with_max else 0
+        context["max_score_slug"] = article_with_max.slug if article_with_max else ""
         context["total"] = Article.objects.count()
         context["new_today"] = Article.objects.filter(
             created_at__gte=new_datetime(now).date()

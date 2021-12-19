@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"strings"
 	"sync"
 	"time"
 
@@ -16,6 +17,8 @@ import (
 	"github.com/jmoiron/sqlx"
 	"github.com/spf13/cobra"
 )
+
+var url = fmt.Sprintf("%sscrutiny.local:%d/api/news/", "https://", 8081)
 
 type TopNews []uint64
 
@@ -29,14 +32,27 @@ type News struct {
 	Title    string    `db:"title" json:"title"`
 }
 
+type jsonTime struct {
+	time.Time
+}
+
+func (t *jsonTime) UnmarshalJSON(buf []byte) error {
+	tt, err := time.Parse("2006-01-02T15:04:05", strings.Trim(string(buf), `"`))
+	if err != nil {
+		return err
+	}
+	t.Time = tt
+	return nil
+}
+
 type NewsCreateRequest struct {
-	PostedBY string    `json:"posted_by"`
-	Score    uint64    `json:"score"`
-	Slug     string    `json:"slug"`
-	StoryID  uint64    `json:"story_id"`
-	StoryURL string    `json:"story_url"`
-	Time     time.Time `json:"time"`
-	Title    string    `json:"title"`
+	PostedBY string   `json:"posted_by"`
+	Score    uint64   `json:"score"`
+	Slug     string   `json:"slug"`
+	StoryID  uint64   `json:"story_id"`
+	StoryURL string   `json:"story_url"`
+	Time     jsonTime `json:"time"`
+	Title    string   `json:"title"`
 }
 
 type req struct {
@@ -61,8 +77,6 @@ func (c *db) close() error {
 	}
 	return nil
 }
-
-var url = fmt.Sprintf("%s://scrutiny.local:%d/api/news/", "https", 8081)
 
 func (c *db) list(ctx context.Context) map[uint64]struct{} {
 	start := time.Now()
@@ -141,9 +155,6 @@ func Extract(ctx context.Context) <-chan *News {
 				case out <- &news:
 				}
 			}(i)
-			if i > 0 {
-				break
-			}
 		}
 		wg.Wait()
 	}()
@@ -191,7 +202,7 @@ func Load(ctx context.Context, stream <-chan *News) error {
 			StoryID:  item.StoryID,
 			StoryURL: item.StoryURL,
 			Title:    item.Title,
-			Time:     item.Time,
+			Time:     jsonTime{Time: item.Time},
 		})
 		if len(items) >= batchSize {
 			if err := client.create(ctx, items); err != nil {

@@ -1,15 +1,17 @@
 import datetime
 import uuid
-from typing import List
+from typing import List, Optional
+from unittest import mock
 
-from django.utils.datetime_safe import new_datetime
+from django.http.response import HttpResponse
 from django.test import Client, TestCase
 from django.urls import reverse
+from django.utils.datetime_safe import new_datetime
 from rest_framework.test import APIClient
 
 from news.models import Article
 from news.serializers import ArticleSerializer
-from scrutiny.tests import ScrutinyTestApiListView, ScrutinyTestListView
+from scrutiny.tests import ScrutinyTestListView
 
 
 def article(*args, **kwargs) -> Article:
@@ -53,6 +55,7 @@ class TestApiDashboardView(TestCase):
         self.assertEqual(self.resp.context["total"], 0)
         self.assertEqual(self.resp.context["new_today"], 0)
         self.assertEqual(self.resp.context["max_score"], 0)
+        self.assertEqual(self.resp.context["max_score_slug"], "")
 
     def test_get(self):
         with self.assertNumQueries(3):
@@ -66,6 +69,10 @@ class TestApiDashboardView(TestCase):
         self.assertContains(self.resp, "Highest Score")
         self.assertEqual(self.resp.context["max_score"], 100)
         self.assertContains(self.resp, "data-max-score")
+        self.assertEqual(
+            self.resp.context["max_score_slug"],
+            Article.objects.get(title="hello").slug,
+        )
 
 
 class TestListViewWithDetails(ScrutinyTestListView):
@@ -85,7 +92,8 @@ class TestListViewWithDetails(ScrutinyTestListView):
 
     def test_no_items(self) -> None:
         self.tearDown()
-        super().test_no_items()
+        self.response = self.client.get(self.url)
+        self.assertEqual(self.response.status_code, 200)
 
     def test_items(self) -> None:
         super().test_items()
@@ -117,7 +125,8 @@ class TestListView(ScrutinyTestListView):
 
     def test_no_items(self) -> None:
         self.tearDown()
-        super().test_no_items()
+        self.response = self.client.get(self.url)
+        self.assertEqual(self.response.status_code, 200)
 
     def test_items(self) -> None:
         super().test_items()
@@ -127,19 +136,45 @@ class TestListView(ScrutinyTestListView):
         )
 
 
-class TestApiListView(ScrutinyTestApiListView):
+class TestApiListView(TestCase):
     client_class = APIClient
     items = List[Article]
     model = Article
+    response: HttpResponse
+    url: Optional[str] = ""
 
-    def setUp(self) -> None:
+    @mock.patch("news.signals.requests")
+    def setUp(self, mock_requests) -> None:
+        self.mock_requests = mock_requests
+        self.mock_requests.post.return_value = HttpResponse(status=200)
         self.items = [
             article(title="hello"),
             article(title="hello again"),
         ]
         self.url = reverse("news_api.list_view")
 
-    def test_create_item(self):
+    def tearDown(self) -> None:
+        super().tearDown()
+        if self.model:
+            self.model.objects.all().delete()
+
+    def test_no_items(self) -> None:
+        self.tearDown()
+        with self.assertNumQueries(1):
+            self.response = self.client.get(path=self.url, format="json")
+        self.assertEqual(self.response.status_code, 200)
+        self.assertEqual(len(self.response.json()), 0)
+
+    def test_items(self) -> None:
+        with self.assertNumQueries(1):
+            self.response = self.client.get(path=self.url, format="json")
+        self.assertEqual(self.response.status_code, 200)
+        self.assertEqual(len(self.response.json()), len(self.items))
+
+    @mock.patch("news.signals.requests")
+    def test_create_item(self, mock_requests):
+        self.mock_requests = mock_requests
+        self.tearDown()
         now = datetime.datetime.now()
         expected = Article(
             posted_by="test_user",
@@ -154,8 +189,12 @@ class TestApiListView(ScrutinyTestApiListView):
         resp = self.client.post(path=self.url, data=payload, format="json")
         self.assertEqual(resp.status_code, 201)
         self.assertEqual(Article.objects.filter(slug=expected.slug).first(), expected)
+        self.mock_requests.post.assert_called()
 
-    def test_create_items(self):
+    @mock.patch("news.signals.requests")
+    def test_create_items(self, mock_requests):
+        self.mock_requests = mock_requests
+        self.tearDown()
         now = datetime.datetime.now()
         data = [
             ArticleSerializer(
@@ -183,3 +222,4 @@ class TestApiListView(ScrutinyTestApiListView):
         ]
         resp = self.client.post(path=self.url, data=data, format="json")
         self.assertEqual(resp.status_code, 201)
+        self.mock_requests.post.assert_called()
