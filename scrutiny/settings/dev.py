@@ -34,6 +34,7 @@ ALLOWED_HOSTS = [
     "scrutiny.local",
     "scrutiny.local:8081",
     "scrutiny.cluster",
+    "web:8080",
 ]
 
 
@@ -155,4 +156,8 @@ LOGGING = {
         "handlers": ["console"],
         "level": "INFO",
     },
+}
+
+REST_FRAMEWORK = {
+    "DATETIME_FORMAT": "%Y-%m-%dT%H:%M:%S",
 }

@@ -4,6 +4,10 @@ RUN apt-get update
 
 WORKDIR /go/src
 
+COPY go.mod /go/src
+COPY go.sum /go/src
+RUN go mod download
+
 COPY . /go/src
 RUN go build -o /go/bin/ scrutiny
 

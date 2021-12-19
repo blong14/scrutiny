@@ -1,7 +1,7 @@
 version: "3"
 
 services:
-    caddy:
+    scrutiny.local:
         image: dunglas/mercure
         restart: unless-stopped
         ports:
@@ -14,7 +14,10 @@ services:
         ports:
             - "8080:8080"
         volumes:
+            - ./scrutiny/settings:/app/scrutiny/settings
             - ./scrutiny/db.sqlite3:/app/scrutiny/db.sqlite3
+        depends_on:
+            - scrutiny.local
     scrape:
         image: blong14/scrutiny
         restart: unless-stopped
@@ -23,3 +26,5 @@ services:
         command:
             - ./bin/scrutiny
             - news
+        depends_on:
+            - web
