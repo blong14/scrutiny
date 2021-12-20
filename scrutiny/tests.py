@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List
 
 from django.db import models
 from django.http.response import HttpResponse
