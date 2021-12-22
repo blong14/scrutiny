@@ -18,6 +18,7 @@ import (
 )
 
 var url = fmt.Sprintf("%sscrutiny.local:%d/api/news/", "https://", 8081)
+// var url = fmt.Sprintf("%sscrutiny.local:%d/api/news/", "http://", 8000)
 
 type TopNews []uint64
 
@@ -194,7 +195,7 @@ var NewsCmd = &cobra.Command{
 		http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 		ctx, cancel := context.WithCancel(context.Background())
 		defer cancel()
-		ticker := time.NewTicker(1 * time.Minute)
+		ticker := time.NewTicker(30 * time.Second)
 		defer ticker.Stop()
 		for {
 			select {

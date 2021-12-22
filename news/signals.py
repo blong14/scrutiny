@@ -4,12 +4,13 @@ from urllib import parse
 
 import requests
 from django.conf import settings
+from django.http import HttpRequest
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.template.loader import render_to_string
 
 from news.models import Item
-from news.views import NewsApiDashboardView
+from news.views import NewsApiDashboardView, NewsListView
 
 
 logger = logging.getLogger(__name__)
@@ -47,8 +48,9 @@ def dispatch_update_dashboard(sender: Item, **kwargs) -> None:
 
 @receiver(post_save, sender=Item)
 def dispatch_new_item(sender: Item, **kwargs) -> None:
-    item = kwargs.get("instance", None)
-    if not item:
-        raise ValueError(f"invalid instance of {sender}")
-    msg = render_to_string("news/_list_item.turbo.html", context={"item": item})
+    view = NewsListView()
+    view.setup(request=HttpRequest())
+    query = view.get_queryset()
+    context = view.get_context_data(object_list=query)
+    msg = render_to_string("news/_list.turbo.html", context=context)
     _send(sender, msg)

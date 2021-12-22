@@ -1,11 +1,13 @@
 import datetime
 import logging
 
+from django.conf import settings
 from django.utils.datetime_safe import new_datetime
+from django.views import generic
 
 from news.models import Item
 from news.serializers import ItemSerializer
-from scrutiny.views import ScrutinyApiListView, ScrutinyListView, ScrutinyTemplateView
+from scrutiny.views import ScrutinyApiListView, ScrutinyTemplateView
 
 
 logger = logging.getLogger(__name__)
@@ -27,14 +29,21 @@ class NewsApiDashboardView(ScrutinyTemplateView):
         return context
 
 
-class NewsListView(ScrutinyListView):
+class NewsListView(generic.ListView):
+    context_object_name = "items"
     model = Item
+    paginate_by = 25
     order = ["-created_at"]
     template_name = "news/list.html"
 
+    def get_context_data(self, *args, **kwargs):
+        context = super().get_context_data(*args, **kwargs)
+        context["features"] = getattr(settings, "FEATURES", {})
+        return context
+
     def get_queryset(self):
         query = self.model.objects.filter(parent_id=None)
-        slugs = self.request.GET.get("slugs")
+        slugs = self.request.GET.get("slugs") if self.request else None
         if slugs:
             query = query.filter(pk__in=[slug for slug in slugs.split(",")])
         query = query.order_by(*self.order)

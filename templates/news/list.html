@@ -6,9 +6,9 @@
         {% include "news/_dashboard.html" %}
         </turbo-frame>
         <h2 class="lh-title">Recent Top Stories</h2>
-        <ul id="news" class="list pa0 mv2">
-            {% include "news/_list.html" with items=items %}
-        </ul>
+        <turbo-frame id="news">
+        {% include "news/_list.html" with items=items %}
+        </turbo-frame>
         {% if features.sse %}
             <script>{% include "news/list.js" %}</script>
         {% endif %}

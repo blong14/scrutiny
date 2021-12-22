@@ -25,8 +25,6 @@ COPY requirements.txt /app/requirements.txt
 RUN pypy -mpip install -r requirements.txt
 
 COPY . /app
-RUN pypy manage.py migrate --settings=scrutiny.settings.spec
-
 COPY --from=go-build /go/bin/scrutiny /app/bin/scrutiny
 
 CMD pypy manage.py waitress
