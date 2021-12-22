@@ -1,20 +1,16 @@
 <article>
-    <header>
-        <h3 class="lh-title mt0">{{ item.title }}</h3>
-        <small>{{ item.time }}</small>
+    <header class="mb3">
+        <h3 class="lh-title ma0">{{ item.title }}</h3>
+        <small><time>{{ item.created_at }}</time></small>
     </header>
-    <div class="w-100">
-        <p class="f6 lh-copy">
-            score {{ item.score }}
-        </p>
-    </div>
     <footer class="flex">
-        <div class="w-75">By {{ item.posted_by }}</div>
+        <div class="w-25">By {{ item.author }}</div>
+        <div class="w-50">score {{ item.points }}</div>
         <div class="w-25 flex items-end">
             <div class="w-100">
                 <a class="link dim blue underline-hover tc"
                    title="Read Article"
-                   href="{{ item.story_url }}">Link</a>
+                   href="{{ item.url }}">Link</a>
             </div>
             <div class="w-100">
                 <a class="link dim blue underline-hover tc"
