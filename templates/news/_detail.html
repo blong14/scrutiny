@@ -3,17 +3,17 @@
     <article class="pa3" data-slug="{{ items.0.slug }}">
         <header>
             <h2 class="lh-title mt0">
-                <a class="link dim blue underline" href="{{ items.0.story_url }}">{{ items.0.title }}</a>
+                <a class="link dim blue underline" href="{{ items.0.url }}">{{ items.0.title }}</a>
             </h2>
         </header>
         <div>
             <p>
-                {{ items.0.score }}
+                {{ items.0.points }}
             </p>
         </div>
         <footer>
             <p>
-                {{ items.0.posted_by }} on <time>{{ items.0.time }}</time>
+                {{ items.0.author }} on <time>{{ items.0.created_at }}</time>
             </p>
         </footer>
     </article>

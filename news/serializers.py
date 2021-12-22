@@ -1,9 +1,9 @@
 from rest_framework.serializers import ModelSerializer
 
-from news.models import Article
+from news.models import Item
 
 
-class ArticleSerializer(ModelSerializer):
+class ItemSerializer(ModelSerializer):
     class Meta:
-        fields = Article.serializable_fields()
-        model = Article
+        fields = Item.serializable_fields()
+        model = Item

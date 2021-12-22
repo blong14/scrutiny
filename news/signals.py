@@ -8,14 +8,14 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.template.loader import render_to_string
 
-from news.models import Article
+from news.models import Item
 from news.views import NewsApiDashboardView
 
 
 logger = logging.getLogger(__name__)
 
 
-def _send(sender: Article, msg: str):
+def _send(sender: Item, msg: str):
     token = settings.JWT_PUBLISH_TOKEN
     if not token:
         raise EnvironmentError("missing jwt publish token")
@@ -38,15 +38,15 @@ def _send(sender: Article, msg: str):
         logger.error("error dispatching event %s for %s", resp, sender)
 
 
-@receiver(post_save, sender=Article)
-def dispatch_update_dashboard(sender: Article, **kwargs) -> None:
+@receiver(post_save, sender=Item)
+def dispatch_update_dashboard(sender: Item, **kwargs) -> None:
     context = NewsApiDashboardView().get_context_data()
     msg = render_to_string("news/_dashboard.turbo.html", context=context)
     _send(sender, msg)
 
 
-@receiver(post_save, sender=Article)
-def dispatch_new_item(sender: Article, **kwargs) -> None:
+@receiver(post_save, sender=Item)
+def dispatch_new_item(sender: Item, **kwargs) -> None:
     item = kwargs.get("instance", None)
     if not item:
         raise ValueError(f"invalid instance of {sender}")

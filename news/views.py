@@ -3,8 +3,8 @@ import logging
 
 from django.utils.datetime_safe import new_datetime
 
-from news.models import Article
-from news.serializers import ArticleSerializer
+from news.models import Item
+from news.serializers import ItemSerializer
 from scrutiny.views import ScrutinyApiListView, ScrutinyListView, ScrutinyTemplateView
 
 
@@ -17,18 +17,18 @@ class NewsApiDashboardView(ScrutinyTemplateView):
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
         now = datetime.datetime.now()
-        article_with_max = Article.max_score_article()
-        context["max_score"] = article_with_max.score if article_with_max else 0
-        context["max_score_slug"] = article_with_max.slug if article_with_max else ""
-        context["total"] = Article.objects.count()
-        context["new_today"] = Article.objects.filter(
-            created_at__gte=new_datetime(now).date()
+        item = Item.max_score_item()
+        context["max_score"] = item.points if item else 0
+        context["max_score_slug"] = item.slug if item else ""
+        context["total"] = Item.objects.count()
+        context["new_today"] = Item.objects.filter(
+            added_at__gte=new_datetime(now).date()
         ).count()
         return context
 
 
 class NewsListView(ScrutinyListView):
-    model = Article
+    model = Item
     order = ["-created_at"]
     template_name = "news/list.html"
 
@@ -42,5 +42,5 @@ class NewsListView(ScrutinyListView):
 
 
 class NewsApiListView(ScrutinyApiListView):
-    queryset = Article.objects.all()
-    serializer_class = ArticleSerializer
+    queryset = Item.objects.all()
+    serializer_class = ItemSerializer

@@ -8,52 +8,70 @@ from django.urls import reverse
 logger = logging.getLogger(__name__)
 
 
-class Article(models.Model):
-    """Article models a "story" from news
+class Item(models.Model):
+    """Item models an "item" from news algolia search API
     Example:
-        https://hacker-news.firebaseio.com/v0/item/8863.json
+        https://hn.algolia.com/api
         {
-            "by" : "dhouston",
-            "descendants" : 71,
-            "id" : 8863,
-            "kids" : [ 8952, 9224, 8917, 8884, 8887, ... ],
-            "score" : 111,
-            "time" : 1175714200,
-            "title" : "My YC app: Dropbox - Throw away your USB drive",
-            "type" : "story",
-            "url" : "http://www.getdropbox.com/u/2/screencast.html"
+            id: 1,
+            created_at: "2006-10-09T18:21:51.000Z",
+            author: "pg",
+            title: "Y Combinator",
+            url: "http://ycombinator.com",
+            text: null,
+            points: 57,
+            parent_id: null,
+            children: [
+                {
+                    id: 2,
+                    created_at: "2006-10-09T18:21:51.000Z",
+                    author: "pg",
+                    title: "Y Combinator",
+                    url: "http://ycombinator.com",
+                    text: null,
+                    points: 57,
+                    parent_id: 1,
+                    children: []
+                },
+            ]
         }
     """
 
     class Meta:
-        get_latest_by = "score"
-        ordering = ["-time"]
+        get_latest_by = "points"
+        ordering = ["-added_at"]
 
-    story_id = models.BigIntegerField()
-    posted_by = models.CharField(max_length=256)
-    score = models.IntegerField()
+    id = models.BigIntegerField()
+    author = models.CharField(max_length=256)
+    parent_id = models.ForeignKey(to="Item", on_delete=models.CASCADE, null=True)
+    points = models.IntegerField()
     slug = models.CharField(
         primary_key=True,
         max_length=36,
     )
-    story_url = models.URLField()
-    time = models.DateTimeField()
+    text = models.TextField(null=True)
     title = models.CharField(max_length=256)
-    created_at = models.DateTimeField(auto_now_add=True)
+    url = models.URLField()
+    created_at = models.DateTimeField()
+    added_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     @staticmethod
     def serializable_fields() -> List[str]:
-        return [field.name for field in Article._meta.get_fields()]
+        return [
+            field.name
+            for field in Item._meta.get_fields()
+            if field.name not in ("item",)
+        ]
 
     @staticmethod
-    def max_score_article() -> Optional["Article"]:
-        article_with_max = None
+    def max_score_item() -> Optional["Item"]:
+        item_with_max = None
         try:
-            article_with_max = Article.objects.latest("score")
-        except Article.DoesNotExist as e:
+            item_with_max = Item.objects.latest("points")
+        except Item.DoesNotExist as e:
             logger.error("unable to find max score %s", e)
-        return article_with_max
+        return item_with_max
 
     def get_absolute_url(self) -> str:
         return f"{reverse('news.list_view')}?slugs={str(self.slug)}"

@@ -9,44 +9,45 @@ from django.urls import reverse
 from django.utils.datetime_safe import new_datetime
 from rest_framework.test import APIClient
 
-from news.models import Article
-from news.serializers import ArticleSerializer
+from news.models import Item
+from news.serializers import ItemSerializer
 from scrutiny.tests import ScrutinyTestListView
 
 
-def article(*args, **kwargs) -> Article:
-    """Simple Article generator
-    Saves single Article when called with pre-filled data
+def item(*args, **kwargs) -> Item:
+    """Simple Item generator
+    Saves single Item when called with pre-filled data
     TODO: Add proper test factories or fixtures
     """
-    score = kwargs.pop("score", 77)
+    points = kwargs.pop("points", 77)
     now = datetime.datetime.now()
-    art = Article(
-        posted_by="test_user",
-        score=score,
-        story_id=123,
-        story_url="https://local.local",
-        time=new_datetime(now),
+    i = Item(
+        author="test_user",
+        points=points,
+        id=123,
+        url="https://local.local",
+        created_at=new_datetime(now),
         slug=str(uuid.uuid4()),
         *args,
         **kwargs,
     )
-    art.save()
-    return art
+    i.save()
+    return i
 
 
 class TestApiDashboardView(TestCase):
     client_class = Client
+    model = Item
 
     def setUp(self) -> None:
         self.url = reverse("news_api.dashboard")
         self.items = [
-            article(title="hello", score=100),
-            article(title="hello again", score=50),
+            item(title="hello", points=100),
+            item(title="hello again", points=50),
         ]
 
     def tearDown(self) -> None:
-        Article.objects.all().delete()
+        self.model.objects.all().delete()
 
     def test_get_no_items(self):
         self.tearDown()
@@ -71,16 +72,17 @@ class TestApiDashboardView(TestCase):
         self.assertContains(self.resp, "data-max-score")
         self.assertEqual(
             self.resp.context["max_score_slug"],
-            Article.objects.get(title="hello").slug,
+            self.model.objects.get(title="hello").slug,
         )
 
 
 class TestListViewWithDetails(ScrutinyTestListView):
     client_class = Client
+    model = Item
 
     def setUp(self) -> None:
         super().setUp()
-        self.item = article(title="Python can suck.")
+        self.item = item(title="Python can suck.")
         self.url = self.item.get_absolute_url()
         self.items = [
             self.item,
@@ -88,7 +90,7 @@ class TestListViewWithDetails(ScrutinyTestListView):
 
     def tearDown(self) -> None:
         super().tearDown()
-        Article.objects.all().delete()
+        self.model.objects.all().delete()
 
     def test_no_items(self) -> None:
         self.tearDown()
@@ -97,31 +99,32 @@ class TestListViewWithDetails(ScrutinyTestListView):
 
     def test_items(self) -> None:
         super().test_items()
-        self.assertContains(self.response, self.item.posted_by)
-        self.assertContains(self.response, self.item.score)
-        self.assertContains(self.response, self.item.story_url)
+        self.assertContains(self.response, self.item.author)
+        self.assertContains(self.response, self.item.points)
+        self.assertContains(self.response, self.item.url)
         self.assertContains(self.response, self.item.title)
 
     def test_items_bad_request(self) -> None:
-        self.url = f"{reverse('news.list_view')}?slugs=(SELECT * FROM news_article),(SELECT story FROM news_article)"
+        self.url = f"{reverse('news.list_view')}?slugs=(SELECT * FROM news_item),(SELECT story FROM news_item)"
         self.response = self.client.get(path=self.url, format="json")
         self.assertEqual(self.response.status_code, 200)
 
 
 class TestListView(ScrutinyTestListView):
     client_class = Client
+    model = Item
 
     def setUp(self) -> None:
         super().setUp()
         self.url = reverse("news.list_view")
-        self.items: List[Article] = [
-            article(title="Python can suck."),
-            article(title="Django too"),
+        self.items: List[Item] = [
+            item(title="Python can suck."),
+            item(title="Django too"),
         ]
 
     def tearDown(self) -> None:
         super().tearDown()
-        Article.objects.all().delete()
+        self.model.objects.all().delete()
 
     def test_no_items(self) -> None:
         self.tearDown()
@@ -138,8 +141,8 @@ class TestListView(ScrutinyTestListView):
 
 class TestApiListView(TestCase):
     client_class = APIClient
-    items = List[Article]
-    model = Article
+    items = List[Item]
+    model = Item
     response: HttpResponse
     url: Optional[str] = ""
 
@@ -148,8 +151,8 @@ class TestApiListView(TestCase):
         self.mock_requests = mock_requests
         self.mock_requests.post.return_value = HttpResponse(status=200)
         self.items = [
-            article(title="hello"),
-            article(title="hello again"),
+            item(title="hello"),
+            item(title="hello again"),
         ]
         self.url = reverse("news_api.list_view")
 
@@ -176,19 +179,21 @@ class TestApiListView(TestCase):
         self.mock_requests = mock_requests
         self.tearDown()
         now = datetime.datetime.now()
-        expected = Article(
-            posted_by="test_user",
-            score=77,
-            story_id=123,
-            story_url="https://local.local",
-            time=new_datetime(now),
+        expected = self.model(
+            author="test_user",
+            points=77,
+            id=123,
+            url="https://local.local",
+            created_at=new_datetime(now),
             title="hello",
             slug=str(uuid.uuid4()),
         )
-        payload = [ArticleSerializer(expected).data]
+        payload = [ItemSerializer(expected).data]
         resp = self.client.post(path=self.url, data=payload, format="json")
         self.assertEqual(resp.status_code, 201)
-        self.assertEqual(Article.objects.filter(slug=expected.slug).first(), expected)
+        self.assertEqual(
+            self.model.objects.filter(slug=expected.slug).first(), expected
+        )
         self.mock_requests.post.assert_called()
 
     @mock.patch("news.signals.requests")
@@ -197,24 +202,24 @@ class TestApiListView(TestCase):
         self.tearDown()
         now = datetime.datetime.now()
         data = [
-            ArticleSerializer(
-                Article(
-                    posted_by="test_user",
-                    score=77,
-                    story_id=123,
-                    story_url="https://local.local",
-                    time=new_datetime(now),
+            ItemSerializer(
+                self.model(
+                    author="test_user",
+                    points=77,
+                    id=123,
+                    url="https://local.local",
+                    created_at=new_datetime(now),
                     title="hello",
                     slug=str(uuid.uuid4()),
                 ),
             ).data,
-            ArticleSerializer(
-                Article(
-                    posted_by="test_user",
-                    score=77,
-                    story_id=123,
-                    story_url="https://local.local",
-                    time=new_datetime(now),
+            ItemSerializer(
+                self.model(
+                    author="test_user",
+                    points=77,
+                    id=123,
+                    url="https://local.local",
+                    created_at=new_datetime(now),
                     title="ahello",
                     slug=str(uuid.uuid4()),
                 ),
