@@ -6,3 +6,4 @@ venv
 vendor
 Dockerfile
 *.sqlite3
+sitecustomize.py

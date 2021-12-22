@@ -162,13 +162,13 @@ func Extract(ctx context.Context) <-chan *News {
 }
 
 func Transform(ctx context.Context, stream <-chan *News) <-chan *News {
-	client := &db{}
-	client.connect()
-	defer client.close()
-	items := client.list(ctx)
 	out := make(chan *News)
 	go func() {
 		defer close(out)
+		client := &db{}
+		client.connect()
+		defer client.close()
+		items := client.list(ctx)
 		for item := range stream {
 			if _, ok := items[item.StoryID]; ok {
 				continue
@@ -176,6 +176,9 @@ func Transform(ctx context.Context, stream <-chan *News) <-chan *News {
 			slug := uuid.New()
 			item.Slug = slug.String()
 			item.Time = time.Now().UTC()
+			if item.StoryURL == "" {
+				item.StoryURL = "https://test.com"
+			}
 			select {
 			case <-ctx.Done():
 			case out <- item:
@@ -192,9 +195,6 @@ func Load(ctx context.Context, stream <-chan *News) error {
 	defer client.close()
 	items := make([]NewsCreateRequest, 0)
 	for item := range stream {
-		if item.StoryURL == "" {
-			item.StoryURL = "https://test.com"
-		}
 		items = append(items, NewsCreateRequest{
 			PostedBY: item.PostedBY,
 			Score:    item.Score,

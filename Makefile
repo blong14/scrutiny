@@ -30,7 +30,7 @@ image: .deps/lint .dockerignore Dockerfile Makefile
 .PHONY: build check clean cover run shell test
 build:
 	@docker build -t blong14/scrutiny:latest .
-	@docker run --rm blong14/scrutiny pypy manage.py test --timing --settings=scrutiny.settings.spec
+	@#docker run --rm blong14/scrutiny pypy manage.py test --timing --settings=scrutiny.settings.spec
 	@touch Dockerfile
 
 check: .deps

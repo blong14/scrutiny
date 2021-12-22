@@ -1,7 +1,9 @@
 from .dev import *  # noqa
 
-DEBUG = False
+DEBUG = True
 
 DEPLOY_ENV = "test"
+
+FEATURES = {}
 
 LOGGING = {}

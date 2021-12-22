@@ -1,7 +1,11 @@
-from typing import List
+import logging
+from typing import List, Optional
 
 from django.db import models
 from django.urls import reverse
+
+
+logger = logging.getLogger(__name__)
 
 
 class Article(models.Model):
@@ -41,6 +45,15 @@ class Article(models.Model):
     @staticmethod
     def serializable_fields() -> List[str]:
         return [field.name for field in Article._meta.get_fields()]
+
+    @staticmethod
+    def max_score_article() -> Optional["Article"]:
+        article_with_max = None
+        try:
+            article_with_max = Article.objects.latest("score")
+        except Article.DoesNotExist as e:
+            logger.error("unable to find max score %s", e)
+        return article_with_max
 
     def get_absolute_url(self) -> str:
         return f"{reverse('news.list_view')}?slugs={str(self.slug)}"

@@ -11,6 +11,8 @@ services:
     web:
         image: blong14/scrutiny
         restart: unless-stopped
+        environment:
+            - DJANGO_SETTINGS_MODULE=scrutiny.settings.prod
         ports:
             - "8080:8080"
         volumes:

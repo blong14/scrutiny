@@ -17,8 +17,6 @@ RUN apt-get update
 
 WORKDIR /app
 
-ENV DJANGO_SETTINGS_MODULE=scrutiny.settings.prod
-
 RUN pypy -m ensurepip && \
     pypy -mpip install -U pip wheel
 
