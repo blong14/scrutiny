@@ -159,5 +159,5 @@ LOGGING = {
 }
 
 REST_FRAMEWORK = {
-    "DATETIME_FORMAT": "%Y-%m-%dT%H:%M:%S",
+    "DATETIME_FORMAT": "%Y-%m-%dT%H:%M:%SZ",
 }

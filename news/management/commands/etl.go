@@ -9,12 +9,11 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-	"strings"
 	"sync"
 	"time"
 
+	"github.com/google/brotli/go/cbrotli"
 	"github.com/google/uuid"
-	"github.com/jmoiron/sqlx"
 	"github.com/spf13/cobra"
 )
 
@@ -22,63 +21,21 @@ var url = fmt.Sprintf("%sscrutiny.local:%d/api/news/", "https://", 8081)
 
 type TopNews []uint64
 
-type News struct {
-	PostedBY string    `db:"posted_by" json:"by"`
-	Score    uint64    `db:"score" json:"score"`
-	Slug     string    `db:"slug" json:"-"`
-	StoryID  uint64    `db:"story_id" json:"id"`
-	StoryURL string    `db:"story_url" json:"url"`
-	Time     time.Time `db:"time" json:"-"`
-	Title    string    `db:"title" json:"title"`
+type Item struct {
+	Author    string    `json:"author"`
+	CreatedAT time.Time `json:"created_at"`
+	ID        uint64    `json:"id"`
+	ParentID  *uint64   `json:"parent_id"`
+	Points    uint64    `json:"points"`
+	Slug      string    `json:"slug"`
+	Title     string    `json:"title"`
+	Text      string    `json:"text"`
+	URL       string    `json:"url"`
 }
 
-type jsonTime struct {
-	time.Time
-}
+type db struct{}
 
-func (t *jsonTime) UnmarshalJSON(buf []byte) error {
-	tt, err := time.Parse("2006-01-02T15:04:05", strings.Trim(string(buf), `"`))
-	if err != nil {
-		return err
-	}
-	t.Time = tt
-	return nil
-}
-
-type NewsCreateRequest struct {
-	PostedBY string   `json:"posted_by"`
-	Score    uint64   `json:"score"`
-	Slug     string   `json:"slug"`
-	StoryID  uint64   `json:"story_id"`
-	StoryURL string   `json:"story_url"`
-	Time     jsonTime `json:"time"`
-	Title    string   `json:"title"`
-}
-
-type req struct {
-	Items []NewsCreateRequest `json:"items"`
-}
-
-type db struct {
-	conn *sqlx.DB
-}
-
-func (c *db) connect() {
-	db, err := sqlx.Connect("sqlite3", "db.sqlite3")
-	if err != nil {
-		log.Panic(err)
-	}
-	c.conn = db
-}
-
-func (c *db) close() error {
-	if c.conn != nil {
-		return c.conn.Close()
-	}
-	return nil
-}
-
-func (c *db) list(ctx context.Context) map[uint64]struct{} {
+func (c *db) list(_ context.Context) map[uint64]struct{} {
 	start := time.Now()
 	resp, err := http.Get(url)
 	if err != nil {
@@ -89,19 +46,19 @@ func (c *db) list(ctx context.Context) map[uint64]struct{} {
 	if err != nil {
 		log.Fatal("Error reading response. ", err)
 	}
-	var items []NewsCreateRequest
+	var items []Item
 	if err := json.Unmarshal(body, &items); err != nil {
 		log.Fatal("Error unmarshalling response. ", err)
 	}
 	out := make(map[uint64]struct{})
 	for _, i := range items {
-		out[i.StoryID] = struct{}{}
+		out[i.ID] = struct{}{}
 	}
 	log.Printf("List took %s\n", time.Since(start))
 	return out
 }
 
-func (c *db) create(_ context.Context, rows []NewsCreateRequest) error {
+func (c *db) create(_ context.Context, rows []Item) error {
 	data, err := json.Marshal(rows)
 	if err != nil {
 		return fmt.Errorf("not able to marshal json %v", err)
@@ -115,10 +72,12 @@ func (c *db) create(_ context.Context, rows []NewsCreateRequest) error {
 	return nil
 }
 
-func Extract(ctx context.Context) <-chan *News {
-	out := make(chan *News)
+func Extract(ctx context.Context) <-chan *Item {
+	out := make(chan *Item)
 	go func() {
 		defer close(out)
+		client := &db{}
+		items := client.list(ctx)
 		resp, err := http.Get("https://hacker-news.firebaseio.com/v0/topstories.json")
 		if err != nil {
 			log.Fatal("Error getting response. ", err)
@@ -133,26 +92,51 @@ func Extract(ctx context.Context) <-chan *News {
 			log.Fatal("Error unmarshalling response. ", err)
 		}
 		var wg sync.WaitGroup
+		count := 1
 		for _, i := range topStories {
+			if _, ok := items[i]; ok {
+				continue
+			}
+			if count == 10 {
+				break
+			} else {
+				count++
+			}
 			wg.Add(1)
 			go func(storyID uint64) {
 				defer wg.Done()
-				resp, err := http.Get(fmt.Sprintf("https://hacker-news.firebaseio.com/v0/item/%d.json", storyID))
+				client := http.DefaultClient
+				req, err := http.NewRequest(
+					"GET", fmt.Sprintf("http://hn.algolia.com/api/v1/items/%d", storyID), nil)
+				if err != nil {
+					log.Fatal("Error getting response. ", err)
+				}
+				req.Header.Set("Accept", "*/*")
+				req.Header.Set("Connection", "keep-alive")
+				req.Header.Set("Accept-Encoding", "gzip, deflate, br")
+				resp, err := client.Do(req)
 				if err != nil {
 					log.Fatal("Error getting response. ", err)
 				}
 				defer resp.Body.Close()
-				body, err := ioutil.ReadAll(resp.Body)
+				var body []byte
+				if resp.Header.Get("Content-Encoding") == "br" {
+					reader := cbrotli.NewReader(resp.Body)
+					defer reader.Close()
+					body, err = ioutil.ReadAll(reader)
+				} else {
+					body, err = ioutil.ReadAll(resp.Body)
+				}
 				if err != nil {
 					log.Fatal("Error reading response. ", err)
 				}
-				var news News
-				if err := json.Unmarshal(body, &news); err != nil {
+				var item Item
+				if err := json.Unmarshal(body, &item); err != nil {
 					log.Fatal("Error unmarshalling response. ", err)
 				}
 				select {
 				case <-ctx.Done():
-				case out <- &news:
+				case out <- &item:
 				}
 			}(i)
 		}
@@ -161,23 +145,15 @@ func Extract(ctx context.Context) <-chan *News {
 	return out
 }
 
-func Transform(ctx context.Context, stream <-chan *News) <-chan *News {
-	out := make(chan *News)
+func Transform(ctx context.Context, stream <-chan *Item) <-chan *Item {
+	out := make(chan *Item)
 	go func() {
 		defer close(out)
-		client := &db{}
-		client.connect()
-		defer client.close()
-		items := client.list(ctx)
 		for item := range stream {
-			if _, ok := items[item.StoryID]; ok {
-				continue
-			}
 			slug := uuid.New()
 			item.Slug = slug.String()
-			item.Time = time.Now().UTC()
-			if item.StoryURL == "" {
-				item.StoryURL = "https://test.com"
+			if item.URL == "" {
+				item.URL = "https://test.com"
 			}
 			select {
 			case <-ctx.Done():
@@ -188,28 +164,18 @@ func Transform(ctx context.Context, stream <-chan *News) <-chan *News {
 	return out
 }
 
-func Load(ctx context.Context, stream <-chan *News) error {
+func Load(ctx context.Context, stream <-chan *Item) error {
 	batchSize := 100
 	client := &db{}
-	client.connect()
-	defer client.close()
-	items := make([]NewsCreateRequest, 0)
+	items := make([]Item, 0)
 	for item := range stream {
-		items = append(items, NewsCreateRequest{
-			PostedBY: item.PostedBY,
-			Score:    item.Score,
-			Slug:     item.Slug,
-			StoryID:  item.StoryID,
-			StoryURL: item.StoryURL,
-			Title:    item.Title,
-			Time:     jsonTime{Time: item.Time},
-		})
+		items = append(items, *item)
 		if len(items) >= batchSize {
 			if err := client.create(ctx, items); err != nil {
 				log.Println(err)
 			}
 			log.Printf("added %d stories\n", len(items))
-			items = []NewsCreateRequest{}
+			items = []Item{}
 		}
 	}
 	if len(items) > 0 {
@@ -226,10 +192,9 @@ var NewsCmd = &cobra.Command{
 	Short: "Fetch news articles",
 	Run: func(cmd *cobra.Command, _ []string) {
 		http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
-
 		ctx, cancel := context.WithCancel(context.Background())
 		defer cancel()
-		ticker := time.NewTicker(30 * time.Second)
+		ticker := time.NewTicker(1 * time.Minute)
 		defer ticker.Stop()
 		for {
 			select {

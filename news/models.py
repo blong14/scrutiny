@@ -49,7 +49,7 @@ class Item(models.Model):
         primary_key=True,
         max_length=36,
     )
-    text = models.TextField(null=True)
+    text = models.TextField(null=True, default="")
     title = models.CharField(max_length=256)
     url = models.URLField()
     created_at = models.DateTimeField()
@@ -61,7 +61,17 @@ class Item(models.Model):
         return [
             field.name
             for field in Item._meta.get_fields()
-            if field.name not in ("item",)
+            if field.name
+            not in (
+                "item",
+                "text",
+            )
+        ]
+
+    @staticmethod
+    def optional_fields() -> List[str]:
+        return [
+            "text",
         ]
 
     @staticmethod

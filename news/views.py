@@ -33,7 +33,7 @@ class NewsListView(ScrutinyListView):
     template_name = "news/list.html"
 
     def get_queryset(self):
-        query = self.model.objects.all()
+        query = self.model.objects.filter(parent_id=None)
         slugs = self.request.GET.get("slugs")
         if slugs:
             query = query.filter(pk__in=[slug for slug in slugs.split(",")])

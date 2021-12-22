@@ -1,6 +1,7 @@
 FROM golang:1.16-bullseye AS go-build
 
-RUN apt-get update
+RUN apt-get update && \
+    apt-get install -y libbrotli-dev
 
 WORKDIR /go/src
 
