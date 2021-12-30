@@ -4,6 +4,7 @@
 .git
 .gitignore
 .idea
+assets
 venv
 vendor
 Dockerfile
