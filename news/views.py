@@ -35,7 +35,7 @@ class NewsApiDashboardView(ScrutinyTemplateView):
 class NewsListView(generic.ListView):
     context_object_name = "items"
     model = Item
-    paginate_by = 25
+    paginate_by = 10
     order = ["-created_at"]
     template_name = "news/list.html"
 
