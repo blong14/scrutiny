@@ -105,13 +105,23 @@ class TestListViewWithDetails(ScrutinyTestListView):
         self.assertEqual(self.response.status_code, 200)
 
     def test_items(self) -> None:
+        comment = item(
+            author="comment author",
+            parent=self.item,
+            text="",  # should not display this comment as it is missing text
+            title="comment",
+            type="COMMENT",
+        )
         super().test_items()
+        self.assertContains(self.response, self.item.slug)
         self.assertContains(self.response, self.item.author)
         self.assertContains(self.response, self.item.points)
         self.assertContains(self.response, self.item.url)
         self.assertContains(self.response, self.item.title)
+        self.assertContains(self.response, self.comment.slug)
         self.assertContains(self.response, self.comment.author)
         self.assertContains(self.response, self.comment.text)
+        self.assertNotContains(self.response, comment.slug)
 
     def test_items_bad_request(self) -> None:
         self.url = f"{reverse('news.list_view')}?slugs=(SELECT * FROM news_item),(SELECT story FROM news_item)"

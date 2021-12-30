@@ -13,17 +13,20 @@
     </header>
     <ul class="list pa0 mv2">
         {% for comment in items.0.children.all %}
-            <li class="pv2 {% if not forloop.last %}bb b--black-10{% endif %}">
-                <article data-slug="{{ comment.slug }}">
-                    <main>
-                        {{ comment.text | safe }}
-                    </main>
-                    <footer class="mb3">
-                        <small><time>{{ comment.created_at }}</time></small>
-                        <small>By {{ comment.author }}</small>
-                    </footer>
-                </article>
-            </li>
+            {% if comment.text %}
+                <li class="pv2 {% if not forloop.last %}bb b--black-10{% endif %}"
+                    data-slug="{{ comment.slug }}">
+                    <article data-slug="{{ comment.slug }}">
+                        <main>
+                            {{ comment.text | safe }}
+                        </main>
+                        <footer class="mb3">
+                            <small><time>{{ comment.created_at }}</time></small>
+                            <small>By {{ comment.author }}</small>
+                        </footer>
+                    </article>
+                </li>
+            {% endif %}
         {% endfor %}
     </ul>
 </article>
