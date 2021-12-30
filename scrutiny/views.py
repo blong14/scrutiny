@@ -26,3 +26,7 @@ class ScrutinyListView(generic.ListView):
 
 class ScrutinyDetailView(generic.DetailView):
     context_object_name = "item"
+
+
+class ScrutinyIndexView(generic.TemplateView):
+    template_name = "index.html"
