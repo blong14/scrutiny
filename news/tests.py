@@ -3,7 +3,6 @@ import uuid
 from typing import List, Optional
 from unittest import mock
 
-from django.core.serializers import serialize
 from django.http.response import HttpResponse
 from django.test import Client, TestCase
 from django.urls import reverse
