@@ -1,3 +1,5 @@
+.coverage
+.coveragerc
 .deps
 .git
 .gitignore
@@ -5,5 +7,5 @@
 venv
 vendor
 Dockerfile
-*.sqlite3
+scrutiny/db.sqlite3
 sitecustomize.py
