@@ -2,7 +2,7 @@
 {% block page_left %}
     <div class="w-40 br b--black-10">
         <turbo-frame id="news-dashboard" src="{% url 'news_api.dashboard' %}">
-        {% include "news/_dashboard.html" %}
+        {% include "news/dashboard.html" %}
         </turbo-frame>
         <h2 class="lh-title">Recent Top Stories</h2>
         <turbo-frame id="news">
