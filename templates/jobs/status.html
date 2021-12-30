@@ -1,0 +1,10 @@
+<turbo-frame id="job-last-sync">
+<dd class="black-50 ml0">
+    Last Sync
+</dd>
+<dd class="f3 fw6 ml0" data-last-sync>
+    <time datetime="{{ last_sync | date:"c" }}" data-last-sync>
+        <small>{{ last_sync | date:"h:i A" }}</small>
+    </time>
+</dd>
+</turbo-frame>

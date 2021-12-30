@@ -1,6 +1,6 @@
 <article>
-    <div class="cf pt3">
-        <dl class="fl fn-l w-50 dib-l w-auto-l lh-title mr5">
+    <div class="cf pt3 flex">
+        <dl class="fl fn-l w-25 lh-title">
             <dd class="black-50 ml0">
                 Total Articles
             </dd>
@@ -8,7 +8,7 @@
                 {{ total }}
             </dd>
         </dl>
-        <dl class="fl fn-l w-50 dib-l w-auto-l lh-title mr5-l">
+        <dl class="fl fn-l w-25 lh-title">
             <dd class="black-50 ml0">
                 New Today
             </dd>
@@ -16,7 +16,7 @@
                 {{ new_today }}
             </dd>
         </dl>
-        <dl class="fl fn-l w-50 dib-l w-auto-l lh-title mr5-l">
+        <dl class="fl fn-l w-25 lh-title">
             <dd class="black-50 ml0">
                 Highest Score
             </dd>
@@ -28,6 +28,9 @@
                     {{ max_score }}
                 </a>
             </dd>
+        </dl>
+        <dl class="fl fn-l w-25 lh-title">
+            <turbo-frame id="job-last-sync" src="{% url 'jobs_api.status' %}?name=hackernews"></turbo-frame>
         </dl>
     </div>
 </article>

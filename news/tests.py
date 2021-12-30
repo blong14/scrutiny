@@ -23,6 +23,7 @@ def item(*args, **kwargs) -> Item:
     author = kwargs.pop("author", "test_user")
     now = datetime.datetime.now()
     i = Item(
+        author=author,
         points=points,
         url="https://local.local",
         created_at=new_datetime(now),

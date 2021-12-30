@@ -26,7 +26,3 @@ class ScrutinyListView(generic.ListView):
 
 class ScrutinyDetailView(generic.DetailView):
     context_object_name = "item"
-
-
-class ScrutinyTemplateView(generic.TemplateView):
-    pass

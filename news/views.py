@@ -10,13 +10,12 @@ from rest_framework.response import Response
 
 from news.models import Item
 from news.serializers import ItemSerializer
-from scrutiny.views import ScrutinyTemplateView
 
 
 logger = logging.getLogger(__name__)
 
 
-class NewsApiDashboardView(ScrutinyTemplateView):
+class NewsApiDashboardView(generic.TemplateView):
     template_name = "news/dashboard.html"
 
     def get_context_data(self, *args, **kwargs):
