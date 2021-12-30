@@ -3,6 +3,7 @@ import uuid
 from typing import List, Optional
 from unittest import mock
 
+from django.core.serializers import serialize
 from django.http.response import HttpResponse
 from django.test import Client, TestCase
 from django.urls import reverse
@@ -24,7 +25,6 @@ def item(*args, **kwargs) -> Item:
     i = Item(
         author="test_user",
         points=points,
-        id=123,
         url="https://local.local",
         created_at=new_datetime(now),
         slug=str(uuid.uuid4()),
@@ -150,9 +150,9 @@ class TestApiListView(TestCase):
     def setUp(self, mock_requests) -> None:
         self.mock_requests = mock_requests
         self.mock_requests.post.return_value = HttpResponse(status=200)
+        self.item = item(title="hello")
         self.items = [
-            item(title="hello"),
-            item(title="hello again"),
+            item(title="hello again", parent=self.item),
         ]
         self.url = reverse("news_api.list_view")
 
@@ -169,7 +169,7 @@ class TestApiListView(TestCase):
         self.assertEqual(len(self.response.json()), 0)
 
     def test_items(self) -> None:
-        with self.assertNumQueries(1):
+        with self.assertNumQueries(2):
             self.response = self.client.get(path=self.url, format="json")
         self.assertEqual(self.response.status_code, 200)
         self.assertEqual(len(self.response.json()), len(self.items))
@@ -182,7 +182,6 @@ class TestApiListView(TestCase):
         expected = self.model(
             author="test_user",
             points=77,
-            id=123,
             url="https://local.local",
             created_at=new_datetime(now),
             title="hello",
@@ -190,10 +189,9 @@ class TestApiListView(TestCase):
         )
         payload = [ItemSerializer(expected).data]
         resp = self.client.post(path=self.url, data=payload, format="json")
+        actual = self.model.objects.filter(slug=expected.slug).first()
         self.assertEqual(resp.status_code, 201)
-        self.assertEqual(
-            self.model.objects.filter(slug=expected.slug).first(), expected
-        )
+        self.assertEqual(actual.slug, expected.slug)
         self.mock_requests.post.assert_called()
 
     @mock.patch("news.signals.requests")
@@ -201,30 +199,33 @@ class TestApiListView(TestCase):
         self.mock_requests = mock_requests
         self.tearDown()
         now = datetime.datetime.now()
+        item_with_child = self.model(
+            id=3,
+            author="test_user",
+            points=77,
+            url="https://local.local",
+            created_at=new_datetime(now),
+            title="hello",
+            slug=str(uuid.uuid4()),
+        )
         data = [
+            ItemSerializer(item_with_child).data,
             ItemSerializer(
                 self.model(
                     author="test_user",
                     points=77,
-                    id=123,
-                    url="https://local.local",
-                    created_at=new_datetime(now),
-                    title="hello",
-                    slug=str(uuid.uuid4()),
-                ),
-            ).data,
-            ItemSerializer(
-                self.model(
-                    author="test_user",
-                    points=77,
-                    id=123,
+                    parent_id=item_with_child.id,
                     url="https://local.local",
                     created_at=new_datetime(now),
                     title="ahello",
+                    type="COMMENT",
                     slug=str(uuid.uuid4()),
                 ),
             ).data,
         ]
         resp = self.client.post(path=self.url, data=data, format="json")
+        actual = Item.objects.filter(pk=item_with_child.id).first()
         self.assertEqual(resp.status_code, 201)
         self.mock_requests.post.assert_called()
+        self.assertIsNotNone(actual)
+        self.assertEqual(actual.children.count(), 1)

@@ -37,20 +37,25 @@ class Item(models.Model):
         }
     """
 
+    ITEM_TYPES = (
+        ("STORY", "story"),
+        ("COMMENT", "comment"),
+    )
+
     class Meta:
         get_latest_by = "points"
         ordering = ["-added_at"]
 
-    id = models.BigIntegerField()
+    id = models.BigAutoField(primary_key=True, serialize=True)
     author = models.CharField(max_length=256)
-    parent_id = models.ForeignKey(to="Item", on_delete=models.CASCADE, null=True)
-    points = models.IntegerField()
-    slug = models.CharField(
-        primary_key=True,
-        max_length=36,
+    parent = models.ForeignKey(
+        to="Item", on_delete=models.CASCADE, null=True, related_name="children"
     )
+    points = models.IntegerField()
+    slug = models.CharField(max_length=36)
     text = models.TextField(null=True, default="")
     title = models.CharField(max_length=256)
+    type = models.CharField(choices=ITEM_TYPES, default="STORY", max_length=32)
     url = models.URLField()
     created_at = models.DateTimeField()
     added_at = models.DateTimeField(auto_now_add=True)
@@ -58,21 +63,7 @@ class Item(models.Model):
 
     @staticmethod
     def serializable_fields() -> List[str]:
-        return [
-            field.name
-            for field in Item._meta.get_fields()
-            if field.name
-            not in (
-                "item",
-                "text",
-            )
-        ]
-
-    @staticmethod
-    def optional_fields() -> List[str]:
-        return [
-            "text",
-        ]
+        return [field.name for field in Item._meta.get_fields()]
 
     @staticmethod
     def max_score_item() -> Optional["Item"]:

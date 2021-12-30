@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"strings"
 	"sync"
 	"time"
 
@@ -18,7 +19,22 @@ import (
 )
 
 var url = fmt.Sprintf("%sscrutiny.local:%d/api/news/", "https://", 8081)
-// var url = fmt.Sprintf("%sscrutiny.local:%d/api/news/", "http://", 8000)
+
+//var url = fmt.Sprintf("%sscrutiny.local:%d/api/news/", "http://", 8000)
+
+func processChildren(ctx context.Context, out chan *Item, item Item) {
+	for _, i := range item.Children {
+		i.ParentID = &item.ID
+		select {
+		case <-ctx.Done():
+			return
+		case out <- &i:
+			//if len(item.Children) > 0 {
+			//	processChildren(ctx, out, i)
+			//}
+		}
+	}
+}
 
 type TopNews []uint64
 
@@ -26,11 +42,26 @@ type Item struct {
 	Author    string    `json:"author"`
 	CreatedAT time.Time `json:"created_at"`
 	ID        uint64    `json:"id"`
+	ParentID  *uint64   `json:"parent"`
+	Points    uint64    `json:"points"`
+	Slug      string    `json:"slug"`
+	Text      string    `json:"text"`
+	Title     string    `json:"title"`
+	Type      string    `json:"type"`
+	URL       string    `json:"url"`
+	Children  []Item    `json:"children"`
+}
+
+type SItem struct {
+	Author    string    `json:"author"`
+	CreatedAT time.Time `json:"created_at"`
+	ID        uint64    `json:"id"`
 	ParentID  *uint64   `json:"parent_id"`
 	Points    uint64    `json:"points"`
 	Slug      string    `json:"slug"`
-	Title     string    `json:"title"`
 	Text      string    `json:"text"`
+	Title     string    `json:"title"`
+	Type      string    `json:"type"`
 	URL       string    `json:"url"`
 }
 
@@ -47,7 +78,7 @@ func (c *db) list(_ context.Context) map[uint64]struct{} {
 	if err != nil {
 		log.Fatal("Error reading response. ", err)
 	}
-	var items []Item
+	var items []SItem
 	if err := json.Unmarshal(body, &items); err != nil {
 		log.Fatal("Error unmarshalling response. ", err)
 	}
@@ -137,7 +168,11 @@ func Extract(ctx context.Context) <-chan *Item {
 				}
 				select {
 				case <-ctx.Done():
+					return
 				case out <- &item:
+				}
+				if len(item.Children) > 0 {
+					processChildren(ctx, out, item)
 				}
 			}(i)
 		}
@@ -150,15 +185,35 @@ func Transform(ctx context.Context, stream <-chan *Item) <-chan *Item {
 	out := make(chan *Item)
 	go func() {
 		defer close(out)
-		for item := range stream {
+		for i := range stream {
 			slug := uuid.New()
-			item.Slug = slug.String()
+			item := Item{
+				Author:    i.Author,
+				ID:        i.ID,
+				CreatedAT: i.CreatedAT,
+				ParentID:  i.ParentID,
+				Points:    i.Points,
+				Slug:      slug.String(),
+				Text:      i.Text,
+				Title:     i.Title,
+				Type:      strings.ToUpper(i.Type),
+				URL:       i.URL,
+				Children:  []Item{},
+			}
 			if item.URL == "" {
-				item.URL = "https://test.com"
+				item.URL = "https://news.ycombinator.com"
+			}
+			if item.Author == "" {
+				item.Author = "unknown"
+			}
+			if item.Type == "COMMENT" {
+				if item.Title == "" {
+					item.Title = "comment"
+				}
 			}
 			select {
 			case <-ctx.Done():
-			case out <- item:
+			case out <- &item:
 			}
 		}
 	}()
@@ -195,7 +250,7 @@ var NewsCmd = &cobra.Command{
 		http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 		ctx, cancel := context.WithCancel(context.Background())
 		defer cancel()
-		ticker := time.NewTicker(30 * time.Second)
+		ticker := time.NewTicker(1 * time.Minute)
 		defer ticker.Stop()
 		for {
 			select {
