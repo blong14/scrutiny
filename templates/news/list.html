@@ -1,5 +1,4 @@
 {% extends "base.html" %}
-{% block page_title %}<h1 class="lh-title">Hacker News Articles</h1>{% endblock %}
 {% block page_left %}
     <div class="w-40 br b--black-10">
         <turbo-frame id="news-dashboard" src="{% url 'news_api.dashboard' %}">
