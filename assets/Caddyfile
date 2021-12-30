@@ -1,0 +1,12 @@
+{
+    log {
+        output stdout
+        format console
+    }
+}
+
+img.scrutiny.local:8081 {
+    encode zstd gzip
+    root * /assets
+    file_server
+}

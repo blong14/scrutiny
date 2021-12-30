@@ -18,3 +18,9 @@ scrutiny.local:8081 {
         respond "Not Found" 404
     }
 }
+
+img.scrutiny.local:8082 {
+    encode zstd gzip
+    root * /assets
+    file_server
+}

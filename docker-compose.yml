@@ -6,8 +6,10 @@ services:
         restart: unless-stopped
         ports:
             - "8081:8081"
+            - "8082:8082"
         volumes:
             - ./Caddyfile:/etc/caddy/Caddyfile
+            - ./assets/images:/assets/images
     web:
         image: blong14/scrutiny
         restart: unless-stopped
