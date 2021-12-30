@@ -1,21 +1,31 @@
 <turbo-frame id="news-detail">
 {% if items %}
-    <article class="pa3" data-slug="{{ items.0.slug }}">
-        <header>
-            <h2 class="lh-title mt0">
-                <a class="link dim blue underline" href="{{ items.0.url }}">{{ items.0.title }}</a>
-            </h2>
-        </header>
-        <div>
-            <p>
-                {{ items.0.points }}
-            </p>
-        </div>
-        <footer>
-            <p>
-                {{ items.0.author }} on <time>{{ items.0.created_at }}</time>
-            </p>
-        </footer>
-    </article>
+    <article class="pa2 pt3" data-slug="{{ items.0.slug }}">
+        <header class="mb3">
+            <h3 class="lh-title ma0">
+                <a class="link dim blue underline"
+                   href="{{ items.0.url }}"
+                   target="_blank">{{ items.0.title }}</a>
+            </h3>
+            <small><time>{{ items.0.created_at }}</time>
+            By {{ items.0.author }}
+        </small>
+    </header>
+    <ul class="list pa0 mv2">
+        {% for comment in items.0.children.all %}
+            <li class="pv2 {% if not forloop.last %}bb b--black-10{% endif %}">
+                <article data-slug="{{ comment.slug }}">
+                    <main>
+                        {{ comment.text | safe }}
+                    </main>
+                    <footer class="mb3">
+                        <small><time>{{ comment.created_at }}</time></small>
+                        <small>By {{ comment.author }}</small>
+                    </footer>
+                </article>
+            </li>
+        {% endfor %}
+    </ul>
+</article>
 {% endif %}
 </turbo-frame>

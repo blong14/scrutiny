@@ -25,9 +25,9 @@ class NewsApiDashboardView(ScrutinyTemplateView):
         item = Item.max_score_item()
         context["max_score"] = item.points if item else 0
         context["max_score_slug"] = item.slug if item else ""
-        context["total"] = Item.objects.count()
+        context["total"] = Item.objects.filter(type="STORY").count()
         context["new_today"] = Item.objects.filter(
-            added_at__gte=new_datetime(now).date()
+            type="STORY", added_at__gte=new_datetime(now).date()
         ).count()
         return context
 
@@ -45,7 +45,7 @@ class NewsListView(generic.ListView):
         return context
 
     def get_queryset(self):
-        query = self.model.objects.filter(parent__isnull=True)
+        query = self.model.objects.prefetch_related("children").filter(type="STORY")
         slugs = self.request.GET.get("slugs") if self.request else None
         if slugs:
             query = query.filter(slug__in=[slug for slug in slugs.split(",")])

@@ -21,9 +21,9 @@ def item(*args, **kwargs) -> Item:
     TODO: Add proper test factories or fixtures
     """
     points = kwargs.pop("points", 77)
+    author = kwargs.pop("author", "test_user")
     now = datetime.datetime.now()
     i = Item(
-        author="test_user",
         points=points,
         url="https://local.local",
         created_at=new_datetime(now),
@@ -83,6 +83,13 @@ class TestListViewWithDetails(ScrutinyTestListView):
     def setUp(self) -> None:
         super().setUp()
         self.item = item(title="Python can suck.")
+        self.comment = item(
+            author="comment author",
+            parent=self.item,
+            text="comment text",
+            title="comment",
+            type="COMMENT",
+        )
         self.url = self.item.get_absolute_url()
         self.items = [
             self.item,
@@ -103,6 +110,8 @@ class TestListViewWithDetails(ScrutinyTestListView):
         self.assertContains(self.response, self.item.points)
         self.assertContains(self.response, self.item.url)
         self.assertContains(self.response, self.item.title)
+        self.assertContains(self.response, self.comment.author)
+        self.assertContains(self.response, self.comment.text)
 
     def test_items_bad_request(self) -> None:
         self.url = f"{reverse('news.list_view')}?slugs=(SELECT * FROM news_item),(SELECT story FROM news_item)"
