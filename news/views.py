@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 
 class NewsApiDashboardView(ScrutinyTemplateView):
-    template_name = "news/_dashboard.html"
+    template_name = "news/dashboard.html"
 
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)

@@ -61,6 +61,10 @@ class Item(models.Model):
     added_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    @property
+    def is_comment(self) -> bool:
+        return self.type == "COMMENT"
+
     @staticmethod
     def serializable_fields() -> List[str]:
         return [field.name for field in Item._meta.get_fields()]

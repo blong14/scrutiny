@@ -41,6 +41,9 @@ def _send(sender: Item, msg: str):
 
 @receiver(post_save, sender=Item)
 def dispatch_update_dashboard(sender: Item, **kwargs) -> None:
+    instance = kwargs.pop("instance", Item())
+    if instance.is_comment:
+        return
     context = NewsApiDashboardView().get_context_data()
     msg = render_to_string("news/_dashboard.turbo.html", context=context)
     _send(sender, msg)
@@ -48,6 +51,9 @@ def dispatch_update_dashboard(sender: Item, **kwargs) -> None:
 
 @receiver(post_save, sender=Item)
 def dispatch_new_item(sender: Item, **kwargs) -> None:
+    instance = kwargs.pop("instance", Item())
+    if instance.is_comment:
+        return
     view = NewsListView()
     view.setup(request=HttpRequest())
     query = view.get_queryset()

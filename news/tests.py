@@ -235,6 +235,6 @@ class TestApiListView(TestCase):
         resp = self.client.post(path=self.url, data=data, format="json")
         actual = Item.objects.filter(pk=item_with_child.id).first()
         self.assertEqual(resp.status_code, 201)
-        self.mock_requests.post.assert_called()
+        self.assertEqual(self.mock_requests.post.call_count, 2)
         self.assertIsNotNone(actual)
         self.assertEqual(actual.children.count(), 1)
