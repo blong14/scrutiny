@@ -15,10 +15,12 @@ scrutiny.local:8081 {
             ui true
         }
         handle_path /images/* {
+            encode zstd gzip
 		    root * /images
 		    file_server
 	    }
        handle_path /static/* {
+            encode zstd gzip
 		    root * /static
 		    file_server
 	    }

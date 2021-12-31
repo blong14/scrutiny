@@ -4,16 +4,13 @@
     <body class="-debug-grid-16 sans-serif roboto">
         {% include "_header.html" %}
         <main class="flex">
-            <iframe
-                    id="graft"
+            <iframe id="graft"
                     class="vh-100 w-100"
-                    src="//www.graftapp.co" style="border: 0px;"
-                    sandbox="allow-scripts allow-same-origin"
-                    allowtransparency="true"
-                    hspace="0"
-                    vspace="0"
-            >
+                    src="//www.graftapp.co"
+                    style="border: 0px;">
             </iframe>
+            <div class="w-100">{% include "notes/_list.html" with items=items %}</div>
+            No items.
         </main>
         <footer class="bt b--black-10 w-100">
             {% include "_nav.html" %}
