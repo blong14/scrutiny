@@ -49,7 +49,7 @@ cover:
 run: test
 	@python manage.py runserver --settings=scrutiny.settings.dev
 
-seed: clean .deps
+seed: .deps
 	@python manage.py seed --settings=scrutiny.settings.dev
 
 shell: .deps

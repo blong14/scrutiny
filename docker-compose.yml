@@ -9,7 +9,8 @@ services:
             - "8082:8082"
         volumes:
             - ./Caddyfile:/etc/caddy/Caddyfile
-            - ./assets/images:/assets/images
+            - ./scrutiny/assets/images:/images
+            - ./scrutiny/static:/static
     web:
         image: blong14/scrutiny
         restart: unless-stopped

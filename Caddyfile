@@ -14,13 +14,15 @@ scrutiny.local:8081 {
             anonymous true
             ui true
         }
+        handle_path /images/* {
+		    root * /images
+		    file_server
+	    }
+       handle_path /static/* {
+		    root * /static
+		    file_server
+	    }
         reverse_proxy web:8080
         respond "Not Found" 404
     }
-}
-
-img.scrutiny.local:8082 {
-    encode zstd gzip
-    root * /assets
-    file_server
 }
