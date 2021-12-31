@@ -27,7 +27,7 @@ image: .deps/lint .dockerignore Dockerfile Makefile
 	@docker push blong14/scrutiny:latest
 	@docker images --format="{{json .}}" --no-trunc blong14/scrutiny:latest > $@
 
-.PHONY: build check clean cover run shell test
+.PHONY: build check clean cover run seed shell test
 build:
 	@docker build -t blong14/scrutiny:latest .
 	@#docker run --rm blong14/scrutiny pypy manage.py test --timing --settings=scrutiny.settings.spec
@@ -48,6 +48,9 @@ cover:
 
 run: test
 	@python manage.py runserver --settings=scrutiny.settings.dev
+
+seed: clean .deps
+	@python manage.py seed --settings=scrutiny.settings.dev
 
 shell: .deps
 	@python manage.py shell --settings=scrutiny.settings.dev
