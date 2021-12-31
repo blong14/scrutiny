@@ -8,14 +8,15 @@ class Command(BaseCommand):
     help = "Seed database with data"
 
     def handle(self, *args, **options):
-        features = [
-            Feature(name="library"),
-            Feature(name="notes"),
-            Feature(name="social"),
-            Feature(name="signup"),
-        ]
         try:
-            Feature.objects.bulk_create(features)
+            Feature.objects.bulk_create(
+                [
+                    Feature(name="library"),
+                    Feature(name="notes"),
+                    Feature(name="social"),
+                    Feature(name="signup"),
+                ]
+            )
         except Exception as e:
             raise CommandError(e)
         try:
