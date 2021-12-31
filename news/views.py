@@ -2,7 +2,6 @@ import datetime
 import logging
 from typing import List, Tuple, Union
 
-from django.conf import settings
 from django.utils.datetime_safe import new_datetime
 from django.views import generic
 from rest_framework.generics import ListCreateAPIView
@@ -37,11 +36,6 @@ class NewsListView(generic.ListView):
     paginate_by = 10
     order = ["-created_at"]
     template_name = "news/list.html"
-
-    def get_context_data(self, *args, **kwargs):
-        context = super().get_context_data(*args, **kwargs)
-        context["features"] = getattr(settings, "FEATURES", {})
-        return context
 
     def get_queryset(self):
         query = self.model.objects.prefetch_related("children").filter(type="STORY")

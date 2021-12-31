@@ -30,3 +30,7 @@ class ScrutinyDetailView(generic.DetailView):
 
 class ScrutinyIndexView(generic.TemplateView):
     template_name = "index.html"
+
+
+class ScrutinyAboutView(generic.TemplateView):
+    template_name = "about.html"

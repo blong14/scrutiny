@@ -50,3 +50,16 @@ class TestScrutinyIndexView(TestCase):
         self.response = self.client.get(self.url)
         self.assertEqual(self.response.status_code, 200)
         self.assertTemplateUsed(self.response, "index.html")
+
+
+class TestScrutinyAboutView(TestCase):
+    client_class = Client
+
+    def setUp(self) -> None:
+        super().setUp()
+        self.url = reverse("scrutiny.about")
+
+    def test_about(self) -> None:
+        self.response = self.client.get(self.url)
+        self.assertEqual(self.response.status_code, 200)
+        self.assertTemplateUsed(self.response, "about.html")

@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "rest_framework",
+    "features",
     "jobs",
     "library",
     "news",
@@ -64,6 +65,7 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     #     "requestlogs.middleware.RequestLogsMiddleware",
+    "features.middleware.FeatureMiddleware",
 ]
 
 ROOT_URLCONF = "scrutiny.urls"
