@@ -4,6 +4,6 @@ DEBUG = True
 
 DEPLOY_ENV = "test"
 
-FEATURES = {}
-
 LOGGING = {}
+
+SSE = False

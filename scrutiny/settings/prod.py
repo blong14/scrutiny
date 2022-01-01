@@ -4,4 +4,5 @@ DEBUG = False
 
 DEPLOY_ENV = "prod"
 
-FEATURES = {"sse": True}
+# turns server side events on
+SSE = True

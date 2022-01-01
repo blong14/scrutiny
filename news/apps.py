@@ -13,7 +13,7 @@ class HackernewsConfig(AppConfig):
 
     def ready(self):
         logger.info("registering signals")
-        if getattr(settings, "FEATURES", {}).get("sse", False):
+        if getattr(settings, "SSE", False):
             from news.signals import (  # noqa
                 dispatch_new_item,
                 dispatch_update_dashboard,
