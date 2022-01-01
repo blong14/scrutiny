@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 from typing import List
 
 from django.db import models
@@ -16,6 +17,11 @@ class Job(models.Model):
     @staticmethod
     def serializable_fields() -> List[str]:
         return [field.name for field in Job._meta.get_fields()]
+
+    @property
+    def active(self) -> bool:
+        when = datetime.utcnow() - self.synced_at
+        return when < timedelta(minutes=1)
 
     def get_absolute_url(self) -> str:
         return reverse("jobs_api.update_view", args=[str(self.name)])
