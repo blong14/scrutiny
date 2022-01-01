@@ -29,8 +29,8 @@
                 </a>
             </dd>
         </dl>
-        <dl class="fl fn-l w-25 lh-title">
-            <turbo-frame id="job-last-sync" src="{% url 'jobs_api.status' %}?name=hackernews"></turbo-frame>
-        </dl>
+        <div class="fl w-100 lh-title">
+            <turbo-frame id="job-last-sync" class="w-100" src="{% url 'jobs_api.status' %}?name=hackernews"></turbo-frame>
+        </div>
     </div>
 </article>
