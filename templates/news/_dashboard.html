@@ -1,36 +1,29 @@
-<article>
-    <div class="cf pt3 flex">
-        <dl class="fl fn-l w-25 lh-title">
-            <dd class="black-50 ml0">
-                Total Articles
-            </dd>
-            <dd class="f3 fw6 ml0" data-total-value>
-                {{ total }}
-            </dd>
-        </dl>
-        <dl class="fl fn-l w-25 lh-title">
-            <dd class="black-50 ml0">
-                New Today
-            </dd>
-            <dd class="f3 fw6 ml0" data-new-today>
-                {{ new_today }}
-            </dd>
-        </dl>
-        <dl class="fl fn-l w-25 lh-title">
-            <dd class="black-50 ml0">
-                Highest Score
-            </dd>
-            <dd class="f3 fw6 ml0" data-max-score>
-                <a class="link dim blue underline-hover tc"
-                   title="Read Comments"
-                   href="{% url 'news.list_view' %}?slugs={{ max_score_slug }}"
-                   data-turbo-frame="news-detail">
-                    {{ max_score }}
-                </a>
-            </dd>
-        </dl>
-        <div class="fl w-50 lh-title">
-            <turbo-frame id="job-last-sync" src="{% url 'jobs_api.status' %}?name=hackernews"></turbo-frame>
-        </div>
-    </div>
-</article>
+<dl class="w-33 lh-title">
+    <dd class="black-50 ml0">
+        Total Articles
+    </dd>
+    <dd class="f3 fw6 ml0" data-total-value>
+        {{ total }}
+    </dd>
+</dl>
+<dl class="w-33 lh-title">
+    <dd class="black-50 ml0">
+        New Today
+    </dd>
+    <dd class="f3 fw6 ml0" data-new-today>
+        {{ new_today }}
+    </dd>
+</dl>
+<dl class="w-33 lh-title">
+    <dd class="black-50 ml0">
+        Highest Score
+    </dd>
+    <dd class="f3 fw6 ml0" data-max-score>
+        <a class="link dim blue underline-hover tc"
+           title="Read Comments"
+           href="{% url 'news.list_view' %}?slugs={{ max_score_slug }}"
+           data-turbo-frame="news-detail">
+            {{ max_score }}
+        </a>
+    </dd>
+</dl>

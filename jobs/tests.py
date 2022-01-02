@@ -14,7 +14,7 @@ class TestJobsStatusView(TestCase):
 
     def setUp(self) -> None:
         now = datetime.datetime.now()
-        self.url = reverse("jobs_api.status")
+        self.url = reverse("jobs_api.dashboard")
         self.item = Job(name="hackernews", synced_at=new_datetime(now))
         self.item.save()
 

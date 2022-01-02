@@ -12,9 +12,8 @@ class HackernewsConfig(AppConfig):
     name = "news"
 
     def ready(self):
-        logger.info("registering signals")
         if getattr(settings, "SSE", False):
             from news.signals import (  # noqa
                 dispatch_new_item,
-                dispatch_update_dashboard,
+                dispatch_update_news_dashboard,
             )

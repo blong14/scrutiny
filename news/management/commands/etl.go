@@ -36,6 +36,11 @@ func processChildren(ctx context.Context, out chan *Item, item Item) {
 	}
 }
 
+type JobStatus struct {
+	Name   string `json:"name"`
+	Status string `json:"status"`
+}
+
 type TopNews []uint64
 
 type Item struct {
@@ -101,6 +106,27 @@ func (c *db) create(_ context.Context, rows []Item) error {
 	}
 	log.Println(resp.Status, resp.StatusCode, resp.Header)
 	resp.Body.Close()
+	return nil
+}
+
+func (c *db) update(_ context.Context, status JobStatus) error {
+	data, err := json.Marshal(status)
+	if err != nil {
+		return fmt.Errorf("not able to marshal json %v", err)
+	}
+	url := fmt.Sprintf("%sscrutiny.local:%d/api/jobs/hackernews/", "https://", 8081)
+	req, err := http.NewRequest("PUT", url, bytes.NewBuffer(data))
+	if err != nil {
+		log.Fatal("Error getting response. ", err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+	client := http.DefaultClient
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Fatal("Error getting response. ", err)
+	}
+	defer resp.Body.Close()
+	log.Println(resp.Status, resp.StatusCode, resp.Header)
 	return nil
 }
 
@@ -236,6 +262,9 @@ func Load(ctx context.Context, stream <-chan *Item) error {
 	}
 	if len(items) > 0 {
 		if err := client.create(ctx, items); err != nil {
+			return err
+		}
+		if err := client.update(ctx, JobStatus{Name: "hackernews", Status: "Healthy"}); err != nil {
 			return err
 		}
 		log.Printf("added %d stories\n", len(items))

@@ -15,7 +15,7 @@ urlpatterns = [
     path("news/", NewsListView.as_view(), name="news.list_view"),
     path("library/", PocketListView.as_view(), name="library.list_view"),
     path("notes/", GraftListView.as_view(), name="notes.list_view"),
-    path("api/jobs/status/", JobsStatusView.as_view(), name="jobs_api.status"),
+    path("api/jobs/status/", JobsStatusView.as_view(), name="jobs_api.dashboard"),
     path(
         "api/jobs/<slug:name>/",
         JobsApiUpdateView.as_view(),

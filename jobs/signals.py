@@ -4,19 +4,19 @@ from urllib import parse
 
 import requests
 from django.conf import settings
-from django.http import HttpRequest
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from django.http import HttpRequest
 from django.template.loader import render_to_string
 
-from news.models import Item
-from news.views import NewsApiDashboardView, NewsListView
+from jobs.models import Job
+from jobs.views import JobsStatusView
 
 
 logger = logging.getLogger(__name__)
 
 
-def _send(sender: Item, msg: str):
+def _send(sender: Job, msg: str):
     token = settings.JWT_PUBLISH_TOKEN
     if not token:
         raise EnvironmentError("missing jwt publish token")
@@ -39,24 +39,10 @@ def _send(sender: Item, msg: str):
         logger.error("error dispatching event %s for %s", resp, sender)
 
 
-@receiver(post_save, sender=Item)
-def dispatch_update_news_dashboard(sender: Item, **kwargs) -> None:
-    instance = kwargs.pop("instance", Item())
-    if instance.is_comment:
-        return
-    context = NewsApiDashboardView().get_context_data()
-    msg = render_to_string("news/_dashboard.turbo.html", context=context)
-    _send(sender, msg)
-
-
-@receiver(post_save, sender=Item)
-def dispatch_new_item(sender: Item, **kwargs) -> None:
-    instance = kwargs.pop("instance", Item())
-    if instance.is_comment:
-        return
-    view = NewsListView()
+@receiver(post_save, sender=Job)
+def dispatch_update_jobs_dashboard(sender: Job, **kwargs) -> None:
+    view = JobsStatusView()
     view.setup(request=HttpRequest())
-    query = view.get_queryset()
-    context = view.get_context_data(object_list=query)
-    msg = render_to_string("news/_list.turbo.html", context=context)
+    context = view.get_context_data(name="hackernews")
+    msg = render_to_string("jobs/_dashboard.turbo.html", context=context)
     _send(sender, msg)
