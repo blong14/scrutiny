@@ -1,6 +1,7 @@
 FROM pypy:3.8-7.3.7-bullseye
 
-RUN apt-get update
+RUN apt-get update && \
+    apt-get install -y libpq-dev
 
 WORKDIR /app
 

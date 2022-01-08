@@ -92,9 +92,7 @@ class _TracingApplication(OpenTelemetryMiddleware):
                     span, start_response, response_hook
                 )
                 iterable = self.wsgi(environ, start_response)
-                return _end_span_after_iterating(
-                    iterable, span, token
-                )
+                return _end_span_after_iterating(iterable, span, token)
         except Exception as ex:
             if span.is_recording():
                 span.set_status(Status(StatusCode.ERROR, str(ex)))
