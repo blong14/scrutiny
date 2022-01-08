@@ -27,12 +27,20 @@ image: .deps/lint .dockerignore Dockerfile Makefile
 	@docker push blong14/scrutiny:latest
 	@docker images --format="{{json .}}" --no-trunc blong14/scrutiny:latest > $@
 
-.PHONY: build check clean cover run seed shell test
-build:
-	@docker build -t blong14/scrutiny:latest .
+build-pypy:
+	@docker build -f DockerfilePyPy -t blong14/scrutiny-pypy:latest .
+	@touch Dockerfile
+
+build-python:
+	@docker build -f DockerfilePython -t blong14/scrutiny-python:latest .
 	@#docker run --rm blong14/scrutiny pypy manage.py test --timing --settings=scrutiny.settings.spec
 	@touch Dockerfile
 
+build-go:
+	@docker build -f DockerfileGo -t blong14/scrutiny-go:latest .
+	@touch Dockerfile
+
+.PHONY: check clean cover run seed shell test
 check: .deps
 	@python manage.py check --settings=scrutiny.settings.dev
 

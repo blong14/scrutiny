@@ -10,7 +10,7 @@ class NoopLogger:
 
 
 class TestWaitressCommand(TestCase):
-    @mock.patch("wsgi.management.commands.waitress.default_logger")
+    @mock.patch("wsgi.management.commands.waitress.default_application")
     @mock.patch("wsgi.management.commands.waitress.serve")
     def test_handle(self, mock_serve, mock_logger):
         noop = NoopLogger()

@@ -8,12 +8,15 @@ from django.http import HttpRequest
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.template.loader import render_to_string
+from opentelemetry import trace
 
 from news.models import Item
 from news.views import NewsApiDashboardView, NewsListView
 
 
 logger = logging.getLogger(__name__)
+tracer = trace.get_tracer(__name__)
+module = "news.signals"
 
 
 def _send(sender: Item, msg: str):
@@ -41,22 +44,28 @@ def _send(sender: Item, msg: str):
 
 @receiver(post_save, sender=Item)
 def dispatch_update_news_dashboard(sender: Item, **kwargs) -> None:
-    instance = kwargs.pop("instance", Item())
-    if instance.is_comment:
-        return
-    context = NewsApiDashboardView().get_context_data()
-    msg = render_to_string("news/_dashboard.turbo.html", context=context)
-    _send(sender, msg)
+    with tracer.start_as_current_span(f"{module}.dispatch_update_news_dashboard"):
+        instance = kwargs.pop("instance", Item())
+        if instance.is_comment:
+            return
+        context = NewsApiDashboardView().get_context_data()
+        with tracer.start_as_current_span(f"{module}.render_to_string"):
+            msg = render_to_string("news/_dashboard.turbo.html", context=context)
+        with tracer.start_as_current_span(f"{module}._send"):
+            _send(sender, msg)
 
 
 @receiver(post_save, sender=Item)
 def dispatch_new_item(sender: Item, **kwargs) -> None:
-    instance = kwargs.pop("instance", Item())
-    if instance.is_comment:
-        return
-    view = NewsListView()
-    view.setup(request=HttpRequest())
-    query = view.get_queryset()
-    context = view.get_context_data(object_list=query)
-    msg = render_to_string("news/_list.turbo.html", context=context)
-    _send(sender, msg)
+    with tracer.start_as_current_span(f"{module}.dispatch_new_item"):
+        instance = kwargs.pop("instance", Item())
+        if instance.is_comment:
+            return
+        view = NewsListView()
+        view.setup(request=HttpRequest())
+        query = view.get_queryset()
+        context = view.get_context_data(object_list=query)
+        with tracer.start_as_current_span(f"{module}.render_to_string"):
+            msg = render_to_string("news/_list.turbo.html", context=context)
+        with tracer.start_as_current_span(f"{module}._send"):
+            _send(sender, msg)

@@ -3,9 +3,11 @@ from typing import List, Optional
 
 from django.db import models
 from django.urls import reverse
+from opentelemetry import trace
 
 
 logger = logging.getLogger(__name__)
+tracer = trace.get_tracer(__name__)
 
 
 class Item(models.Model):
@@ -37,6 +39,7 @@ class Item(models.Model):
         }
     """
 
+    module = "news.models.Item"
     ITEM_TYPES = (
         ("STORY", "story"),
         ("COMMENT", "comment"),
@@ -63,20 +66,24 @@ class Item(models.Model):
 
     @property
     def is_comment(self) -> bool:
-        return self.type == "COMMENT"
+        with tracer.start_as_current_span(f"{self.module}.is_comment"):
+            return self.type == "COMMENT"
 
     @staticmethod
     def serializable_fields() -> List[str]:
-        return [field.name for field in Item._meta.get_fields()]
+        with tracer.start_as_current_span(f"{Item.module}.serializable_fields"):
+            return [field.name for field in Item._meta.get_fields()]
 
     @staticmethod
     def max_score_item() -> Optional["Item"]:
-        item_with_max = None
-        try:
-            item_with_max = Item.objects.latest("points")
-        except Item.DoesNotExist as e:
-            logger.error("unable to find max score %s", e)
-        return item_with_max
+        with tracer.start_as_current_span(f"{Item.module}.max_score_item"):
+            item_with_max = None
+            try:
+                item_with_max = Item.objects.latest("points")
+            except Item.DoesNotExist as e:
+                logger.error("unable to find max score %s", e)
+            return item_with_max
 
     def get_absolute_url(self) -> str:
-        return f"{reverse('news.list_view')}?slugs={str(self.slug)}"
+        with tracer.start_as_current_span(f"{self.module}.get_absolute_url"):
+            return f"{reverse('news.list_view')}?slugs={str(self.slug)}"
