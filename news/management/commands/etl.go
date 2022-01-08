@@ -1,160 +1,62 @@
 package news
 
 import (
-	"bytes"
 	"context"
 	"crypto/tls"
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"strings"
 	"sync"
 	"time"
 
-	"github.com/google/brotli/go/cbrotli"
 	"github.com/google/uuid"
 	"github.com/spf13/cobra"
+
+	"scrutiny/pkg/client"
 )
 
-var url = fmt.Sprintf("%sscrutiny.local:%d/api/news/", "https://", 8081)
+var url = fmt.Sprintf("%sscrutiny.local:%d", "https://", 8081)
 
 //var url = fmt.Sprintf("%sscrutiny.local:%d/api/news/", "http://", 8000)
 
-func processChildren(ctx context.Context, out chan *Item, item Item) {
-	for _, i := range item.Children {
-		i.ParentID = &item.ID
+func processChildren(ctx context.Context, out chan *client.Item, story client.Story) {
+	for _, i := range story.Children {
+		item := &client.Item{
+			Author:    i.Author,
+			CreatedAT: i.CreatedAT,
+			ID:        i.ID,
+			ParentID:  &story.ID,
+			Points:    i.Points,
+			Text:      i.Text,
+			Title:     i.Title,
+			Type:      i.Type,
+			URL:       i.URL,
+		}
 		select {
 		case <-ctx.Done():
 			return
-		case out <- &i:
-			//if len(item.Children) > 0 {
+		case out <- item:
+			//if len(item.Comments) > 0 {
 			//	processChildren(ctx, out, i)
 			//}
 		}
 	}
 }
 
-type JobStatus struct {
-	Name   string `json:"name"`
-	Status string `json:"status"`
-}
-
-type TopNews []uint64
-
-type Item struct {
-	Author    string    `json:"author"`
-	CreatedAT time.Time `json:"created_at"`
-	ID        uint64    `json:"id"`
-	ParentID  *uint64   `json:"parent"`
-	Points    uint64    `json:"points"`
-	Slug      string    `json:"slug"`
-	Text      string    `json:"text"`
-	Title     string    `json:"title"`
-	Type      string    `json:"type"`
-	URL       string    `json:"url"`
-	Children  []Item    `json:"children"`
-}
-
-type SItem struct {
-	Author    string    `json:"author"`
-	CreatedAT time.Time `json:"created_at"`
-	ID        uint64    `json:"id"`
-	ParentID  *uint64   `json:"parent_id"`
-	Points    uint64    `json:"points"`
-	Slug      string    `json:"slug"`
-	Text      string    `json:"text"`
-	Title     string    `json:"title"`
-	Type      string    `json:"type"`
-	URL       string    `json:"url"`
-}
-
-type db struct{}
-
-func (c *db) list(_ context.Context) map[uint64]struct{} {
-	start := time.Now()
-	resp, err := http.Get(url)
-	if err != nil {
-		log.Fatal("Error getting response. ", err)
-	}
-	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		log.Fatal("Error reading response. ", err)
-	}
-	var items []SItem
-	if err := json.Unmarshal(body, &items); err != nil {
-		log.Fatal("Error unmarshalling response. ", err)
-	}
-	out := make(map[uint64]struct{})
-	for _, i := range items {
-		out[i.ID] = struct{}{}
-	}
-	log.Printf("List took %s\n", time.Since(start))
-	return out
-}
-
-func (c *db) create(_ context.Context, rows []Item) error {
-	data, err := json.Marshal(rows)
-	if err != nil {
-		return fmt.Errorf("not able to marshal json %v", err)
-	}
-	resp, err := http.Post(url, "application/json", bytes.NewBuffer(data))
-	if err != nil {
-		return fmt.Errorf("creation error %v", err)
-	}
-	log.Println(resp.Status, resp.StatusCode, resp.Header)
-	resp.Body.Close()
-	return nil
-}
-
-func (c *db) update(_ context.Context, status JobStatus) error {
-	data, err := json.Marshal(status)
-	if err != nil {
-		return fmt.Errorf("not able to marshal json %v", err)
-	}
-	url := fmt.Sprintf("%sscrutiny.local:%d/api/jobs/hackernews/", "https://", 8081)
-	req, err := http.NewRequest("PUT", url, bytes.NewBuffer(data))
-	if err != nil {
-		log.Fatal("Error getting response. ", err)
-	}
-	req.Header.Set("Content-Type", "application/json")
-	client := http.DefaultClient
-	resp, err := client.Do(req)
-	if err != nil {
-		log.Fatal("Error getting response. ", err)
-	}
-	defer resp.Body.Close()
-	log.Println(resp.Status, resp.StatusCode, resp.Header)
-	return nil
-}
-
-func Extract(ctx context.Context) <-chan *Item {
-	out := make(chan *Item)
+func Extract(ctx context.Context) <-chan *client.Item {
+	out := make(chan *client.Item)
 	go func() {
 		defer close(out)
-		client := &db{}
-		items := client.list(ctx)
-		resp, err := http.Get("https://hacker-news.firebaseio.com/v0/topstories.json")
+		topStories, err := client.TopStories(ctx, fmt.Sprintf("%s/api/news/", url))
 		if err != nil {
-			log.Fatal("Error getting response. ", err)
+			log.Printf("extract error %s\n", err)
+			return
 		}
-		defer resp.Body.Close()
-		body, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			log.Fatal("Error reading response. ", err)
-		}
-		var topStories TopNews
-		if err := json.Unmarshal(body, &topStories); err != nil {
-			log.Fatal("Error unmarshalling response. ", err)
-		}
-		var wg sync.WaitGroup
+		log.Printf("found %d top stories\n", len(topStories))
 		count := 1
+		var wg sync.WaitGroup
 		for _, i := range topStories {
-			if _, ok := items[i]; ok {
-				continue
-			}
 			if count == 10 {
 				break
 			} else {
@@ -163,57 +65,45 @@ func Extract(ctx context.Context) <-chan *Item {
 			wg.Add(1)
 			go func(storyID uint64) {
 				defer wg.Done()
-				client := http.DefaultClient
-				req, err := http.NewRequest(
-					"GET", fmt.Sprintf("http://hn.algolia.com/api/v1/items/%d", storyID), nil)
+				story, err := client.GetStory(ctx, storyID)
 				if err != nil {
-					log.Fatal("Error getting response. ", err)
+					log.Printf("Error unmarshalling response. %s\n", err)
 				}
-				req.Header.Set("Accept", "*/*")
-				req.Header.Set("Connection", "keep-alive")
-				req.Header.Set("Accept-Encoding", "gzip, deflate, br")
-				resp, err := client.Do(req)
-				if err != nil {
-					log.Fatal("Error getting response. ", err)
-				}
-				defer resp.Body.Close()
-				var body []byte
-				if resp.Header.Get("Content-Encoding") == "br" {
-					reader := cbrotli.NewReader(resp.Body)
-					defer reader.Close()
-					body, err = ioutil.ReadAll(reader)
-				} else {
-					body, err = ioutil.ReadAll(resp.Body)
-				}
-				if err != nil {
-					log.Fatal("Error reading response. ", err)
-				}
-				var item Item
-				if err := json.Unmarshal(body, &item); err != nil {
-					log.Fatal("Error unmarshalling response. ", err)
+				item := &client.Item{
+					Author:    story.Author,
+					CreatedAT: story.CreatedAT,
+					ID:        story.ID,
+					ParentID:  story.ParentID,
+					Points:    story.Points,
+					Text:      story.Text,
+					Title:     story.Title,
+					Type:      story.Type,
+					URL:       story.URL,
 				}
 				select {
 				case <-ctx.Done():
 					return
-				case out <- &item:
+				case out <- item:
 				}
-				if len(item.Children) > 0 {
-					processChildren(ctx, out, item)
+				if len(story.Children) > 0 {
+					processChildren(ctx, out, story)
 				}
 			}(i)
 		}
 		wg.Wait()
+		log.Println("finished extracting top stories")
 	}()
 	return out
 }
 
-func Transform(ctx context.Context, stream <-chan *Item) <-chan *Item {
-	out := make(chan *Item)
+func Transform(ctx context.Context, stream <-chan *client.Item) <-chan *client.Item {
+	out := make(chan *client.Item)
 	go func() {
 		defer close(out)
+		log.Println("starting transformation stream")
 		for i := range stream {
 			slug := uuid.New()
-			item := Item{
+			item := client.Item{
 				Author:    i.Author,
 				ID:        i.ID,
 				CreatedAT: i.CreatedAT,
@@ -224,7 +114,7 @@ func Transform(ctx context.Context, stream <-chan *Item) <-chan *Item {
 				Title:     i.Title,
 				Type:      strings.ToUpper(i.Type),
 				URL:       i.URL,
-				Children:  []Item{},
+				Comments:  []uint64{},
 			}
 			if item.URL == "" {
 				item.URL = "https://news.ycombinator.com"
@@ -242,32 +132,37 @@ func Transform(ctx context.Context, stream <-chan *Item) <-chan *Item {
 			case out <- &item:
 			}
 		}
+		log.Println("closing transformation stream")
 	}()
 	return out
 }
 
-func Load(ctx context.Context, stream <-chan *Item) error {
+func Load(ctx context.Context, stream <-chan *client.Item) error {
 	batchSize := 100
-	client := &db{}
-	items := make([]Item, 0)
+	items := make([]client.Item, 0)
 	for item := range stream {
 		items = append(items, *item)
 		if len(items) >= batchSize {
-			if err := client.create(ctx, items); err != nil {
+			if err := client.NewsCreate(ctx, fmt.Sprintf("%s/api/news/", url), items); err != nil {
 				log.Println(err)
 			}
 			log.Printf("added %d stories\n", len(items))
-			items = []Item{}
+			items = []client.Item{}
+			if err := client.JobsUpdate(ctx, fmt.Sprintf("%s/api/jobs/hackernews/", url), client.JobStatus{Name: "hackernews", Status: "Healthy"}); err != nil {
+				return err
+			}
+			log.Println("updated job status")
 		}
 	}
 	if len(items) > 0 {
-		if err := client.create(ctx, items); err != nil {
-			return err
-		}
-		if err := client.update(ctx, JobStatus{Name: "hackernews", Status: "Healthy"}); err != nil {
+		if err := client.NewsCreate(ctx, fmt.Sprintf("%s/api/news/", url), items); err != nil {
 			return err
 		}
 		log.Printf("added %d stories\n", len(items))
+		if err := client.JobsUpdate(ctx, fmt.Sprintf("%s/api/jobs/hackernews/", url), client.JobStatus{Name: "hackernews", Status: "Healthy"}); err != nil {
+			return err
+		}
+		log.Println("updated job status")
 	}
 	return nil
 }
@@ -277,21 +172,21 @@ var NewsCmd = &cobra.Command{
 	Short: "Fetch news articles",
 	Run: func(cmd *cobra.Command, _ []string) {
 		http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
-		ctx, cancel := context.WithCancel(context.Background())
-		defer cancel()
 		ticker := time.NewTicker(1 * time.Minute)
 		defer ticker.Stop()
 		for {
 			select {
-			case <-ctx.Done():
-				return
 			case <-ticker.C:
 				log.Println("starting news scrape...")
+				ctx, cancel := context.WithCancel(context.Background())
 				stream := Extract(ctx)
 				stream = Transform(ctx, stream)
 				if err := Load(ctx, stream); err != nil {
 					log.Println(fmt.Errorf("load %v", err))
 				}
+				cancel()
+				log.Println("finished news scrape")
+			default:
 			}
 		}
 	},
