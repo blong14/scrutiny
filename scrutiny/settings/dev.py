@@ -31,10 +31,14 @@ DEPLOY_ENV = "dev"
 
 ALLOWED_HOSTS = [
     "localhost",
-    "scrutiny.local",
-    "scrutiny.local:8081",
     "scrutiny.cluster",
+    "scrutiny.local",
+    "web",
     "web:8080",
+    "web1",
+    "web1:8080",
+    "web2",
+    "web2:8080",
 ]
 
 

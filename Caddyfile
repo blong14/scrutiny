@@ -24,7 +24,7 @@ scrutiny.local:8081 {
 		    root * /static
 		    file_server
 	    }
-        reverse_proxy web:8080
+        reverse_proxy varnish:80
         respond "Not Found" 404
     }
 }

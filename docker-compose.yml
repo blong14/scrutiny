@@ -10,21 +10,18 @@ services:
             - ./Caddyfile:/etc/caddy/Caddyfile
             - ./scrutiny/assets/images:/images
             - ./scrutiny/static:/static
-    db:
-        image: postgres:14-bullseye
-        restart: unless-stopped
-        environment:
-            - POSTGRES_PASSWORD=!Changeme!
-            - POSTGRES_USER=admin
-            - POSTGRES_DATABASE=scrutiny
-            - POSTGRES_HOST_AUTH_METHOD=trust
-        ports:
-            - "54321:5432"
+        depends_on:
+            -   varnish
+    varnish:
+        image: varnish:latest
         volumes:
-            - ./pg_entrypoint.sh:/docker-entrypoint-initdb.d/initdb.sh
-    web:
+            - ./default.vcl:/etc/varnish/default.vcl:ro
+        depends_on:
+            - web1
+            - web2
+    web1:
         image: blong14/scrutiny-python
-#        image: blong14/scrutiny-pypy
+        #        image: blong14/scrutiny-pypy
         restart: unless-stopped
         environment:
             - DJANGO_SETTINGS_MODULE=scrutiny.settings.prod
@@ -39,15 +36,45 @@ services:
         volumes:
             - ./scrutiny/settings:/app/scrutiny/settings
         depends_on:
-            - scrutiny.local
+            - db
+            - scrape
+    web2:
+        image: blong14/scrutiny-python
+        #        image: blong14/scrutiny-pypy
+        restart: unless-stopped
+        environment:
+            - DJANGO_SETTINGS_MODULE=scrutiny.settings.prod
+            - OTEL_PYTHON_DJANGO_INSTRUMENT="True"
+            - OTEL_TRACES_SAMPLER=parentbased_traceidratio
+            - OTEL_TRACES_SAMPLER_ARG=0.1
+            - PG_PASSWORD=!Changeme!
+            - PG_USER=admin
+            - PG_HOST=db
+            - PG_PORT=5432
+            - PG_DATABASE=scrutiny
+        volumes:
+            - ./scrutiny/settings:/app/scrutiny/settings
+        depends_on:
+            - db
+            - scrape
+    db:
+        image: postgres:14-bullseye
+        restart: unless-stopped
+        environment:
+            - POSTGRES_PASSWORD=!Changeme!
+            - POSTGRES_USER=admin
+            - POSTGRES_DATABASE=scrutiny
+            - POSTGRES_HOST_AUTH_METHOD=trust
+        ports:
+            - "54321:5432"
+        volumes:
+            - ./pg_entrypoint.sh:/docker-entrypoint-initdb.d/initdb.sh
     scrape:
         image: blong14/scrutiny-go
         restart: unless-stopped
         command:
             - /go/bin/scrutiny
             - news
-        depends_on:
-            - web
     jaeger:
         image: jaegertracing/all-in-one
         ports:
