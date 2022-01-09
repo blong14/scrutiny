@@ -6,39 +6,23 @@ services:
         restart: unless-stopped
         ports:
             - "8081:8081"
+            - "8082:8082"
         volumes:
             - ./Caddyfile:/etc/caddy/Caddyfile
-            - ./scrutiny/assets/images:/images
-            - ./scrutiny/static:/static
         depends_on:
-            -   varnish
+            - varnish
     varnish:
         image: varnish:latest
         volumes:
             - ./default.vcl:/etc/varnish/default.vcl:ro
         depends_on:
-            - web1
-            - web2
-    web1:
-        image: blong14/scrutiny-python
-        #        image: blong14/scrutiny-pypy
-        restart: unless-stopped
-        environment:
-            - DJANGO_SETTINGS_MODULE=scrutiny.settings.prod
-            - OTEL_PYTHON_DJANGO_INSTRUMENT="True"
-            - OTEL_TRACES_SAMPLER=parentbased_traceidratio
-            - OTEL_TRACES_SAMPLER_ARG=0.1
-            - PG_PASSWORD=!Changeme!
-            - PG_USER=admin
-            - PG_HOST=db
-            - PG_PORT=5432
-            - PG_DATABASE=scrutiny
+            - web
+            - static
+    static:
+        image: nginx:latest
         volumes:
-            - ./scrutiny/settings:/app/scrutiny/settings
-        depends_on:
-            - db
-            - scrape
-    web2:
+            - ./scrutiny/static:/usr/share/nginx/html
+    web:
         image: blong14/scrutiny-python
         #        image: blong14/scrutiny-pypy
         restart: unless-stopped
@@ -78,5 +62,4 @@ services:
     jaeger:
         image: jaegertracing/all-in-one
         ports:
-            - "16686:16686"
             - "6831:6831/udp"

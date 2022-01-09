@@ -14,17 +14,18 @@ scrutiny.local:8081 {
             anonymous true
             ui true
         }
-        handle_path /images/* {
-            encode zstd gzip
-		    root * /images
-		    file_server
-	    }
-       handle_path /static/* {
-            encode zstd gzip
-		    root * /static
-		    file_server
-	    }
-        reverse_proxy varnish:80
+        reverse_proxy varnish:80 {
+            transport http {
+                max_conns_per_host 10
+            }
+        }
+        respond "Not Found" 404
+    }
+}
+
+scrutiny.local:8082 {
+    route {
+        reverse_proxy jaeger:16686
         respond "Not Found" 404
     }
 }

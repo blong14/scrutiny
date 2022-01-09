@@ -3,8 +3,20 @@ vcl 4.0;
 import directors;
 import std;
 
-backend web1 {
-    .host = "web1";
+backend static {
+    .host = "static";
+    .port = "80";
+    .probe = {
+        .url = "/";  # serves nginx index.html page
+        .timeout = 1s;
+        .interval = 5s;
+        .window = 5;
+        .threshold = 3;
+    }
+}
+
+backend web {
+    .host = "web";
     .port = "8080";
     .probe = {
         .url = "/";
@@ -13,28 +25,14 @@ backend web1 {
         .window = 5;
         .threshold = 3;
     }
-}
-
-backend web2 {
-    .host = "web2";
-    .port = "8080";
-    .probe = {
-        .url = "/";
-        .timeout = 1s;
-        .interval = 5s;
-        .window = 5;
-        .threshold = 3;
-    }
-}
-
-sub vcl_init {
-    new balancer = directors.round_robin();
-    balancer.add_backend(web1);
-    balancer.add_backend(web2);
 }
 
 sub vcl_recv {
-    set req.backend_hint = balancer.backend();
+    if (req.url ~ "(images|static)/*") {
+        set req.backend_hint = static;
+    } else {
+        set req.backend_hint = web;
+    }
 	unset req.http.x-cache;
 }
 
