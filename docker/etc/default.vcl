@@ -3,20 +3,8 @@ vcl 4.0;
 import directors;
 import std;
 
-backend static {
-    .host = "static";
-    .port = "80";
-    .probe = {
-        .url = "/index.html";
-        .timeout = 1s;
-        .interval = 5s;
-        .window = 5;
-        .threshold = 3;
-    }
-}
-
 backend web {
-    .host = "web";
+    .host = "scrutiny";
     .port = "8080";
     .probe = {
         .url = "/";
@@ -28,11 +16,9 @@ backend web {
 }
 
 sub vcl_recv {
-    if (req.url ~ "(images|static)/*") {
-        set req.backend_hint = static;
-    } else {
-        set req.backend_hint = web;
-    }
+  if (req.url ~ "(metrics)/*") {
+    return (pass);
+  }
 	unset req.http.x-cache;
 }
 

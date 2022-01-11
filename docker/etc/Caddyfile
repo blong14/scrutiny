@@ -1,0 +1,30 @@
+{
+    auto_https off
+    debug
+    admin 0.0.0.0:5099
+    log {
+        output stdout
+        format console
+    }
+}
+
+http://scrutiny-caddy.default.svc.cluster.local:8443 http://scrutiny.local:8443 {
+    bind 0.0.0.0
+    encode zstd gzip
+    log
+    route {
+        mercure {
+            publisher_jwt !ChangeMe!
+            subscriber_jwt !ChangeMe!
+            anonymous true
+            ui true
+        }
+        reverse_proxy scrutiny-varnish {
+            transport http {
+                max_conns_per_host 10
+            }
+        }
+        respond "not found" 404
+    }
+}
+
