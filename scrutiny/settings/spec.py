@@ -13,4 +13,5 @@ DEPLOY_ENV = "test"
 
 LOGGING = {}
 
+MERCURE_URL = ""
 SSE = False

@@ -33,6 +33,7 @@ ALLOWED_HOSTS = [
     "localhost",
     "scrutiny.cluster",
     "scrutiny.local",
+    "scrutiny-varnish",
     "web",
     "web:8080",
     "web1",
@@ -137,8 +138,6 @@ TIME_ZONE = "UTC"
 
 USE_I18N = True
 
-USE_L10N = True
-
 USE_TZ = False
 
 
@@ -174,3 +173,6 @@ LOGGING = {
 REST_FRAMEWORK = {
     "DATETIME_FORMAT": "%Y-%m-%dT%H:%M:%SZ",
 }
+
+MERCURE_URL = ""
+SSE = False

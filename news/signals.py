@@ -26,7 +26,7 @@ def _send(sender: Item, msg: str):
     resp: Optional[requests.models.Response] = None
     try:
         resp = requests.post(
-            "https://scrutiny.local:8081/.well-known/mercure",
+            settings.MERCURE_URL,
             data=parse.urlencode(
                 {"target": "news", "topic": ["news"], "data": msg}, True
             ),
@@ -38,7 +38,7 @@ def _send(sender: Item, msg: str):
         )
     except Exception as e:
         logger.error("unknown error %s when sending for %s", e, sender)
-    if resp.status_code != 200:
+    if resp and resp.status_code != 200:
         logger.error("error dispatching event %s for %s", resp, sender)
 
 
