@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"strings"
 	"sync"
-	"time"
 
 	"github.com/google/uuid"
 	"github.com/spf13/cobra"
@@ -16,7 +15,7 @@ import (
 	"scrutiny/pkg/client"
 )
 
-var url = fmt.Sprintf("%sscrutiny.local:%d", "https://", 8081)
+var url = fmt.Sprintf("http://scrutiny-caddy.default.svc.cluster.local:%d", 8443)
 
 //var url = fmt.Sprintf("%sscrutiny.local:%d/api/news/", "http://", 8000)
 
@@ -172,22 +171,14 @@ var NewsCmd = &cobra.Command{
 	Short: "Fetch news articles",
 	Run: func(cmd *cobra.Command, _ []string) {
 		http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
-		ticker := time.NewTicker(1 * time.Minute)
-		defer ticker.Stop()
-		for {
-			select {
-			case <-ticker.C:
-				log.Println("starting news scrape...")
-				ctx, cancel := context.WithCancel(context.Background())
-				stream := Extract(ctx)
-				stream = Transform(ctx, stream)
-				if err := Load(ctx, stream); err != nil {
-					log.Println(fmt.Errorf("load %v", err))
-				}
-				cancel()
-				log.Println("finished news scrape")
-			default:
-			}
+		log.Println("starting news scrape...")
+		ctx, cancel := context.WithCancel(context.Background())
+		stream := Extract(ctx)
+		stream = Transform(ctx, stream)
+		if err := Load(ctx, stream); err != nil {
+			log.Println(fmt.Errorf("load %v", err))
 		}
+		cancel()
+		log.Println("finished news scrape")
 	},
 }

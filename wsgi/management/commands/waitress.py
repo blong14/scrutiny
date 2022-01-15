@@ -30,14 +30,14 @@ provider = TracerProvider(
     resource=Resource.create({SERVICE_NAME: "scrutiny-http-service"})
 )
 trace.set_tracer_provider(provider)
-# trace.get_tracer_provider().add_span_processor(
-#     BatchSpanProcessor(
-#         JaegerExporter(
-#             agent_host_name="jaeger",
-#             agent_port=6831,
-#         ),
-#     ),
-# )
+trace.get_tracer_provider().add_span_processor(
+    BatchSpanProcessor(
+        JaegerExporter(
+            agent_host_name="jaeger",
+            agent_port=6831,
+        ),
+    ),
+)
 
 
 def _default_span_name(environ):
