@@ -1,7 +1,11 @@
-<ul class="list pa0 mv2">
+<ul>
     {% for item in items %}
-        <li class="pv2 {% if not forloop.last %}bb b--black-10{% endif %}">
-            {% include "news/_list_item.html" with item=item %}
+        <li>
+            <a title="Read Comments"
+               href="{% url 'news.list_view' %}?slugs={{ item.slug }}"
+               data-turbo-frame="news-detail">
+                {{ item.title }}
+            </a>
         </li>
     {% endfor %}
 </ul>

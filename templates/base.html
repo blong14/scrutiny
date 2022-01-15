@@ -1,16 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
     {% include "_head.html" %}
-    <body class="-debug-grid-16 sans-serif roboto">
-        {% include "_header.html" %}
-        <main class="mh4">
-            <section class="flex">
-                {% block page_left %}{% endblock %}
-                {% block page_right %}{% endblock %}
-            </section>
+    <body>
+        <main>
+            {% include "_header.html" %}
+            {% block page_content %}{% endblock %}
+            <footer>
+                <small>Copyright © Scrutiny {% now "Y" %}</small>
+            </footer>
         </main>
-        <footer class="bt b--black-10 w-100">
-            {% include "_nav.html" %}
-        </footer>
     </body>
 </html>

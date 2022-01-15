@@ -1,26 +1,25 @@
-<nav class="pa4 lh-copy">
-    <a class="link f3 green mr4"
-       href="{% url 'scrutiny.index' %}"
-       title="Scrutiny">Scrutiny</a>
-    <a class="link dim blue underline-hover mr2"
-       href="{% url 'scrutiny.about' %}"
-       title="About">About</a>
-    <a class="link dim blue underline-hover mr2"
-       href="{% url 'news.list_view' %}"
-       title="News">News</a>
-    {% if request.features.library %}
-        <a class="link dim blue underline-hover mr2"
-           href="{% url 'library.list_view' %}"
-           title="Library">Library</a>
-    {% endif %}
-    {% if request.features.notes %}
-        <a class="link dim blue underline-hover mr2"
-           href="{% url 'notes.list_view' %}"
-           title="Notes">Notes</a>
-    {% endif %}
-    {% if user.is_authenticated %}
-        <a class="link dim blue underline-hover mr2"
-           href="{% url 'admin:index' %}"
-           title="Admin">Admin</a>
-    {% endif %}
+<nav>
+    <ul>
+        <li>
+            <a href="{% url 'scrutiny.about' %}" title="About">About</a>
+        </li>
+        <li>
+            <a href="{% url 'news.list_view' %}" title="News">News</a>
+        </li>
+        {% if request.features.library %}
+            <li>
+                <a href="{% url 'library.list_view' %}" title="Library">Library</a>
+            </li>
+        {% endif %}
+        {% if request.features.notes %}
+            <li>
+                <a href="{% url 'notes.list_view' %}" title="Notes">Notes</a>
+            </li>
+        {% endif %}
+        {% if user.is_authenticated %}
+            <li>
+                <a href="{% url 'admin:index' %}" title="Admin">Admin</a>
+            </li>
+        {% endif %}
+    </ul>
 </nav>

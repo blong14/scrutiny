@@ -1,19 +1,10 @@
-<!DOCTYPE html>
-<html lang="en">
-    {% include "_head.html" %}
-    <body class="-debug-grid-16 sans-serif roboto">
-        {% include "_header.html" %}
-        <main class="flex">
-            <iframe id="graft"
-                    class="vh-100 w-100"
-                    src="//www.graftapp.co"
-                    style="border: 0px;">
-            </iframe>
-            <div class="w-100">{% include "notes/_list.html" with items=items %}</div>
-            No items.
-        </main>
-        <footer class="bt b--black-10 w-100">
-            {% include "_nav.html" %}
-        </footer>
-    </body>
-</html>
+{% extends "base.html" %}
+{% block page_content %}
+    <section>
+        <h1>Project Notes</h1>
+    </section>
+    <section>
+        {% include "notes/_list.html" with items=items %}
+        No items.
+    </section>
+{% endblock %}

@@ -1,18 +1,20 @@
-<dl class="fl w-50 lh-title">
-    <dd class="black-50 ml0">
-        Last Sync
-    </dd>
-    <dd class="f3 fw6 ml0" data-last-sync>
-        <time datetime="{{ last_sync | date:"c" }}" data-last-sync>
-            <small>{{ last_sync | date:"h:i A" }}</small>
-        </time>
-    </dd>
-</dl>
-<dl class="fl w-50 lh-title">
-    <dd class="black-50 ml0">
-        Job Status
-    </dd>
-    <dd class="f3 fw6 ml0" data-status>
-        <small class="{% if status == "Degraded" %}orange{% else %}green{% endif %}">{{ status }}</small>
-    </dd>
-</dl>
+<table>
+    <thead>
+        <tr>
+            <th>Last Sync</th>
+            <th>Job Status</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td data-last-sync>
+                <time datetime="{{ last_sync | date:"c" }}">
+                    {{ last_sync | date:"h:i A" }}
+                </time>
+            </td>
+            <td data-status>
+                <span class="{% if status == "Degraded" %}warn{% else %}success{% endif %}">{{ status }}</span>
+            </td>
+        </tr>
+    </tbody>
+</table>

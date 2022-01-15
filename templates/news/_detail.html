@@ -1,34 +1,34 @@
 <turbo-frame id="news-detail">
 {% if items %}
-    <article class="pa2 pt3" data-slug="{{ items.0.slug }}">
-        <header class="mb3">
-            <h3 class="lh-title ma0">
-                <a class="link dim blue underline"
-                   href="{{ items.0.url }}"
-                   target="_blank">{{ items.0.title }}</a>
-            </h3>
-            <small><time>{{ items.0.created_at }}</time>
+    <article data-slug="{{ items.0.slug }}">
+        <h1>
+            <a href="{{ items.0.url }}" target="_blank">{{ items.0.title }}</a>
+        </h1>
+        <p>
+            <time>{{ items.0.created_at }}</time>
             By {{ items.0.author }}
-        </small>
-    </header>
-    <ul class="list pa0 mv2">
-        {% for comment in items.0.children.all %}
-            {% if comment.text %}
-                <li class="pv2 {% if not forloop.last %}bb b--black-10{% endif %}"
-                    data-slug="{{ comment.slug }}">
-                    <article data-slug="{{ comment.slug }}">
-                        <main>
-                            {{ comment.text | safe }}
-                        </main>
-                        <footer class="mb3">
-                            <small><time>{{ comment.created_at }}</time></small>
-                            <small>By {{ comment.author }}</small>
-                        </footer>
-                    </article>
-                </li>
-            {% endif %}
-        {% endfor %}
-    </ul>
-</article>
+        </p>
+        <ul>
+            {% for comment in items.0.children.all %}
+                {% if comment.text %}
+                    <li data-slug="{{ comment.slug }}">
+                        {{ comment.text | safe }}
+                        <small>
+                            <time>{{ comment.created_at }}</time>
+                            By {{ comment.author }}
+                        </small>
+                    </li>
+                {% endif %}
+            {% endfor %}
+        </ul>
+        <p>
+            <a onclick="toTop()" href="javascript:void;">[Top]</a>
+        </p>
+    </article>
 {% endif %}
 </turbo-frame>
+<script>
+    function toTop() {
+        window.scrollTo(0, 0);
+    }
+</script>

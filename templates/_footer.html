@@ -1,49 +1,6 @@
-<footer class="pa4 pa5-l black-70 bt b--black-10 white"
-        style="background: #023430;">
-    <div class="mb4-l cf">
-        <h1 class="fl w-100 pv0 f6 fw6 ttu tracked mb4">Scrutiny</h1>
-        <article class="fl w-50 dib-ns w-auto-ns mr4-m mr5-l mb4 pr2 pr0-ns">
-            <h4 class="f5 f4-l fw6">
-                <a class="link white underline"
-                   href="{% url 'scrutiny.about' %}"
-                   title="Notes">About</a>
-            </h4>
-        </article>
-        <article class="fl w-50 dib-ns w-auto-ns mr4-m mr5-l mb4 pr2 pr0-ns">
-            <h4 class="f5 f4-l fw6">
-                <a class="link white underline"
-                   href="{% url 'news.list_view' %}"
-                   title="News">News</a>
-            </h4>
-        </article>
-        {% if request.features.library %}
-            <article class="fl w-50 dib-ns w-auto-ns mr4-m mr5-l mb4 pl2 pl0-ns">
-                <h4 class="f5 f4-l fw6">
-                    <a class="link white underline"
-                       href="{% url 'library.list_view' %}"
-                       title="Library">Library</a>
-                </h4>
-            </article>
-        {% endif %}
-        {% if request.features.notes %}
-            <article class="fl w-50 dib-ns w-auto-ns mr4-m mr5-l mb4 pr2 pr0-ns">
-                <h4 class="f5 f4-l fw6">
-                    <a class="link white underline"
-                       href="{% url 'notes.list_view' %}"
-                       title="Notes">Notes</a>
-                </h4>
-            </article>
-        {% endif %}
-        {% if user.is_authenticated %}
-            <article class="fl w-50 dib-ns w-auto-ns mr4-m mr5-l mb4 pr2 pr0-ns">
-                <h4 class="f5 f4-l fw6">
-                    <a class="link white underline"
-                       href="{% url 'admin:index' %}"
-                       title="Admin">Admin</a>
-                </h4>
-            </article>
-        {% endif %}
-    </div>
+<footer>
+    <h2>Scrutiny</h2>
+    <small>Copyright © Scrutiny {% now "Y" %}</small>
     {% if request.features.signup %}
         <section class="cf mb5">
             <div class="mb4 mb0-ns w-100 w-50-l fr">
@@ -63,13 +20,8 @@
             </div>
         </section>
     {% endif %}
-    <div class="dt dt--fixed w-100">
-        <div class="dn dtc-ns v-mid">
-            <p class="f7 white dib pr3 mb3">
-                Copyright © Scrutiny {% now "Y" %}
-            </p>
-        </div>
-        {% if request.features.social %}
+    {% if request.features.social %}
+        <div class="dt dt--fixed w-100">
             <div class="db dtc-ns tc tr-ns v-mid">
                 <a href="https://www.facebook.com/"
                    class="link dim dib mr3 white"
@@ -137,11 +89,6 @@
                     </svg>
                 </a>
             </div>
-        {% endif %}
-    </div>
-    <div class="db dn-ns">
-        <p class="f7 black-70 mt4 tc">
-            Copyright © Scrutiny {% now "Y" %}
-        </p>
-    </div>
+        </div>
+    {% endif %}
 </footer>

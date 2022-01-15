@@ -115,7 +115,6 @@ class TestListViewWithDetails(ScrutinyTestListView):
         super().test_items()
         self.assertContains(self.response, self.item.slug)
         self.assertContains(self.response, self.item.author)
-        self.assertContains(self.response, self.item.points)
         self.assertContains(self.response, self.item.url)
         self.assertContains(self.response, self.item.title)
         self.assertContains(self.response, self.comment.slug)

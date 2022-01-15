@@ -1,27 +1,25 @@
 {% extends "base.html" %}
-{% block page_left %}
-    <div class="w-40 br b--black-10">
-        <div class="w-100 flex">
-            <turbo-frame id="news-dashboard" class="w-50 flex" src="{% url 'news_api.dashboard' %}">
-            {% include "news/dashboard.html" %}
-            </turbo-frame>
-            <turbo-frame id="jobs-dashboard" class="w-50 flex" src="{% url 'jobs_api.dashboard' %}?name=hackernews">
-            {% include "jobs/dashboard.html" %}
-            </turbo-frame>
-        </div>
-        <h2 class="lh-title">Recent Top Stories</h2>
+{% block page_content %}
+    <section>
+        <h1>Recent Top Stories</h1>
+    </section>
+    <section>
+        <turbo-frame id="news-dashboard" src="{% url 'news_api.dashboard' %}">
+        {% include "news/dashboard.html" %}
+        </turbo-frame>
+        <turbo-frame id="jobs-dashboard" src="{% url 'jobs_api.dashboard' %}?name=hackernews">
+        {% include "jobs/dashboard.html" %}
+        </turbo-frame>
+    </section>
+    <section>
         <turbo-frame id="news">
         {% include "news/_list.html" with items=items %}
         </turbo-frame>
         {% if sse %}
             <script>{% include "news/list.js" %}</script>
         {% endif %}
-    </div>
-{% endblock %}
-{% block page_right %}
-    <div class="w-60">
-        {% if items %}
-            {% include "news/_detail.html" with items=items %}
-        {% endif %}
-    </div>
+    </section>
+    {% if items %}
+        {% include "news/_detail.html" with items=items %}
+    {% endif %}
 {% endblock %}
