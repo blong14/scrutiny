@@ -8,7 +8,7 @@ backend web {
     .port = "8080";
     .probe = {
         .url = "/";
-        .timeout = 1s;
+        .timeout = 60s;
         .interval = 5s;
         .window = 5;
         .threshold = 3;
@@ -20,7 +20,7 @@ backend static {
     .port = "80";
     .probe = {
         .url = "/index.html";
-        .timeout = 1s;
+        .timeout = 60s;
         .interval = 5s;
         .window = 5;
         .threshold = 3;

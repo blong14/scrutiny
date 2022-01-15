@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block page_content %}
     <section>
-        <h1>Recent Top Stories</h1>
+        <h1>Hacker News Top Stories</h1>
     </section>
     <section>
         <turbo-frame id="news-dashboard" src="{% url 'news_api.dashboard' %}">
@@ -11,14 +11,12 @@
         {% include "jobs/dashboard.html" %}
         </turbo-frame>
     </section>
-    <section>
-        <turbo-frame id="news">
-        {% include "news/_list.html" with items=items %}
-        </turbo-frame>
-        {% if sse %}
-            <script>{% include "news/list.js" %}</script>
-        {% endif %}
-    </section>
+    <turbo-frame id="news">
+    {% include "news/_list.html" with items=items %}
+    </turbo-frame>
+    {% if sse %}
+        <script>{% include "news/list.js" %}</script>
+    {% endif %}
     {% if items %}
         {% include "news/_detail.html" with items=items %}
     {% endif %}

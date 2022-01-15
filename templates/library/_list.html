@@ -1,4 +1,10 @@
-{% extends "unordered_list.html" %}
-{% block content %}
-    {% for item in items %}<li>{{ item.title }}</li>{% endfor %}
-{% endblock %}
+<article>
+    <ul>
+        <li>Cockroachdb Is reallly cool</li>
+        {% for item in items %}
+            <li>
+                {{ item.title }}
+            </li>
+        {% endfor %}
+    </ul>
+</article>

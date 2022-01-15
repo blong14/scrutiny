@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% block page_content %}
-    <section>
-        {% include "library/_list.html" with items=items %}
+     <section>
+        <h1>Library</h1>
     </section>
+    {% include "library/_list.html" with items=items %}
 {% endblock %}

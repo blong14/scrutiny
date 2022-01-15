@@ -1,11 +1,14 @@
-<ul>
-    {% for item in items %}
-        <li>
-            <a title="Read Comments"
-               href="{% url 'news.list_view' %}?slugs={{ item.slug }}"
-               data-turbo-frame="news-detail">
-                {{ item.title }}
-            </a>
-        </li>
-    {% endfor %}
-</ul>
+<article id="most-recent">
+    <h1>Most Recent</h1>
+    <ul>
+        {% for item in items %}
+            <li>
+                <a title="Read Comments"
+                   href="{% url 'news.list_view' %}?slugs={{ item.slug }}"
+                   data-turbo-frame="news-detail">
+                    {{ item.title }}
+                </a>
+            </li>
+        {% endfor %}
+    </ul>
+</article>

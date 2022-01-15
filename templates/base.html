@@ -5,9 +5,7 @@
         <main>
             {% include "_header.html" %}
             {% block page_content %}{% endblock %}
-            <footer>
-                <small>Copyright © Scrutiny {% now "Y" %}</small>
-            </footer>
         </main>
+        {% include "_footer.html" %}
     </body>
 </html>

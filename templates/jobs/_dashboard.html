@@ -1,20 +1,24 @@
-<table>
-    <thead>
-        <tr>
-            <th>Last Sync</th>
-            <th>Job Status</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr>
-            <td data-last-sync>
-                <time datetime="{{ last_sync | date:"c" }}">
-                    {{ last_sync | date:"h:i A" }}
-                </time>
-            </td>
-            <td data-status>
-                <span class="{% if status == "Degraded" %}warn{% else %}success{% endif %}">{{ status }}</span>
-            </td>
-        </tr>
-    </tbody>
-</table>
+<article>
+    <main>
+        <table>
+            <thead>
+                <tr>
+                    <th>Last Sync</th>
+                    <th>Job Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td data-last-sync>
+                        <time datetime="{{ last_sync | date:"c" }}">
+                            {{ last_sync | date:"h:i A" }}
+                        </time>
+                    </td>
+                    <td data-status>
+                        <span class="{% if status == "Degraded" %}warn{% else %}success{% endif %}">{{ status }}</span>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </main>
+</article>

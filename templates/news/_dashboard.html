@@ -1,22 +1,26 @@
-<table>
-    <thead>
-        <tr>
-            <th>Total Articles</th>
-            <th>New Today</th>
-            <th>Highest Score</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr>
-            <td data-total-value>{{ total }}</td>
-            <td data-new-today>{{ new_today }}</td>
-            <td data-max-score>
-                <a title="Read Comments"
-                   href="{% url 'news.list_view' %}?slugs={{ max_score_slug }}"
-                   data-turbo-frame="news-detail">
-                    {{ max_score }}
-                </a>
-            </td>
-        </tr>
-    </tbody>
-</table>
+<article>
+    <main>
+        <table>
+            <thead>
+                <tr>
+                    <th>Total Articles</th>
+                    <th>New Today</th>
+                    <th>Highest Score</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td data-total-value>{{ total }}</td>
+                    <td data-new-today>{{ new_today }}</td>
+                    <td data-max-score>
+                        <a title="Read Comments"
+                           href="{% url 'news.list_view' %}?slugs={{ max_score_slug }}"
+                           data-turbo-frame="news-detail">
+                            {{ max_score }}
+                        </a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </main>
+</article>
