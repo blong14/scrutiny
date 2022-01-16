@@ -1,0 +1,20 @@
+<section>
+    <nav>
+        <ul>
+            <li>
+                {% if previous > 0 %}
+                    <a href="?next={{ previous }}" title="Previous">Previous</a>
+                {% else %}
+                    Previous
+                {% endif %}
+            </li>
+            <li>
+                {% if items %}
+                    <a href="?next={{ next }}" title="Next">Next</a>
+                {% else %}
+                    Next
+                {% endif %}
+            </li>
+        </ul>
+    </nav>
+</section>
