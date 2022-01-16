@@ -1,10 +1,6 @@
 <article>
     <ul>
         <li>Cockroachdb Is reallly cool</li>
-        {% for item in items %}
-            <li>
-                {{ item.title }}
-            </li>
-        {% endfor %}
+        {% for item in items %}<li>{{ item.title }}</li>{% endfor %}
     </ul>
 </article>

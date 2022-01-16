@@ -3,6 +3,7 @@ import logging
 from typing import List, Tuple, Union
 
 from django.conf import settings
+from django.contrib.auth import mixins as auth
 from django.utils.datetime_safe import new_datetime
 from django.views import generic
 from opentelemetry import trace
@@ -18,7 +19,7 @@ tracer = trace.get_tracer(__name__)
 module = "news.views"
 
 
-class NewsApiDashboardView(generic.TemplateView):
+class NewsApiDashboardView(auth.LoginRequiredMixin, generic.TemplateView):
     template_name = "news/dashboard.html"
     module = f"{module}.NewsApiDashboardView"
 
@@ -38,7 +39,7 @@ class NewsApiDashboardView(generic.TemplateView):
             return context
 
 
-class NewsListView(generic.ListView):
+class NewsListView(auth.LoginRequiredMixin, generic.ListView):
     context_object_name = "items"
     model = Item
     module = f"{module}.NewsListView"

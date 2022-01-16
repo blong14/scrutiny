@@ -4,6 +4,7 @@ from typing import List, Optional
 from unittest import mock
 
 from django.http.response import HttpResponse
+from django.contrib.auth.models import User
 from django.test import Client, TestCase
 from django.urls import reverse
 from django.utils.datetime_safe import new_datetime
@@ -45,13 +46,15 @@ class TestApiDashboardView(TestCase):
             item(title="hello", points=100),
             item(title="hello again", points=50),
         ]
+        self.user = User.objects.create_superuser("foo", "myemail@test.com", "pass")
+        self.client.login(username="foo", password="pass")
 
     def tearDown(self) -> None:
         self.model.objects.all().delete()
 
     def test_get_no_items(self):
         self.tearDown()
-        with self.assertNumQueries(4):
+        with self.assertNumQueries(6):
             self.resp = self.client.get(self.url)
         self.assertEqual(self.resp.context["total"], 0)
         self.assertEqual(self.resp.context["new_today"], 0)
@@ -59,7 +62,7 @@ class TestApiDashboardView(TestCase):
         self.assertEqual(self.resp.context["max_score_slug"], "")
 
     def test_get(self):
-        with self.assertNumQueries(4):
+        with self.assertNumQueries(6):
             self.resp = self.client.get(self.url)
         self.assertContains(self.resp, "Total")
         self.assertEqual(self.resp.context["total"], len(self.items))
@@ -94,6 +97,8 @@ class TestListViewWithDetails(ScrutinyTestListView):
         self.items = [
             self.item,
         ]
+        self.user = User.objects.create_superuser("foo", "myemail@test.com", "pass")
+        self.client.login(username="foo", password="pass")
 
     def tearDown(self) -> None:
         super().tearDown()
@@ -139,6 +144,8 @@ class TestListView(ScrutinyTestListView):
             item(title="Python can suck."),
             item(title="Django too"),
         ]
+        self.user = User.objects.create_superuser("foo", "myemail@test.com", "pass")
+        self.client.login(username="foo", password="pass")
 
     def tearDown(self) -> None:
         super().tearDown()

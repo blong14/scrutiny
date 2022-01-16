@@ -1,5 +1,6 @@
 from typing import List
 
+from django.contrib.auth.models import User
 from django.test.client import Client
 from django.urls import reverse
 
@@ -22,6 +23,8 @@ class TestListView(ScrutinyTestListView):
         self.items: List[Article] = [
             article(title=title) for title in ("Python can suck.", "Django too.")
         ]
+        self.user = User.objects.create_superuser("foo", "myemail@test.com", "pass")
+        self.client.login(username="foo", password="pass")
 
     def tearDown(self) -> None:
         super().tearDown()

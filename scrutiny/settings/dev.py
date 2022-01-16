@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "social_django",
     "rest_framework",
     "features",
     "jobs",
@@ -176,3 +177,18 @@ REST_FRAMEWORK = {
 
 MERCURE_URL = ""
 SSE = False
+
+SOCIAL_AUTH_JSONFIELD_ENABLED = True
+
+AUTHENTICATION_BACKENDS = (
+    "social_core.backends.pocket.PocketAuth",
+    "django.contrib.auth.backends.ModelBackend",
+)
+
+SOCIAL_AUTH_POCKET_KEY = "100485-6d330864127985d949177b3"
+
+SOCIAL_AUTH_LOGIN_REDIRECT_URL = "/library"
+
+LOGIN_URL = "/login/"
+
+LOGOUT_REDIRECT_URL = "/"

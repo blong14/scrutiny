@@ -2,6 +2,7 @@
 {% block page_content %}
     <section>
         <h1>Hacker News Top Stories</h1>
+        {{ user.is_authenticated }}
     </section>
     <section>
         <turbo-frame id="news-dashboard" src="{% url 'news_api.dashboard' %}">

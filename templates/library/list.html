@@ -1,7 +1,13 @@
 {% extends "base.html" %}
 {% block page_content %}
-     <section>
+    <section>
         <h1>Library</h1>
     </section>
-    {% include "library/_list.html" with items=items %}
+    {% if items %}
+        {% include "library/_list.html" with items=items %}
+    {% else %}
+        <p>
+            No items.
+        </p>
+    {% endif %}
 {% endblock %}
