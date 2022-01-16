@@ -1,7 +1,7 @@
 from typing import List
 
 from django.contrib.auth.models import User
-from django.test.client import Client
+from django.test import Client, TestCase
 from django.urls import reverse
 
 from library.models import Article
@@ -12,6 +12,18 @@ def article(*args, **kwargs) -> Article:
     art = Article(*args, **kwargs)
     art.save()
     return art
+
+
+class TestAnonymousUserListView(TestCase):
+    client_class = Client
+
+    def setUp(self) -> None:
+        self.url = reverse("library.list_view")
+
+    def test_get(self) -> None:
+        self.resp = self.client.get(self.url, follow=True)
+        self.assertEqual(self.resp.status_code, 200)
+        self.assertTemplateUsed(self.resp, "registration/login.html")
 
 
 class TestListView(ScrutinyTestListView):

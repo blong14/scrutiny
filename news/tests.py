@@ -133,6 +133,18 @@ class TestListViewWithDetails(ScrutinyTestListView):
         self.assertEqual(self.response.status_code, 200)
 
 
+class TestAnonymousUserListView(TestCase):
+    client_class = Client
+
+    def setUp(self) -> None:
+        self.url = reverse("news.list_view")
+
+    def test_get(self) -> None:
+        self.resp = self.client.get(self.url, follow=True)
+        self.assertEqual(self.resp.status_code, 200)
+        self.assertTemplateUsed(self.resp, "registration/login.html")
+
+
 class TestListView(ScrutinyTestListView):
     client_class = Client
     model = Item
