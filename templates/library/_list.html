@@ -1,6 +1,23 @@
 <article>
-    <ul>
-        <li>Cockroachdb Is reallly cool</li>
-        {% for item in items %}<li>{{ item.title }}</li>{% endfor %}
-    </ul>
+    <main>
+        <table>
+            <tbody>
+                {% for item in items %}
+                    <tr>
+                        <td data-item-image>
+                            <figure>
+                                <img alt="{{ item.resolved_title }}" src="{{ item.image.src }}">
+                                {% if item.image.caption %}
+                                    <figcaption>
+                                        <i>{{ item.image.caption }}</i>
+                                    </figcaption>
+                                {% endif %}
+                            </figure>
+                        </td>
+                        <td data-item-detail>{% include "library/_detail.html" with item=item %}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </main>
 </article>

@@ -1,0 +1,18 @@
+<article>
+    <h3>
+        <a href="https://getpocket.com/read/{{ item.item_id }}"
+           target="_blank"
+           title="Read">{{ item.resolved_title }}</a>
+    </h3>
+    <h4>
+        <small>
+            By
+            {% for _, author in item.authors.items %}{{ author.name }}{% endfor %}
+            -
+            {{ item.listen_duration_estimate }}
+        </small>
+    </h4>
+    <p>
+        {{ item.excerpt | safe }}
+    </p>
+</article>
