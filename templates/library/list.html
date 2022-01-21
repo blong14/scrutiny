@@ -1,27 +1,21 @@
-{% extends "base.html" %}
-{% block page_content %}
-    {% if not items %}
-        <style>
+<turbo-frame id="library-list">
+{% if items %}
+    {% include "library/_list.html" with items=items %}
+{% else %}
+    <style>
         footer {
             bottom: 0;
             position: fixed;
             width: 100%;
         }
-        </style>
-    {% endif %}
-    <section>
-        <h1>My List</h1>
-    </section>
-    {% if items %}
-        {% include "library/_list.html" with items=items %}
-    {% else %}
-        <article>
-            <main>
-                {% include "library/_pagination.html" with items=items %}
-                <p>
-                    No items.
-                </p>
-            </main>
-        </article>
-    {% endif %}
-{% endblock %}
+    </style>
+    <article>
+        <main>
+            {% include "library/_pagination.html" with items=items %}
+            <p>
+                No items.
+            </p>
+        </main>
+    </article>
+{% endif %}
+</turbo-frame>

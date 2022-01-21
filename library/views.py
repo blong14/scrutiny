@@ -2,15 +2,20 @@ import logging
 from typing import Any, List
 
 import requests
-from django.conf import settings
 from django.contrib.auth import mixins as auth
+from django.views import generic
 from opentelemetry import trace
 
 from library.models import Article
+from scrutiny.env import get_pocket_consumer_key
 from scrutiny.views import ScrutinyListView
 
 
 tracer = trace.get_tracer(__name__)
+
+
+class IndexView(auth.LoginRequiredMixin, generic.TemplateView):
+    template_name = "library/index.html"
 
 
 class PocketListView(auth.LoginRequiredMixin, ScrutinyListView):
@@ -30,10 +35,9 @@ class PocketListView(auth.LoginRequiredMixin, ScrutinyListView):
     def get_context_data(self, *args, **kwargs):
         with tracer.start_as_current_span(f"{__name__}.get_context_data"):
             context = super().get_context_data(*args, **kwargs)
-            consumer_key = getattr(settings, "SOCIAL_AUTH_POCKET_KEY", "")
             user = self.request.user.social_auth.first()
             data = {
-                "consumer_key": consumer_key,
+                "consumer_key": get_pocket_consumer_key(),
                 "access_token": user.extra_data.get("access_token", ""),
                 "contentType": "article",
                 "detailType": "complete",

@@ -187,9 +187,11 @@ class TestApiListView(TestCase):
     def setUp(self, mock_requests) -> None:
         self.mock_requests = mock_requests
         self.mock_requests.post.return_value = HttpResponse(status=200)
+        item(title="hello, no children")
         self.item = item(title="hello")
         self.items = [
             item(title="hello again", parent=self.item),
+            item(title="hello again 2", parent=self.item),
         ]
         self.url = reverse("news_api.list_view")
 
@@ -203,13 +205,13 @@ class TestApiListView(TestCase):
         with self.assertNumQueries(2):
             self.response = self.client.get(path=self.url, format="json")
         self.assertEqual(self.response.status_code, 200)
-        self.assertEqual(len(self.response.json()), 0)
+        self.assertEqual(self.response.json()["count"], 0)
 
     def test_items(self) -> None:
-        with self.assertNumQueries(3):
+        with self.assertNumQueries(4):
             self.response = self.client.get(path=self.url, format="json")
         self.assertEqual(self.response.status_code, 200)
-        self.assertEqual(len(self.response.json()), len(self.items))
+        self.assertEqual(self.response.json()["count"], len(self.items))
 
     @mock.patch("news.signals.requests")
     def test_create_item(self, mock_requests):

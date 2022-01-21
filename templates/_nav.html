@@ -6,7 +6,7 @@
             </li>
             {% if request.features.library %}
                 <li>
-                    <a href="{% url 'library.list_view' %}" title="Library">Library</a>
+                    <a href="{% url 'library.index_view' %}" title="Library">Library</a>
                 </li>
             {% endif %}
             {% if request.features.notes %}

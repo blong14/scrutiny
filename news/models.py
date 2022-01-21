@@ -66,13 +66,11 @@ class Item(models.Model):
 
     @property
     def is_comment(self) -> bool:
-        with tracer.start_as_current_span(f"{self.module}.is_comment"):
-            return self.type == "COMMENT"
+        return self.type == "COMMENT"
 
     @staticmethod
     def serializable_fields() -> List[str]:
-        with tracer.start_as_current_span(f"{Item.module}.serializable_fields"):
-            return [field.name for field in Item._meta.get_fields()]
+        return [field.name for field in Item._meta.get_fields()]
 
     @staticmethod
     def max_score_item() -> Optional["Item"]:
@@ -85,5 +83,4 @@ class Item(models.Model):
             return item_with_max
 
     def get_absolute_url(self) -> str:
-        with tracer.start_as_current_span(f"{self.module}.get_absolute_url"):
-            return f"{reverse('news.list_view')}?slugs={str(self.slug)}"
+        return f"{reverse('news.list_view')}?slugs={str(self.slug)}"

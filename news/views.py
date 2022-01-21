@@ -65,7 +65,11 @@ class NewsListView(auth.LoginRequiredMixin, generic.ListView):
 
 class NewsApiListView(ListCreateAPIView):
     module = f"{module}.NewsApiListView"
-    queryset = Item.objects.prefetch_related("children").filter(parent=None)
+    queryset = (
+        Item.objects.prefetch_related("children")
+        .filter(parent=None)
+        .order_by("-created_at")[:10]
+    )
     serializer_class = ItemSerializer
 
     @staticmethod
@@ -90,8 +94,7 @@ class NewsApiListView(ListCreateAPIView):
     def create(self, request, *args, **kwargs):
         with tracer.start_as_current_span(f"{self.module}.create"):
             many = True if isinstance(request.data, list) else False
-            with tracer.start_as_current_span(f"{self.module}._parse_request"):
-                parents, children = self._parse_request(request, many=many)
+            parents, children = self._parse_request(request, many=many)
             parent_serializer = self.get_serializer(data=parents, many=many)
             parent_serializer.is_valid(raise_exception=True)
             self.perform_create(parent_serializer)

@@ -3,14 +3,15 @@
         <ul>
             <li>
                 {% if previous > 0 %}
-                    <a href="?next={{ previous }}" title="Previous">Previous</a>
+                    <a href="{%  url 'library.list_view' %}?next={{ previous }}"
+                       title="Previous">Previous</a>
                 {% else %}
                     Previous
                 {% endif %}
             </li>
             <li>
                 {% if items %}
-                    <a href="?next={{ next }}" title="Next">Next</a>
+                    <a href="{%  url 'library.list_view' %}?next={{ next }}" title="Next">Next</a>
                 {% else %}
                     Next
                 {% endif %}
