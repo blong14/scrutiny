@@ -6,7 +6,8 @@ import (
 
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/spf13/cobra"
-	cmd "scrutiny/news/management/commands"
+
+	cmd "scrutiny/jobs/management/commands"
 )
 
 var rootCmd = &cobra.Command{
@@ -22,7 +23,7 @@ func init() {
 }
 
 func execute() {
-    if err := rootCmd.Execute(); err != nil {
+	if err := rootCmd.Execute(); err != nil {
 		log.Panic(err)
 	}
 }

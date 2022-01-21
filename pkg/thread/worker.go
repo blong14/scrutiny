@@ -2,7 +2,7 @@ package thread
 
 import (
 	"context"
-	"log"
+	"fmt"
 )
 
 type Worker interface {
@@ -10,14 +10,17 @@ type Worker interface {
 	Close() error
 }
 
-func Start(ctx context.Context, w Worker) {
-	for {
-		if err := w.Start(ctx); err != nil {
-			log.Println(err)
+func Run(ctx context.Context, w Worker) error {
+	var err error
+	if e := w.Start(ctx); e != nil {
+		err = e
+	}
+	if e := w.Close(); e != nil {
+		if err != nil {
+			err = fmt.Errorf("%w with %s", err, e.Error())
+		} else {
+			err = e
 		}
 	}
-}
-
-func Close(w Worker) error {
-	return w.Close()
+	return err
 }

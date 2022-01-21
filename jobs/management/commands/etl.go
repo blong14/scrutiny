@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"scrutiny/pkg/thread"
 	"strings"
 	"sync"
 
@@ -36,9 +37,9 @@ func processChildren(ctx context.Context, out chan *client.Item, story client.St
 		case <-ctx.Done():
 			return
 		case out <- item:
-			//if len(item.Comments) > 0 {
-			//	processChildren(ctx, out, i)
-			//}
+			if len(i.Children) > 0 {
+				processChildren(ctx, out, i)
+			}
 		}
 	}
 }
@@ -52,15 +53,8 @@ func Extract(ctx context.Context) <-chan *client.Item {
 			log.Printf("extract error %s\n", err)
 			return
 		}
-		log.Printf("found %d top stories\n", len(topStories))
-		count := 1
 		var wg sync.WaitGroup
 		for _, i := range topStories {
-			if count == 10 {
-				break
-			} else {
-				count++
-			}
 			wg.Add(1)
 			go func(storyID uint64) {
 				defer wg.Done()
@@ -166,19 +160,34 @@ func Load(ctx context.Context, stream <-chan *client.Item) error {
 	return nil
 }
 
+// worker implements thread.Worker
+type worker struct {
+}
+
+func (w *worker) Start(ctx context.Context) error {
+	log.Println("starting news scrape...")
+	stream := Extract(ctx)
+	stream = Transform(ctx, stream)
+	if err := Load(ctx, stream); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (w *worker) Close() error {
+	log.Println("finished news scrape")
+	return nil
+}
+
 var NewsCmd = &cobra.Command{
 	Use:   "news",
 	Short: "Fetch news articles",
 	Run: func(cmd *cobra.Command, _ []string) {
 		http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
-		log.Println("starting news scrape...")
 		ctx, cancel := context.WithCancel(context.Background())
-		stream := Extract(ctx)
-		stream = Transform(ctx, stream)
-		if err := Load(ctx, stream); err != nil {
-			log.Println(fmt.Errorf("load %v", err))
+		if err := thread.Run(ctx, &worker{}); err != nil {
+			log.Println(err)
 		}
 		cancel()
-		log.Println("finished news scrape")
 	},
 }

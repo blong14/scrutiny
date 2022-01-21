@@ -46,9 +46,16 @@ func TopStories(ctx context.Context, url string) (TopNews, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error getting response %v", err)
 	}
+	out := make(TopNews, 0)
 	items := make(map[uint64]bool)
 	for _, item := range i {
 		items[item.ID] = true
+		if len(item.Comments) == 0 {
+			out = append(out, item.ID)
+		}
+	}
+	if len(out) == 10 {
+		return out, nil
 	}
 	resp, err := http.Get("https://hacker-news.firebaseio.com/v0/topstories.json")
 	if err != nil {
@@ -63,10 +70,13 @@ func TopStories(ctx context.Context, url string) (TopNews, error) {
 	if err := json.Unmarshal(body, &topStories); err != nil {
 		return nil, fmt.Errorf("marshaling data %v", err)
 	}
-	out := make(TopNews, 0)
 	for _, i := range topStories {
 		if _, ok := items[i]; !ok {
-			out = append(out, i)
+			if len(out) < 10 {
+				out = append(out, i)
+			} else {
+				break
+			}
 		}
 	}
 	return out, nil
@@ -106,7 +116,7 @@ func GetStory(_ context.Context, storyID uint64) (Story, error) {
 }
 
 func NewsList(_ context.Context, url string) ([]Item, error) {
-	resp, err := http.Get(url)
+	resp, err := http.Get(fmt.Sprintf("%s?page=1", url))
 	if err != nil {
 		return nil, fmt.Errorf("error getting response %v", err)
 	}
