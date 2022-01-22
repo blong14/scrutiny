@@ -226,45 +226,9 @@ class TestApiListView(TestCase):
             title="hello",
             slug=str(uuid.uuid4()),
         )
-        payload = [ItemSerializer(expected).data]
+        payload = ItemSerializer(expected).data
         resp = self.client.post(path=self.url, data=payload, format="json")
         actual = self.model.objects.filter(slug=expected.slug).first()
         self.assertEqual(resp.status_code, 201)
         self.assertEqual(actual.slug, expected.slug)
         self.mock_requests.post.assert_called()
-
-    @mock.patch("news.signals.requests")
-    def test_create_items(self, mock_requests):
-        self.mock_requests = mock_requests
-        self.tearDown()
-        now = datetime.datetime.now()
-        item_with_child = self.model(
-            id=3,
-            author="test_user",
-            points=77,
-            url="https://local.local",
-            created_at=new_datetime(now),
-            title="hello",
-            slug=str(uuid.uuid4()),
-        )
-        data = [
-            ItemSerializer(item_with_child).data,
-            ItemSerializer(
-                self.model(
-                    author="test_user",
-                    points=77,
-                    parent_id=item_with_child.id,
-                    url="https://local.local",
-                    created_at=new_datetime(now),
-                    title="ahello",
-                    type="COMMENT",
-                    slug=str(uuid.uuid4()),
-                ),
-            ).data,
-        ]
-        resp = self.client.post(path=self.url, data=data, format="json")
-        actual = Item.objects.filter(pk=item_with_child.id).first()
-        self.assertEqual(resp.status_code, 201)
-        self.assertEqual(self.mock_requests.post.call_count, 2)
-        self.assertIsNotNone(actual)
-        self.assertEqual(actual.children.count(), 1)

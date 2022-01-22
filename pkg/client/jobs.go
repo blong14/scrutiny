@@ -13,11 +13,17 @@ type JobStatus struct {
 	Status string `json:"status"`
 }
 
-func JobsUpdate(_ context.Context, url string, status JobStatus) error {
-	data, err := json.Marshal(status)
+func JobsUpdate(_ context.Context, url string, name string, status string) error {
+	data, err := json.Marshal(
+		JobStatus{
+			Name:   name,
+			Status: status,
+		},
+	)
 	if err != nil {
 		return fmt.Errorf("not able to marshal json %v", err)
 	}
+	url = fmt.Sprintf("%s/api/jobs/hackernews/", url)
 	req, err := http.NewRequest("PUT", url, bytes.NewBuffer(data))
 	if err != nil {
 		return fmt.Errorf("error getting response %v", err)
@@ -29,5 +35,8 @@ func JobsUpdate(_ context.Context, url string, status JobStatus) error {
 		return fmt.Errorf("error getting response %v", err)
 	}
 	resp.Body.Close()
+	if resp.StatusCode >= 400 {
+		return fmt.Errorf("error updating job %s with status %s", name, status)
+	}
 	return nil
 }

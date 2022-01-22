@@ -4,16 +4,14 @@ import (
 	"context"
 	"crypto/tls"
 	"fmt"
-	"log"
-	"net/http"
-	"scrutiny/pkg/thread"
-	"strings"
-	"sync"
-
 	"github.com/google/uuid"
 	"github.com/spf13/cobra"
+	"log"
+	"net/http"
+	"strings"
 
 	"scrutiny/pkg/client"
+	"scrutiny/pkg/thread"
 )
 
 var url = fmt.Sprintf("http://scrutiny-caddy.default.svc.cluster.local:%d", 8443)
@@ -53,37 +51,31 @@ func Extract(ctx context.Context) <-chan *client.Item {
 			log.Printf("extract error %s\n", err)
 			return
 		}
-		var wg sync.WaitGroup
-		for _, i := range topStories {
-			wg.Add(1)
-			go func(storyID uint64) {
-				defer wg.Done()
-				story, err := client.GetStory(ctx, storyID)
-				if err != nil {
-					log.Printf("Error unmarshalling response. %s\n", err)
-				}
-				item := &client.Item{
-					Author:    story.Author,
-					CreatedAT: story.CreatedAT,
-					ID:        story.ID,
-					ParentID:  story.ParentID,
-					Points:    story.Points,
-					Text:      story.Text,
-					Title:     story.Title,
-					Type:      story.Type,
-					URL:       story.URL,
-				}
-				select {
-				case <-ctx.Done():
-					return
-				case out <- item:
-				}
-				if len(story.Children) > 0 {
-					processChildren(ctx, out, story)
-				}
-			}(i)
+		for _, storyID := range topStories {
+			story, err := client.GetStory(ctx, storyID)
+			if err != nil {
+				log.Printf("Error unmarshalling response. %s\n", err)
+			}
+			item := &client.Item{
+				Author:    story.Author,
+				CreatedAT: story.CreatedAT,
+				ID:        story.ID,
+				ParentID:  story.ParentID,
+				Points:    story.Points,
+				Text:      story.Text,
+				Title:     story.Title,
+				Type:      story.Type,
+				URL:       story.URL,
+			}
+			select {
+			case <-ctx.Done():
+				return
+			case out <- item:
+			}
+			if len(story.Children) > 0 {
+				processChildren(ctx, out, story)
+			}
 		}
-		wg.Wait()
 		log.Println("finished extracting top stories")
 	}()
 	return out
@@ -131,32 +123,16 @@ func Transform(ctx context.Context, stream <-chan *client.Item) <-chan *client.I
 }
 
 func Load(ctx context.Context, stream <-chan *client.Item) error {
-	batchSize := 100
-	items := make([]client.Item, 0)
 	for item := range stream {
-		items = append(items, *item)
-		if len(items) >= batchSize {
-			if err := client.NewsCreate(ctx, fmt.Sprintf("%s/api/news/", url), items); err != nil {
-				log.Println(err)
-			}
-			log.Printf("added %d stories\n", len(items))
-			items = []client.Item{}
-			if err := client.JobsUpdate(ctx, fmt.Sprintf("%s/api/jobs/hackernews/", url), client.JobStatus{Name: "hackernews", Status: "Healthy"}); err != nil {
-				return err
-			}
-			log.Println("updated job status")
+		if err := client.NewsCreate(ctx, url, item); err != nil {
+			log.Println(err)
 		}
 	}
-	if len(items) > 0 {
-		if err := client.NewsCreate(ctx, fmt.Sprintf("%s/api/news/", url), items); err != nil {
-			return err
-		}
-		log.Printf("added %d stories\n", len(items))
-		if err := client.JobsUpdate(ctx, fmt.Sprintf("%s/api/jobs/hackernews/", url), client.JobStatus{Name: "hackernews", Status: "Healthy"}); err != nil {
-			return err
-		}
-		log.Println("updated job status")
+	err := client.JobsUpdate(ctx, url, "hackernews", "Healthy")
+	if err != nil {
+		return err
 	}
+	log.Println("updated job status")
 	return nil
 }
 

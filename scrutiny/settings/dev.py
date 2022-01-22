@@ -153,6 +153,8 @@ STATIC_ROOT = f"{BASE_DIR}/static"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
+os.environ["DJANGO_ALLOW_ASYNC_UNSAFE"] = "True"
+
 JWT_PUBLISH_TOKEN = jwt.encode(
     payload={"mercure": {"publish": ["*"]}}, key=os.getenv("JWT_KEY", "!ChangeMe!")
 )
@@ -180,17 +182,15 @@ REST_FRAMEWORK = {
 MERCURE_URL = ""
 SSE = False
 
-SOCIAL_AUTH_JSONFIELD_ENABLED = True
 
 AUTHENTICATION_BACKENDS = (
     "social_core.backends.pocket.PocketAuth",
     "django.contrib.auth.backends.ModelBackend",
 )
 
-SOCIAL_AUTH_POCKET_KEY = "100485-6d330864127985d949177b3"
-
-SOCIAL_AUTH_LOGIN_REDIRECT_URL = "/library"
-
 LOGIN_URL = "/login/"
-
 LOGOUT_REDIRECT_URL = "/"
+
+SOCIAL_AUTH_JSONFIELD_ENABLED = True
+SOCIAL_AUTH_LOGIN_REDIRECT_URL = "/library"
+SOCIAL_AUTH_POCKET_KEY = "100485-6d330864127985d949177b3"

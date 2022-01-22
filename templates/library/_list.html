@@ -2,7 +2,7 @@
     <main>
         <header>
             <section>
-                {% include "library/_pagination.html" %}
+                {% include "pagination.html" with items=items %}
             </section>
         </header>
         <table>
@@ -26,7 +26,7 @@
         </table>
         <footer>
             <section>
-                {% include "library/_pagination.html" with items=items %}
+                {% include "pagination.html" with items=items %}
             </section>
         </footer>
     </main>

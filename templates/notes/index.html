@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block page_content %}
+    <section>
+        <h1>Projects</h1>
+    </section>
+    <turbo-frame id="notes-list" src="{% url 'notes.list_view' %}?next=1">
+    {% include "notes/list.html" %}
+    </turbo-frame>
+{% endblock %}

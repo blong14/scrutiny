@@ -4,8 +4,10 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"time"
 
@@ -25,6 +27,11 @@ type Story struct {
 	Type      string    `json:"type"`
 	URL       string    `json:"url"`
 	Children  []Story   `json:"children"`
+}
+
+type ItemResponse struct {
+	Count   uint   `json:"count"`
+	Results []Item `json:"results"`
 }
 
 type Item struct {
@@ -125,22 +132,29 @@ func NewsList(_ context.Context, url string) ([]Item, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error getting response %v", err)
 	}
-	var items []Item
+	var items ItemResponse
 	if err := json.Unmarshal(body, &items); err != nil {
 		return nil, fmt.Errorf("error marshaling data %v", err)
 	}
-	return items, nil
+	log.Printf("found %d news items\n", items.Count)
+	return items.Results, nil
 }
 
-func NewsCreate(_ context.Context, url string, rows []Item) error {
-	data, err := json.Marshal(rows)
-	if err != nil {
-		return fmt.Errorf("not able to marshal json %v", err)
+func NewsCreate(_ context.Context, url string, item *Item) error {
+	data, e := json.Marshal(item)
+	if e != nil {
+		return fmt.Errorf("not able to marshal json %v", e)
 	}
-	resp, err := http.Post(url, "application/json", bytes.NewBuffer(data))
+	buffer := bytes.NewBuffer(data)
+	url = fmt.Sprintf("%s/api/news/", url)
+	resp, err := http.Post(url, "application/json", buffer)
 	if err != nil {
-		return fmt.Errorf("creation error %v", err)
+		return fmt.Errorf("creation error %v", e)
 	}
 	resp.Body.Close()
-	return nil
+	log.Println(resp.StatusCode)
+	if resp.StatusCode == http.StatusOK {
+		return nil
+	}
+	return errors.New("create failed")
 }

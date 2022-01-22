@@ -1,4 +1,23 @@
-{% extends "unordered_list.html" %}
-{% block content %}
-    {% for item in items %}<li>{{ item.title }}</li>{% endfor %}
-{% endblock %}
+<article>
+    <main>
+        <header>
+            <section>
+                {% include "pagination.html" with items=items %}
+            </section>
+        </header>
+        <table>
+            <tbody>
+                {% for item in items %}
+                    <tr>
+                        <td data-item-detail>{% include "notes/_detail.html" with item=item %}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <footer>
+            <section>
+                {% include "pagination.html" with items=items %}
+            </section>
+        </footer>
+    </main>
+</article>

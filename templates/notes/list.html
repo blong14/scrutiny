@@ -1,10 +1,21 @@
-{% extends "base.html" %}
-{% block page_content %}
-    <section>
-        <h1>Project Notes</h1>
-    </section>
-    <section>
-        {% include "notes/_list.html" with items=items %}
-        No items.
-    </section>
-{% endblock %}
+<turbo-frame id="notes-list">
+{% if items %}
+    {% include "notes/_list.html" with items=items %}
+{% else %}
+    <style>
+        footer {
+            bottom: 0;
+            position: fixed;
+            width: 100%;
+        }
+    </style>
+    <article>
+        <main>
+            {% include "pagination.html" with items=items %}
+            <p>
+                No items.
+            </p>
+        </main>
+    </article>
+{% endif %}
+</turbo-frame>

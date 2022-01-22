@@ -44,7 +44,7 @@ class NewsListView(auth.LoginRequiredMixin, generic.ListView):
     model = Item
     module = f"{module}.NewsListView"
     paginate_by = 10
-    order = ["-created_at"]
+    order = ["-added_at"]
     template_name = "news/list.html"
 
     def get_context_data(self, *args, **kwargs):
@@ -68,24 +68,9 @@ class NewsApiListView(ListCreateAPIView):
     queryset = (
         Item.objects.prefetch_related("children")
         .filter(parent=None)
-        .order_by("-created_at")[:10]
+        .order_by("-added_at")
     )
     serializer_class = ItemSerializer
-
-    @staticmethod
-    def _parse_request(
-        request, many: bool = False
-    ) -> Tuple[Union[dict, List[dict]], List[dict]]:
-        if not many:
-            return request.data, []
-        parents, children = [], []
-        for item in request.data:
-            _type = item.get("type")
-            if _type == "STORY":
-                parents.append(item)
-            elif _type == "COMMENT":
-                children.append(item)
-        return parents, children
 
     def perform_create(self, serializer):
         with tracer.start_as_current_span(f"{self.module}.perform_create"):
@@ -94,13 +79,8 @@ class NewsApiListView(ListCreateAPIView):
     def create(self, request, *args, **kwargs):
         with tracer.start_as_current_span(f"{self.module}.create"):
             many = True if isinstance(request.data, list) else False
-            parents, children = self._parse_request(request, many=many)
-            parent_serializer = self.get_serializer(data=parents, many=many)
+            parent_serializer = self.get_serializer(data=request.data, many=many)
             parent_serializer.is_valid(raise_exception=True)
             self.perform_create(parent_serializer)
-            if children:
-                children_serializer = self.get_serializer(data=children, many=many)
-                children_serializer.is_valid(raise_exception=True)
-                self.perform_create(children_serializer)
             headers = self.get_success_headers(parent_serializer.data)
             return Response(parent_serializer.data, status=201, headers=headers)
