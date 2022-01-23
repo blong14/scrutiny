@@ -219,6 +219,7 @@ class TestApiListView(TestCase):
         self.tearDown()
         now = datetime.datetime.now()
         expected = self.model(
+            id=123,
             author="test_user",
             points=77,
             url="https://local.local",

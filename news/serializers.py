@@ -11,3 +11,11 @@ class ItemSerializer(ModelSerializer):
 
     id = IntegerField(read_only=False, required=False, allow_null=True)
     text = CharField(allow_blank=True)
+
+    def create(self, validated_data):
+        validated_data.pop("children")
+        instance, _ = self.Meta.model.objects.update_or_create(
+            defaults=validated_data,
+            id=validated_data.get("id"),
+        )
+        return instance
