@@ -1,6 +1,5 @@
-import uuid
-
 from django.db import models
+from django.urls import reverse
 
 
 class Project(models.Model):
@@ -12,6 +11,9 @@ class Project(models.Model):
     title = models.CharField(max_length=256)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    def get_absolute_url(self) -> str:
+        return f"{reverse('notes.list_view')}?slugs={str(self.slug)}"
 
 
 class Note(models.Model):

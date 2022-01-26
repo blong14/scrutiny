@@ -4,7 +4,7 @@ from django.urls import include, path
 from jobs.views import JobsApiUpdateView, JobsStatusView
 from library.views import IndexView, PocketListView
 from news.views import NewsApiDashboardView, NewsApiListView, NewsListView
-from notes.views import GraftIndexView, GraftListView
+from notes.views import GraftApiDashboardView, GraftListView
 from scrutiny.views import ScrutinyAboutView, ScrutinyIndexView
 
 urlpatterns = [
@@ -16,8 +16,7 @@ urlpatterns = [
     path("news/", NewsListView.as_view(), name="news.list_view"),
     path("library/", IndexView.as_view(), name="library.index_view"),
     path("library/list/", PocketListView.as_view(), name="library.list_view"),
-    path("notes/", GraftIndexView.as_view(), name="notes.index_view"),
-    path("notes/list/", GraftListView.as_view(), name="notes.list_view"),
+    path("notes/", GraftListView.as_view(), name="notes.list_view"),
     path("api/jobs/status/", JobsStatusView.as_view(), name="jobs_api.dashboard"),
     path(
         "api/jobs/<slug:name>/",
@@ -27,5 +26,10 @@ urlpatterns = [
     path("api/news/", NewsApiListView.as_view(), name="news_api.list_view"),
     path(
         "api/news/dashboard/", NewsApiDashboardView.as_view(), name="news_api.dashboard"
+    ),
+    path(
+        "api/notes/dashboard/",
+        GraftApiDashboardView.as_view(),
+        name="notes_api.dashboard",
     ),
 ]

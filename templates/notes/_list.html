@@ -1,23 +1,13 @@
 <article>
-    <main>
-        <header>
-            <section>
-                {% include "pagination.html" with items=items %}
-            </section>
-        </header>
-        <table>
-            <tbody>
-                {% for item in items %}
-                    <tr>
-                        <td data-item-detail>{% include "notes/_detail.html" with item=item %}</td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-        <footer>
-            <section>
-                {% include "pagination.html" with items=items %}
-            </section>
-        </footer>
-    </main>
+    <ul>
+        {% for item in items %}
+            <li>
+                <a title="read notes"
+                   href="{% url 'notes.list_view' %}?slugs={{ item.slug }}"
+                   data-turbo-frame="notes-detail">
+                    {{ item.title }}
+                </a>
+            </li>
+        {% endfor %}
+    </ul>
 </article>

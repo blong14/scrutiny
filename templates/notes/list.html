@@ -1,21 +1,34 @@
-<turbo-frame id="notes-list">
-{% if items %}
-    {% include "notes/_list.html" with items=items %}
-{% else %}
-    <style>
-        footer {
-            bottom: 0;
-            position: fixed;
-            width: 100%;
-        }
-    </style>
-    <article>
-        <main>
-            {% include "pagination.html" with items=items %}
-            <p>
-                No items.
-            </p>
-        </main>
-    </article>
-{% endif %}
-</turbo-frame>
+{% extends "base.html" %}
+{% block page_content %}
+    <section>
+        <h1>Graft Projects</h1>
+    </section>
+    <section>
+        <turbo-frame id="notes-dashboard" src="{% url 'notes_api.dashboard' %}">
+        {% include "notes/dashboard.html" %}
+        </turbo-frame>
+    </section>
+    <turbo-frame id="notes-list">
+    {% if items %}
+        {% include "notes/_list.html" with items=items %}
+    {% else %}
+        <style>
+            footer {
+                bottom: 0;
+                position: fixed;
+                width: 100%;
+            }
+        </style>
+        <article>
+            <main>
+                <p>
+                    No items.
+                </p>
+            </main>
+        </article>
+    {% endif %}
+    </turbo-frame>
+    {% if items %}
+        {% include "notes/_detail.html" with items=items %}
+    {% endif %}
+{% endblock %}

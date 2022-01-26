@@ -150,16 +150,18 @@ async def create_project_with_notes(
         aiohttp.hdrs.METH_GET,
         f"{req.base_url}/v1/projects/{kwargs.get('slug')}/notes/",
     )
+    prj = Project(**kwargs)
+    logger.info(resp.data.get("items"))
     notes = [
         Note(
             id=random.randint(1, 1_000_000),
+            project_id=prj.id,
             slug=n["id"],
             title=n["title"],
             body=n["body"],
         )
         for n in resp.data.get("items", [])
     ]
-    prj = Project(**kwargs)
     return prj, notes
 
 
@@ -167,6 +169,7 @@ async def projects(req: HttpRequest) -> List[Tuple[Project, List[Note]]]:
     resp = await _request(req, aiohttp.hdrs.METH_GET, f"{req.base_url}/v1/projects/")
     if not resp.success:
         return []
+    logger.info(resp.data.get("items"))
     future_projects = [
         asyncio.ensure_future(
             create_project_with_notes(

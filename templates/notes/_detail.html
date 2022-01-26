@@ -1,10 +1,28 @@
-<article>
-    <h3>
-        <a href="https://www.graftapp.co/p/{{ item.slug }}"
-           target="_blank"
-           title="Read">{{ item.resolved_title }}</a>
-    </h3>
-    <p>
-        {{ item.title | safe }}
-    </p>
-</article>
+<turbo-frame id="notes-detail">
+{% if items %}
+    <article data-slug="{{ items.0.slug }}">
+        <main>
+            <header>
+                <h1>
+                    <a href="https://www.graftapp.co/p/{{ items.0.slug }}"
+                       target="_blank"
+                       title="Read">{{ items.0.title }}</a>
+                </h1>
+            </header>
+            <ul>
+                {% for note in items.0.notes.all %}
+                    {% if note.body %}
+                        <li data-slug="{{ note.slug }}">
+                            {{ note.body | safe }}
+                            <small>
+                                <time>{{ note.created_at }}</time>
+                                By {{ request.user }}
+                            </small>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+            </ul>
+        </main>
+    </article>
+{% endif %}
+</turbo-frame>
