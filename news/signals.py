@@ -1,3 +1,4 @@
+import json
 import logging
 from typing import Optional
 from urllib import parse
@@ -10,13 +11,13 @@ from django.dispatch import receiver
 from django.template.loader import render_to_string
 from opentelemetry import trace
 
-from news.models import Item
+from news.models import Event, Item
 from news.views import NewsApiDashboardView, NewsListView
 
 
 logger = logging.getLogger(__name__)
 tracer = trace.get_tracer(__name__)
-module = "news.signals"
+module = __name__
 
 
 def _send(sender: Item, msg: str):
@@ -67,5 +68,8 @@ def dispatch_new_item(sender: Item, **kwargs) -> None:
         context = view.get_context_data(object_list=query)
         with tracer.start_as_current_span(f"{module}.render_to_string"):
             msg = render_to_string("news/_list.turbo.html", context=context)
+        data = json.dumps({"data": msg})
+        with tracer.start_as_current_span(f"{module}.Event.save"):
+            Event(event_type="STORY_CREATED", event_data=data).save()
         with tracer.start_as_current_span(f"{module}._send"):
             _send(sender, msg)

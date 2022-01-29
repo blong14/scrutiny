@@ -1,4 +1,5 @@
 import logging
+import uuid
 from typing import List, Optional
 
 from django.db import models
@@ -8,6 +9,18 @@ from opentelemetry import trace
 
 logger = logging.getLogger(__name__)
 tracer = trace.get_tracer(__name__)
+
+
+class Event(models.Model):
+    EVENT_TYPES = (("STORY_ADDED", "story_added"),)
+
+    id = models.BigAutoField(primary_key=True, serialize=True)
+    event_id = models.UUIDField(default=uuid.uuid4, editable=False)
+    event_type = models.CharField(
+        choices=EVENT_TYPES, default="STORY_ADDED", max_length=32
+    )
+    event_data = models.JSONField(null=False)
+    created_at = models.DateTimeField(auto_now_add=True)
 
 
 class Item(models.Model):
