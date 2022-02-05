@@ -2,6 +2,7 @@ venv
 .coverage
 .deps
 .idea
+__pycache__
 
 build
 *.sqlite3

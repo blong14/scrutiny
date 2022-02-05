@@ -34,6 +34,7 @@ ALLOWED_HOSTS = [
     "controller.cluster",
     "scrutiny.cluster",
     "scrutiny.local",
+    "scrutiny.local:8081",
     "scrutiny-varnish",
     "web",
     "web:8080",
