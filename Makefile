@@ -63,5 +63,5 @@ seed: .deps
 shell: .deps
 	@python manage.py shell --settings=scrutiny.settings.dev
 
-test: .deps
+test:
 	@pytest --durations=0
