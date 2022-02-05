@@ -12,6 +12,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
+    
+    - name: Install system dependencies
+      run: |
+          sudo apt update
+          sudo apt-get update
+          sudo apt-get -y install libbrotli-dev
 
     - name: Set up Go
       uses: actions/setup-go@v2
