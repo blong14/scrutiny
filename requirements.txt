@@ -6,7 +6,7 @@ djlint==0.6.8
 ipython==7.31.1
 locust==2.5.1
 opentelemetry-api==1.8.0
-opentelemetry-sdk==1.8.0
+opentelemetry-sdk==1.9.1
 opentelemetry-exporter-jaeger==1.8.0
 opentelemetry-instrumentation-django==0.27b0
 psycopg2==2.9.3
