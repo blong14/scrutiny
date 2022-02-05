@@ -127,9 +127,3 @@ class TestListView(ScrutinyTestListView):
     def test_items(self) -> None:
         super().test_items()
         self.assertListResponseContains([item.title for item in self.items])
-
-
-class TestSyncCommand(TestCase):
-    def test_handle(self):
-        cmd = Command()
-        cmd.handle()
