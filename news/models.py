@@ -52,7 +52,7 @@ class Item(models.Model):
         }
     """
 
-    module = "news.models.Item"
+    module = __name__
     ITEM_TYPES = (
         ("STORY", "story"),
         ("COMMENT", "comment"),
