@@ -2,7 +2,7 @@ black==21.11b1
 Django==3.2.11
 django-cockroachdb==3.2.2
 djangorestframework==3.12.4
-djlint==0.6.8
+djlint==0.7.4
 ipython==7.31.1
 locust==2.5.1
 opentelemetry-api==1.8.0
