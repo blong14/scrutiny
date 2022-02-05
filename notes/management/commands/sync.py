@@ -79,7 +79,7 @@ class HttpRequest:
     base_url: str = "https://api.graftapp.co"
     read_timeout: float = 10.0
     user: str = "14benj@gmail.com"
-    password: str = "g0zPZoS4NRhS"
+    password: str = ""
 
     def header(self) -> dict:
         return {"Authorization": f"Bearer {self.token}"}
