@@ -55,7 +55,7 @@ cover:
 	@coverage html
 
 run: test
-	@python manage.py runserver --settings=scrutiny.settings.dev
+	@python manage.py runserver 0.0.0.0:8089 --settings=scrutiny.settings.dev
 
 seed: .deps
 	@python manage.py seed --settings=scrutiny.settings.dev
