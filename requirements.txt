@@ -1,6 +1,6 @@
 black==21.11b1
 Django==4.0.2
-django-cockroachdb==3.2.2
+django-cockroachdb==4.0
 djangorestframework==3.12.4
 djlint==0.7.4
 ipython==7.31.1
