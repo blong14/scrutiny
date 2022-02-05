@@ -25,41 +25,25 @@ services:
             - ./scrutiny/static:/usr/share/nginx/html
     web:
         image: blong14/scrutiny-python
-        #        image: blong14/scrutiny-pypy
         restart: unless-stopped
         environment:
-            - DJANGO_SETTINGS_MODULE=scrutiny.settings.prod
+            - CR_HOST=cockroach-0
+            - DJANGO_SETTINGS_MODULE=scrutiny.settings.dev
             - OTEL_PYTHON_DJANGO_INSTRUMENT="True"
             - OTEL_TRACES_SAMPLER=parentbased_traceidratio
             - OTEL_TRACES_SAMPLER_ARG=0.1
-            - PG_PASSWORD=!Changeme!
-            - PG_USER=admin
-            - PG_HOST=db
-            - PG_PORT=5432
-            - PG_DATABASE=scrutiny
+        ports:
+            - "8089:8080"
         volumes:
             - ./scrutiny/settings:/app/scrutiny/settings
         depends_on:
-            - db
-            - scrape
-    db:
-        image: postgres:14-bullseye
-        restart: unless-stopped
-        environment:
-            - POSTGRES_PASSWORD=!Changeme!
-            - POSTGRES_USER=admin
-            - POSTGRES_DATABASE=scrutiny
-            - POSTGRES_HOST_AUTH_METHOD=trust
+            - cockroach-0
+    cockroach-0:
+        image: cockroachdb/cockroach:latest
+        command: start --insecure --join=cockroach-0
         ports:
-            - "54321:5432"
-        volumes:
-            - ./pg_entrypoint.sh:/docker-entrypoint-initdb.d/initdb.sh
-    scrape:
-        image: blong14/scrutiny-go
-        restart: unless-stopped
-        command:
-            - /go/bin/scrutiny
-            - news
+            - "26257:26257"
+            - "8080:8080"
     jaeger:
         image: jaegertracing/all-in-one
         ports:

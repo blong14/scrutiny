@@ -101,12 +101,12 @@ WSGI_APPLICATION = "scrutiny.wsgi.application"
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": "scrutiny",
-        "HOST": os.getenv("PG_HOST", "localhost"),
-        "USER": os.getenv("PG_USER", "admin"),
-        "PASSWORD": os.getenv("PG_PASSWORD", "!Changeme!"),
-        "PORT": os.getenv("PG_PORT", "54321"),
+        "ENGINE": "django_cockroachdb",
+        "NAME": "app",
+        "USER": "root",
+        "PASSWORD": "",
+        "HOST": os.getenv("CR_HOST", "localhost"),
+        "PORT": "26257",
     }
 }
 
@@ -180,7 +180,7 @@ REST_FRAMEWORK = {
 }
 
 MERCURE_URL = ""
-SSE = False
+SSE = True
 
 
 AUTHENTICATION_BACKENDS = (
