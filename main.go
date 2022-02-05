@@ -4,7 +4,6 @@ import (
 	"flag"
 	"log"
 
-	_ "github.com/mattn/go-sqlite3"
 	"github.com/spf13/cobra"
 
 	cmd "scrutiny/jobs/management/commands"
