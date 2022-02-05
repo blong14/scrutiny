@@ -31,6 +31,7 @@ DEPLOY_ENV = "dev"
 
 ALLOWED_HOSTS = [
     "localhost",
+    "controller.cluster",
     "scrutiny.cluster",
     "scrutiny.local",
     "scrutiny-varnish",
