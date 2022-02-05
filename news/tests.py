@@ -1,7 +1,6 @@
 import datetime
 import uuid
 from typing import List, Optional
-from unittest import mock
 
 from django.http.response import HttpResponse
 from django.contrib.auth.models import User
@@ -10,7 +9,7 @@ from django.urls import reverse
 from django.utils.datetime_safe import new_datetime
 from rest_framework.test import APIClient
 
-from news.models import Item
+from news.models import Event, Item
 from news.serializers import ItemSerializer
 from scrutiny.tests import ScrutinyTestListView
 
@@ -183,10 +182,7 @@ class TestApiListView(TestCase):
     response: HttpResponse
     url: Optional[str] = ""
 
-    @mock.patch("news.signals.requests")
-    def setUp(self, mock_requests) -> None:
-        self.mock_requests = mock_requests
-        self.mock_requests.post.return_value = HttpResponse(status=200)
+    def setUp(self) -> None:
         item(title="hello, no children")
         self.item = item(title="hello")
         self.items = [
@@ -199,6 +195,7 @@ class TestApiListView(TestCase):
         super().tearDown()
         if self.model:
             self.model.objects.all().delete()
+        Event.objects.all().delete()
 
     def test_no_items(self) -> None:
         self.tearDown()
@@ -213,9 +210,7 @@ class TestApiListView(TestCase):
         self.assertEqual(self.response.status_code, 200)
         self.assertEqual(self.response.json()["count"], len(self.items))
 
-    @mock.patch("news.signals.requests")
-    def test_create_item(self, mock_requests):
-        self.mock_requests = mock_requests
+    def test_create_item(self):
         self.tearDown()
         now = datetime.datetime.now()
         expected = self.model(
@@ -228,8 +223,9 @@ class TestApiListView(TestCase):
             slug=str(uuid.uuid4()),
         )
         payload = ItemSerializer(expected).data
+        self.assertIsNone(Event.objects.first())
         resp = self.client.post(path=self.url, data=payload, format="json")
         actual = self.model.objects.filter(slug=expected.slug).first()
         self.assertEqual(resp.status_code, 201)
         self.assertEqual(actual.slug, expected.slug)
-        self.mock_requests.post.assert_called()
+        self.assertEqual(Event.objects.first().event_type, "STORY_ADDED")

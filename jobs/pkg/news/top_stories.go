@@ -2,16 +2,12 @@ package news
 
 import (
 	"context"
-	"crypto/tls"
 	"fmt"
 	"github.com/google/uuid"
-	"github.com/spf13/cobra"
 	"log"
-	"net/http"
 	"strings"
 
 	"scrutiny/pkg/client"
-	"scrutiny/pkg/thread"
 )
 
 var url = fmt.Sprintf("http://scrutiny-caddy.default.svc.cluster.local:%d", 8443)
@@ -42,7 +38,7 @@ func processChildren(ctx context.Context, out chan *client.Item, story client.St
 	}
 }
 
-func Extract(ctx context.Context) <-chan *client.Item {
+func extract(ctx context.Context) <-chan *client.Item {
 	out := make(chan *client.Item)
 	go func() {
 		defer close(out)
@@ -81,7 +77,7 @@ func Extract(ctx context.Context) <-chan *client.Item {
 	return out
 }
 
-func Transform(ctx context.Context, stream <-chan *client.Item) <-chan *client.Item {
+func transform(ctx context.Context, stream <-chan *client.Item) <-chan *client.Item {
 	out := make(chan *client.Item)
 	go func() {
 		defer close(out)
@@ -122,7 +118,7 @@ func Transform(ctx context.Context, stream <-chan *client.Item) <-chan *client.I
 	return out
 }
 
-func Load(ctx context.Context, stream <-chan *client.Item) error {
+func load(ctx context.Context, stream <-chan *client.Item) error {
 	for item := range stream {
 		if err := client.NewsCreate(ctx, url, item); err != nil {
 			log.Println(err)
@@ -136,34 +132,25 @@ func Load(ctx context.Context, stream <-chan *client.Item) error {
 	return nil
 }
 
-// worker implements thread.Worker
-type worker struct {
+// TopStoriesETL implements thread.Worker
+type TopStoriesETL struct {
 }
 
-func (w *worker) Start(ctx context.Context) error {
+func (w *TopStoriesETL) Start(ctx context.Context) error {
 	log.Println("starting news scrape...")
-	stream := Extract(ctx)
-	stream = Transform(ctx, stream)
-	if err := Load(ctx, stream); err != nil {
+	stream := extract(ctx)
+	stream = transform(ctx, stream)
+	if err := load(ctx, stream); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (w *worker) Close() error {
+func (w *TopStoriesETL) Close() error {
 	log.Println("finished news scrape")
 	return nil
 }
 
-var NewsCmd = &cobra.Command{
-	Use:   "news",
-	Short: "Fetch news articles",
-	Run: func(cmd *cobra.Command, _ []string) {
-		http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
-		ctx, cancel := context.WithCancel(context.Background())
-		if err := thread.Run(ctx, &worker{}); err != nil {
-			log.Println(err)
-		}
-		cancel()
-	},
+func (w *TopStoriesETL) Read(_ context.Context) error {
+	return nil
 }

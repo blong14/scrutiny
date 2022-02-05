@@ -11,3 +11,7 @@ def get_mercure_token() -> str:
 
 def get_mercure_url() -> str:
     return getattr(settings, "MERCURE_URL", "")
+
+
+def sse() -> bool:
+    return getattr(settings, "SSE", False)

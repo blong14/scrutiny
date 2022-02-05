@@ -1,6 +1,5 @@
 import datetime
 import logging
-from typing import List, Tuple, Union
 
 from django.conf import settings
 from django.contrib.auth import mixins as auth
@@ -10,13 +9,24 @@ from opentelemetry import trace
 from rest_framework.generics import ListCreateAPIView
 from rest_framework.response import Response
 
-from news.models import Item
+from news.models import Event, Item
 from news.serializers import ItemSerializer
 
 
 logger = logging.getLogger(__name__)
 tracer = trace.get_tracer(__name__)
-module = "news.views"
+module = __name__
+
+
+class EventListView(generic.ListView):
+    context_object_name = "items"
+    model = Event
+    module = f"{module}.EventListView"
+    order = ["-added_at"]
+
+    def get_queryset(self):
+        with tracer.start_as_current_span(f"{self.module}.get_query_set"):
+            return self.model.objects.order_by(*self.order)[:10]
 
 
 class NewsApiDashboardView(auth.LoginRequiredMixin, generic.TemplateView):
