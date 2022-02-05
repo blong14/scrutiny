@@ -11,7 +11,7 @@ opentelemetry-exporter-jaeger==1.9.1
 opentelemetry-instrumentation-django==0.28b1
 psycopg2==2.9.3
 pyjwt==2.3.0
-pytest==6.2.5
+pytest==7.0.0
 pytest-django==4.5.2
 requests==2.27.1
 social-auth-app-django==5.0.0
