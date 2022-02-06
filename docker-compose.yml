@@ -35,7 +35,7 @@ services:
         ports:
             - "8089:8080"
         volumes:
-            - ./scrutiny/settings:/app/scrutiny/settings
+            - .:/app
         depends_on:
             - cockroach-0
     cockroach-0:

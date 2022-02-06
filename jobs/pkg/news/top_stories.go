@@ -12,7 +12,7 @@ import (
 
 var url = fmt.Sprintf("http://scrutiny-caddy.default.svc.cluster.local:%d", 8443)
 
-//var url = fmt.Sprintf("%sscrutiny.local:%d/api/news/", "http://", 8000)
+// var url = fmt.Sprintf("%sscrutiny.local:%d", "https://", 8081)
 
 func processChildren(ctx context.Context, out chan *client.Item, story client.Story) {
 	for _, i := range story.Children {

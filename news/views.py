@@ -1,8 +1,11 @@
 import datetime
+import json
 import logging
 
 from django.conf import settings
 from django.contrib.auth import mixins as auth
+from django.http import HttpRequest
+from django.template.loader import render_to_string
 from django.utils.datetime_safe import new_datetime
 from django.views import generic
 from opentelemetry import trace
@@ -22,7 +25,7 @@ class EventListView(generic.ListView):
     context_object_name = "items"
     model = Event
     module = f"{module}.EventListView"
-    order = ["-added_at"]
+    order = ["-created_at"]
 
     def get_queryset(self):
         with tracer.start_as_current_span(f"{self.module}.get_query_set"):
@@ -92,5 +95,29 @@ class NewsApiListView(ListCreateAPIView):
             parent_serializer = self.get_serializer(data=request.data, many=many)
             parent_serializer.is_valid(raise_exception=True)
             self.perform_create(parent_serializer)
+            if parent_serializer.instance and not parent_serializer.instance.is_comment:
+                dispatch_new_item()
+                dispatch_update_news_dashboard()
             headers = self.get_success_headers(parent_serializer.data)
             return Response(parent_serializer.data, status=201, headers=headers)
+
+
+def dispatch_update_news_dashboard() -> None:
+    with tracer.start_as_current_span(f"{__name__}.dispatch_update_news_dashboard"):
+        context = NewsApiDashboardView().get_context_data()
+        with tracer.start_as_current_span(f"{__name__}.render_to_string"):
+            msg = render_to_string("news/_dashboard.turbo.html", context=context)
+        data = json.dumps({"target": "news", "topic": ["news"], "data": msg})
+        Event(event_type="STORY_ADDED", event_data=data).save()
+
+
+def dispatch_new_item() -> None:
+    with tracer.start_as_current_span(f"{__name__}.dispatch_new_item"):
+        view = NewsListView()
+        view.setup(request=HttpRequest())
+        query = view.get_queryset()
+        context = view.get_context_data(object_list=query)
+        with tracer.start_as_current_span(f"{__name__}.render_to_string"):
+            msg = render_to_string("news/_list.turbo.html", context=context)
+        data = json.dumps({"target": "news", "topic": ["news"], "data": msg})
+        Event(event_type="STORY_ADDED", event_data=data).save()

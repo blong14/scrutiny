@@ -181,7 +181,7 @@ REST_FRAMEWORK = {
     "PAGE_SIZE": 500,
 }
 
-MERCURE_URL = ""
+MERCURE_URL = "https://scrutiny.local:8081/.well-known/mercure"
 SSE = True
 
 
