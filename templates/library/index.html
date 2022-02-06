@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block page_content %}
     <section>
-        <h1>My List</h1>
+        <h1>My Library</h1>
     </section>
     <turbo-frame id="library-list" src="{% url 'library.list_view' %}?next=1">
     {% include "library/list.html" %}
