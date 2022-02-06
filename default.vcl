@@ -34,6 +34,7 @@ sub vcl_recv {
         set req.backend_hint = web;
     }
 	unset req.http.x-cache;
+	return (hash);
 }
 
 sub vcl_hit {

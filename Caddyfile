@@ -14,18 +14,6 @@ scrutiny.local:8081 {
             anonymous true
             ui true
         }
-        reverse_proxy varnish:80 {
-            transport http {
-                max_conns_per_host 10
-            }
-        }
-        respond "Not Found" 404
-    }
-}
-
-scrutiny.local:8082 {
-    route {
-        reverse_proxy jaeger:16686
         respond "Not Found" 404
     }
 }
