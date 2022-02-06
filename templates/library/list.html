@@ -1,21 +1,21 @@
-    <turbo-frame id="library-list">
-    <main>
-    {% if items %}
-        {% include "library/_list.html" with items=items %}
-    {% else %}
-        <style>
+<turbo-frame id="library-list">
+{% if items %}
+    {% include "library/_list.html" with items=items %}
+{% else %}
+    <style>
         footer {
             bottom: 0;
             position: fixed;
             width: 100%;
         }
-        </style>
-        <article>
-                {% include "pagination.html" with items=items %}
-                <p>
-                    Loading items...
-                </p>
-        </article>
-    {% endif %}
-    </main>
-    </turbo-frame>
+    </style>
+    <article>
+        <section>
+            {% include "library/_pagination.html" with items=items %}
+        </section>
+        <p>
+            No items.
+        </p>
+    </article>
+{% endif %}
+</turbo-frame>

@@ -3,7 +3,16 @@
     <section>
         <h1>My Library</h1>
     </section>
+    <section>
+        {% include "library/_search.html" %}
+    </section>
     <turbo-frame id="library-list" src="{% url 'library.list_view' %}?next=1">
-    {% include "library/list.html" %}
+    <style>
+        footer {
+            top: 100vh;
+            position: fixed;
+            width: 100%;
+        }
+    </style>
     </turbo-frame>
 {% endblock %}

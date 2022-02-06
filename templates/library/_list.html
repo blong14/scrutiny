@@ -1,15 +1,13 @@
 <article id="most-recent">
     <section>
-        {% include "pagination.html" with items=items %}
+        {% include "library/_pagination.html" with items=items %}
     </section>
     <ul>
         {% for item in items %}
             <li>{% include "library/_detail.html" with item=item %}</li>
         {% endfor %}
     </ul>
-    <footer>
-        <section>
-            {% include "pagination.html" with items=items %}
-        </section>
-    </footer>
+    <section>
+        {% include "library/_pagination.html" with items=items %}
+    </section>
 </article>
