@@ -1,17 +1,12 @@
 from typing import List
+from unittest import mock
 
 from django.contrib.auth.models import User
 from django.test import Client, TestCase
 from django.urls import reverse
+from social_django.models import UserSocialAuth
 
-from library.models import Article
 from scrutiny.tests import ScrutinyTestListView
-
-
-def article(*args, **kwargs) -> Article:
-    art = Article(*args, **kwargs)
-    art.save()
-    return art
 
 
 class TestAnonymousUserListView(TestCase):
@@ -32,22 +27,37 @@ class TestListView(ScrutinyTestListView):
     def setUp(self) -> None:
         super().setUp()
         self.url = reverse("library.list_view")
-        self.items: List[Article] = [
-            article(title=title) for title in ("Python can suck.", "Django too.")
-        ]
-        self.user = User.objects.create_superuser("foo", "myemail@test.com", "pass")
+        self.items = {
+            "list": {
+                "0001": {"resolved_title": "Python can suck."},
+                "002": {"resolved_title": "Django too."},
+            }
+        }
+        self.user = User.objects.create_user("foo", "myemail@test.com", "pass")
+        UserSocialAuth.objects.create(user=self.user, provider="pocket")
         self.client.login(username="foo", password="pass")
 
     def tearDown(self) -> None:
         super().tearDown()
-        Article.objects.all().delete()
+        self.user.delete()
 
-    def test_no_items(self) -> None:
-        self.skipTest("in progress")
-        self.tearDown()
-        super().test_no_items()
+    @mock.patch("library.views.make_request")
+    def test_no_items(self, mock_make_request) -> None:
+        mock_make_request.return_value = {"list": []}
+        self.response = self.client.get(self.url)
+        self.assertEqual(self.response.status_code, 200)
+        self.assertContains(self.response, "No items.")
+        mock_make_request.assert_called()
 
-    def test_items(self) -> None:
-        self.skipTest("in progress")
-        super().test_items()
-        self.assertListResponseContains([item.title for item in self.items])
+    @mock.patch("library.views.make_request")
+    def test_items(self, mock_make_request) -> None:
+        mock_make_request.return_value = self.items
+        self.response = self.client.get(self.url)
+        self.assertEqual(self.response.status_code, 200)
+        self.assertEqual(
+            len(self.response.context["items"]), len(self.items.get("list").values())
+        )
+        self.assertListResponseContains(
+            [item.get("resolved_title") for _, item in self.items.get("list").items()]
+        )
+        mock_make_request.assert_called()

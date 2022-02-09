@@ -13,5 +13,9 @@ def get_mercure_url() -> str:
     return getattr(settings, "MERCURE_URL", "")
 
 
+def should_trace() -> bool:
+    return getattr(settings, "TRACE_ENABLED", False)
+
+
 def sse() -> bool:
     return getattr(settings, "SSE", False)

@@ -32,6 +32,7 @@ DEPLOY_ENV = "dev"
 ALLOWED_HOSTS = [
     "localhost",
     "controller.cluster",
+    "lemur.cluster",
     "scrutiny.cluster",
     "scrutiny.local",
     "scrutiny.local:8081",
@@ -196,3 +197,5 @@ LOGOUT_REDIRECT_URL = "/"
 SOCIAL_AUTH_JSONFIELD_ENABLED = True
 SOCIAL_AUTH_LOGIN_REDIRECT_URL = "/library"
 SOCIAL_AUTH_POCKET_KEY = "100485-6d330864127985d949177b3"
+
+TRACE_ENABLED = False

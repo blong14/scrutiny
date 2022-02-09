@@ -49,14 +49,17 @@ class PocketListView(auth.LoginRequiredMixin, ScrutinyListView):
                 "offset": 0,  # zero based
             }
             data["offset"] = (data["count"] * page) - data["count"]
-            logger.info(data)
-            resp = requests.post(
-                self.pocket_url, json=data, headers={"Content-Type": "application/json"}
-            )
-            resp.raise_for_status()
-            items = self._parse_response(resp.json())
+            items = self._parse_response(make_request(self.pocket_url, data))
             context["items"] = items
             context["previous"] = page - 1 if page > 1 else 0
             context["next"] = page + 1
             context["search"] = search
             return context
+
+
+def make_request(pocket_url, data):
+    resp = requests.post(
+        pocket_url, json=data, headers={"Content-Type": "application/json"}
+    )
+    resp.raise_for_status()
+    return resp.json()

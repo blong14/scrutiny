@@ -18,10 +18,12 @@ from opentelemetry.propagate import extract
 from opentelemetry.sdk.resources import SERVICE_NAME, Resource
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
+from opentelemetry.sdk.trace.export.in_memory_span_exporter import InMemorySpanExporter
 from opentelemetry.trace.status import Status, StatusCode
 
 from waitress import serve
 
+from scrutiny import env
 from scrutiny.wsgi import application
 
 
@@ -35,8 +37,10 @@ trace.get_tracer_provider().add_span_processor(
         JaegerExporter(
             agent_host_name="jaeger",
             agent_port=6831,
-        ),
-    ),
+        )
+        if env.should_trace()
+        else InMemorySpanExporter(),
+    )
 )
 
 
