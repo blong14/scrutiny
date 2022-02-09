@@ -1,6 +1,11 @@
 <nav>
     <ul>
         {% if user.is_authenticated %}
+            {% if user.is_superuser %}
+                <li>
+                    <a href="{% url 'admin:index' %}" title="Admin">Admin</a>
+                </li>
+            {% endif %}
             <li>
                 <a href="{% url 'news.list_view' %}" title="News">News</a>
             </li>
