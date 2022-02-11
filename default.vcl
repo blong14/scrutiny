@@ -30,11 +30,12 @@ backend web {
 sub vcl_recv {
     if (req.url ~ "(images|static)/*") {
         set req.backend_hint = static;
+	    unset req.http.Cookie;
     } else {
         set req.backend_hint = web;
     }
 	unset req.http.x-cache;
-	return (hash);
+	unset req.http.x-ttl;
 }
 
 sub vcl_hit {
@@ -70,4 +71,5 @@ sub vcl_deliver {
 	}
 	# uncomment the following line to show the information in the response
 	set resp.http.x-cache = req.http.x-cache;
+	set resp.http.x-ttl = obj.ttl;
 }
