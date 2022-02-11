@@ -1,8 +1,6 @@
-import datetime
-
 from django.test import Client, TestCase
 from django.urls import reverse
-from django.utils.datetime_safe import new_datetime
+from django.utils.timezone import now as utc_now
 
 from jobs.models import Job
 from jobs.serializers import JobSerializer
@@ -13,9 +11,9 @@ class TestJobsStatusView(TestCase):
     model = Job
 
     def setUp(self) -> None:
-        now = datetime.datetime.now()
+        now = utc_now()
         self.url = reverse("jobs_api.dashboard")
-        self.item = Job(name="hackernews", synced_at=new_datetime(now))
+        self.item = Job(name="hackernews", synced_at=now)
         self.item.save()
 
     def tearDown(self) -> None:
@@ -35,9 +33,11 @@ class TestJobsStatusUpdate(TestCase):
     model = Job
 
     def setUp(self) -> None:
-        now = datetime.datetime.now()
+        now = utc_now()
         self.item = Job(
-            name="hackernews", status="Healthy", synced_at=new_datetime(now)
+            name="hackernews",
+            status="Healthy",
+            synced_at=now,
         )
         self.item.save()
 

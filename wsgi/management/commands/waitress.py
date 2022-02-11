@@ -1,11 +1,10 @@
-import datetime
 import functools
 import logging
 import time
 from typing import Callable
 
-from django.utils.datetime_safe import new_datetime
 from django.core.management.base import BaseCommand
+from django.utils.timezone import now as utc_now
 from opentelemetry import context, trace
 from opentelemetry.exporter.jaeger.thrift import JaegerExporter
 from opentelemetry.instrumentation.wsgi import (
@@ -114,7 +113,7 @@ class _LoggingApplication:
 
     def __call__(self, environ, start_response):
         trace_start = time.perf_counter()
-        start = new_datetime(datetime.datetime.now())
+        start = utc_now()
 
         def replacement_start_response(status, headers):
             duration = time.perf_counter() - trace_start

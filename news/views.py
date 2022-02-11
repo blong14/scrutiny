@@ -1,4 +1,3 @@
-import datetime
 import json
 import logging
 
@@ -6,7 +5,7 @@ from django.conf import settings
 from django.contrib.auth import mixins as auth
 from django.http import HttpRequest
 from django.template.loader import render_to_string
-from django.utils.datetime_safe import new_datetime
+from django.utils.timezone import make_aware, now as utc_now
 from django.views import generic
 from opentelemetry import trace
 from rest_framework.generics import ListCreateAPIView
@@ -39,7 +38,7 @@ class NewsApiDashboardView(auth.LoginRequiredMixin, generic.TemplateView):
     def get_context_data(self, *args, **kwargs):
         with tracer.start_as_current_span(f"{self.module}.get_context_data"):
             context = super().get_context_data(*args, **kwargs)
-            now = datetime.datetime.now()
+            now = utc_now()
             item = Item.max_score_item()
             context["max_score"] = item.points if item else 0
             context["max_score_slug"] = item.slug if item else ""
@@ -47,7 +46,7 @@ class NewsApiDashboardView(auth.LoginRequiredMixin, generic.TemplateView):
                 context["total"] = Item.objects.filter(type="STORY").count()
             with tracer.start_as_current_span(f"{self.module}.Items.new_today"):
                 context["new_today"] = Item.objects.filter(
-                    type="STORY", added_at__gte=new_datetime(now).date()
+                    type="STORY", added_at__gte=now.date()
                 ).count()
             return context
 

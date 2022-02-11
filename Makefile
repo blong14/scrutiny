@@ -64,4 +64,4 @@ shell: .deps
 	@python manage.py shell --settings=scrutiny.settings.dev
 
 test:
-	@pytest --durations=0
+	@pytest --durations=0 --verbosity=1

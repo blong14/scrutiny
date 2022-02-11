@@ -1,4 +1,3 @@
-import datetime
 import uuid
 from typing import List, Optional
 
@@ -6,7 +5,7 @@ from django.http.response import HttpResponse
 from django.contrib.auth.models import User
 from django.test import Client, TestCase
 from django.urls import reverse
-from django.utils.datetime_safe import new_datetime
+from django.utils.timezone import now as utc_now
 from rest_framework.test import APIClient
 
 from news.models import Event, Item
@@ -21,12 +20,11 @@ def item(*args, **kwargs) -> Item:
     """
     points = kwargs.pop("points", 77)
     author = kwargs.pop("author", "test_user")
-    now = datetime.datetime.now()
     i = Item(
         author=author,
         points=points,
         url="https://local.local",
-        created_at=new_datetime(now),
+        created_at=utc_now(),
         slug=str(uuid.uuid4()),
         *args,
         **kwargs,
@@ -40,6 +38,7 @@ class TestApiDashboardView(TestCase):
     model = Item
 
     def setUp(self) -> None:
+        super().setUp()
         self.url = reverse("news_api.dashboard")
         self.items = [
             item(title="hello", points=100),
@@ -49,6 +48,7 @@ class TestApiDashboardView(TestCase):
         self.client.login(username="foo", password="pass")
 
     def tearDown(self) -> None:
+        super().tearDown()
         self.model.objects.all().delete()
 
     def test_get_no_items(self):
@@ -212,13 +212,12 @@ class TestApiListView(TestCase):
 
     def test_create_item(self):
         self.tearDown()
-        now = datetime.datetime.now()
         expected = self.model(
             id=123,
             author="test_user",
             points=77,
             url="https://local.local",
-            created_at=new_datetime(now),
+            created_at=utc_now(),
             title="hello",
             slug=str(uuid.uuid4()),
         )

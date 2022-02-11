@@ -1,7 +1,8 @@
-from datetime import datetime, timedelta
+from datetime import timedelta
 from typing import List
 
 from django.db import models
+from django.utils.timezone import now as utc_now
 from django.urls import reverse
 
 
@@ -20,7 +21,7 @@ class Job(models.Model):
 
     @property
     def active(self) -> bool:
-        when = datetime.utcnow() - self.synced_at
+        when = utc_now() - self.synced_at
         return when < timedelta(minutes=1)
 
     def get_absolute_url(self) -> str:
