@@ -1,4 +1,3 @@
-from typing import List
 from unittest import mock
 
 from django.contrib.auth.models import User
