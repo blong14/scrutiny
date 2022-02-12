@@ -2,7 +2,7 @@
     <ul>
         <li>
             {% if previous > 0 %}
-                <a href="{%  url 'library.list_view' %}?next={{ previous }}{% if search %}&search={{ search }}{% endif %}"
+                <a href="{%  url 'library.list_view' %}?next={{ previous }}{% if search %}&search={{ search }}{% endif %}{% if tag %}&tag={{ tag }}{% endif %}"
                    title="Previous">Previous</a>
             {% else %}
                 Previous
@@ -10,7 +10,7 @@
         </li>
         <li>
             {% if items %}
-                <a href="{%  url 'library.list_view' %}?next={{ next }}{% if search %}&search={{ search }}{% endif %}"
+                <a href="{%  url 'library.list_view' %}?next={{ next }}{% if search %}&search={{ search }}{% endif %}{% if tag %}&tag={{ tag }}{% endif %}"
                    title="Next">Next</a>
             {% else %}
                 Next

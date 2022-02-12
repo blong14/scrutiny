@@ -33,27 +33,40 @@ class PocketListView(auth.LoginRequiredMixin, ScrutinyListView):
             logging.warning(e)
         return items
 
+    def _get_page_context(self, *args, **kwargs):
+        page = int(self.request.GET.get("next", 1))
+        search = self.request.GET.get("search", None)
+        tag = self.request.GET.get("tag", None)
+        return {
+            "items": [],
+            "tags": set(),
+            "previous": page - 1 if page > 1 else 0,
+            "next": page + 1,
+            "page": page,
+            "search": search,
+            "tag": tag,
+        }
+
     def get_context_data(self, *args, **kwargs):
         with tracer.start_as_current_span(f"{__name__}.get_context_data"):
             context = super().get_context_data(*args, **kwargs)
             user = self.request.user.social_auth.first()
-            page = int(self.request.GET.get("next", 1))
-            search = self.request.GET.get("search", None)
+            context |= self._get_page_context()
             data = {
                 "consumer_key": get_pocket_consumer_key(),
                 "access_token": user.extra_data.get("access_token", ""),
                 "contentType": "article",
                 "detailType": "complete",
-                "search": search,
+                "search": context.get("search"),
+                "tag": context.get("tag"),
                 "count": 10,
                 "offset": 0,  # zero based
             }
-            data["offset"] = (data["count"] * page) - data["count"]
-            items = self._parse_response(make_request(self.pocket_url, data))
-            context["items"] = items
-            context["previous"] = page - 1 if page > 1 else 0
-            context["next"] = page + 1
-            context["search"] = search
+            data["offset"] = (data["count"] * context.get("page")) - data["count"]
+            for item in self._parse_response(make_request(self.pocket_url, data)):
+                context["items"].append(item)
+                for _, value in item.get("tags", {}).items():
+                    context["tags"].add(value.get("tag"))
             return context
 
 

@@ -1,12 +1,33 @@
 <article id="most-recent">
+    <details open="">
+        <summary>
+            {% if tag %}
+                Filtering by {{ tag }}
+            {% else %}
+                Filter
+            {% endif %}
+        </summary>
+        <nav>
+            <ul>
+                {% for tag in tags %}
+                    <li>
+                        <a style="padding: 0.25rem;"
+                           title="Filter by {{ tag }}"
+                           href="{% url 'library.list_view' %}?tag={{ tag }}"
+                           data-turbo-frame="news-detail">
+                            {{ tag }}
+                        </a>
+                    </li>
+                {% endfor %}
+            </ul>
+        </nav>
+    </details>
     <section>
         {% include "library/_pagination.html" with items=items %}
     </section>
-    <ul>
-        {% for item in items %}
-            <li>{% include "library/_detail.html" with item=item %}</li>
-        {% endfor %}
-    </ul>
+    {% for item in items %}
+        {% include "library/_detail.html" with item=item %}
+    {% endfor %}
     <section>
         {% include "library/_pagination.html" with items=items %}
     </section>
