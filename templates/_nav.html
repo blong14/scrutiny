@@ -9,16 +9,12 @@
             <li>
                 <a href="{% url 'news.list_view' %}" title="News">News</a>
             </li>
-            {% if request.features.library %}
-                <li>
-                    <a href="{% url 'library.index_view' %}" title="Library">Library</a>
-                </li>
-            {% endif %}
-            {% if request.features.notes %}
-                <li>
-                    <a href="{% url 'notes.list_view' %}" title="Notes">Notes</a>
-                </li>
-            {% endif %}
+            <li>
+                <a href="{% url 'library.index_view' %}" title="Library">Library</a>
+            </li>
+            <li>
+                <a href="{% url 'notes.list_view' %}" title="Notes">Notes</a>
+            </li>
             <li>
                 <a href="{% url "logout" %}" title="Logout">Logout</a>
             </li>
