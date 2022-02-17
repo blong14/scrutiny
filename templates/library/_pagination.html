@@ -1,16 +1,17 @@
 <nav>
     <ul>
         <li>
-            {% if previous > 0 %}
-                <a href="{%  url 'library.list_view' %}?next={{ previous }}{% if search %}&search={{ search }}{% endif %}{% if tag %}&tag={{ tag }}{% endif %}"
+            {% if page_obj.has_previous %}
+                <a href="{%  url 'library.list_view' %}?page={{ page_obj.previous_page_number }}{% if search %}&search={{ search }}{% endif %}{% if tag %}&tag={{ tag }}{% endif %}"
                    title="Previous">Previous</a>
             {% else %}
                 Previous
             {% endif %}
         </li>
+        <li>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</li>
         <li>
-            {% if items %}
-                <a href="{%  url 'library.list_view' %}?next={{ next }}{% if search %}&search={{ search }}{% endif %}{% if tag %}&tag={{ tag }}{% endif %}"
+            {% if page_obj.has_next %}
+                <a href="{%  url 'library.list_view' %}?page={{ page_obj.next_page_number }}{% if search %}&search={{ search }}{% endif %}{% if tag %}&tag={{ tag }}{% endif %}"
                    title="Next">Next</a>
             {% else %}
                 Next

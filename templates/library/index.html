@@ -6,7 +6,8 @@
     <section>
         {% include "library/_search.html" %}
     </section>
-    <turbo-frame id="library-list" src="{% url 'library.list_view' %}?next=1">
+    <turbo-frame id="tag-list" src="{% url 'library.tag_view' %}"></turbo-frame>
+    <turbo-frame id="library-list" src="{% url 'library.list_view' %}?page=1">
     <style>
         footer {
             top: 100vh;

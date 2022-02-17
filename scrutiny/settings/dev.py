@@ -30,12 +30,14 @@ DEBUG = True
 DEPLOY_ENV = "dev"
 
 ALLOWED_HOSTS = [
+    "127.0.0.1",
     "localhost",
     "controller.cluster",
     "lemur.cluster",
     "scrutiny.cluster",
     "scrutiny.local",
     "scrutiny.local:8081",
+    "scrutiny.local:8082",
     "scrutiny-varnish",
     "web",
     "web:8080",
@@ -73,8 +75,6 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    #     "requestlogs.middleware.RequestLogsMiddleware",
-    "features.middleware.FeatureMiddleware",
 ]
 
 ROOT_URLCONF = "scrutiny.urls"
@@ -168,6 +168,12 @@ LOGGING = {
     "handlers": {
         "console": {
             "class": "logging.StreamHandler",
+        },
+    },
+    "loggers": {
+        "django.db.backends": {
+            "level": "DEBUG",
+            "handlers": ["console"],
         },
     },
     "root": {

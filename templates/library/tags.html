@@ -1,0 +1,21 @@
+<turbo-frame id="tag-list">
+<details open="">
+    <summary>
+        Filter by
+    </summary>
+    <nav>
+        <ul>
+            {% for tag in items %}
+                <li>
+                    <a style="padding: 0.25rem;"
+                       title="Filter by {{ tag }}"
+                       href="{% url 'library.list_view' %}?tag={{ tag }}"
+                       data-turbo-frame="library-list">
+                        {{ tag }}
+                    </a>
+                </li>
+            {% endfor %}
+        </ul>
+    </nav>
+</details>
+</turbo-frame>
