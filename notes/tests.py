@@ -54,13 +54,13 @@ class TestGraftApiDashboardView(TestCase):
 
     def test_get_no_items(self):
         self.tearDown()
-        with self.assertNumQueries(5):
+        with self.assertNumQueries(4):
             self.resp = self.client.get(self.url)
         self.assertEqual(self.resp.context["total_projects"], 0)
         self.assertEqual(self.resp.context["total_notes"], 0)
 
     def test_get(self):
-        with self.assertNumQueries(5):
+        with self.assertNumQueries(4):
             self.resp = self.client.get(self.url)
         self.assertContains(self.resp, "Total")
         self.assertEqual(self.resp.context["total_projects"], len(self.items))

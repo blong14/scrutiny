@@ -19,7 +19,7 @@ class TagListView(auth.LoginRequiredMixin, generic.ListView):
         return self.model.objects.filter(user=self.request.user).order_by(*self.order)
 
 
-class PocketListView(generic.ListView):
+class PocketListView(auth.LoginRequiredMixin, generic.ListView):
     context_object_name = "items"
     model = Article
     order = ["-created_at"]

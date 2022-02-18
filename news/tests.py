@@ -53,7 +53,7 @@ class TestApiDashboardView(TestCase):
 
     def test_get_no_items(self):
         self.tearDown()
-        with self.assertNumQueries(6):
+        with self.assertNumQueries(5):
             self.resp = self.client.get(self.url)
         self.assertEqual(self.resp.context["total"], 0)
         self.assertEqual(self.resp.context["new_today"], 0)
@@ -61,7 +61,7 @@ class TestApiDashboardView(TestCase):
         self.assertEqual(self.resp.context["max_score_slug"], "")
 
     def test_get(self):
-        with self.assertNumQueries(6):
+        with self.assertNumQueries(5):
             self.resp = self.client.get(self.url)
         self.assertContains(self.resp, "Total")
         self.assertEqual(self.resp.context["total"], len(self.items))
@@ -199,13 +199,13 @@ class TestApiListView(TestCase):
 
     def test_no_items(self) -> None:
         self.tearDown()
-        with self.assertNumQueries(2):
+        with self.assertNumQueries(1):
             self.response = self.client.get(path=self.url, format="json")
         self.assertEqual(self.response.status_code, 200)
         self.assertEqual(self.response.json()["count"], 0)
 
     def test_items(self) -> None:
-        with self.assertNumQueries(4):
+        with self.assertNumQueries(3):
             self.response = self.client.get(path=self.url, format="json")
         self.assertEqual(self.response.status_code, 200)
         self.assertEqual(self.response.json()["count"], len(self.items))

@@ -3,6 +3,7 @@
     <summary>
         Filter by
     </summary>
+    {% if items %}
     <nav>
         <ul>
             {% for tag in items %}
@@ -17,5 +18,8 @@
             {% endfor %}
         </ul>
     </nav>
+    {% else %}
+        <p>No items.</p>
+    {% endif %}
 </details>
 </turbo-frame>

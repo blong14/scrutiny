@@ -20,7 +20,7 @@ class TestJobsStatusView(TestCase):
         self.model.objects.all().delete()
 
     def test_get(self):
-        with self.assertNumQueries(2):
+        with self.assertNumQueries(1):
             self.resp = self.client.get(f"{self.url}?name=hackernews")
         self.assertContains(self.resp, "data-last-sync")
         self.assertEqual(self.resp.context["last_sync"], self.item.synced_at)
