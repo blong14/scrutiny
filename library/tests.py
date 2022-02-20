@@ -87,12 +87,8 @@ class TestListView(ScrutinyTestListView):
     def test_items(self) -> None:
         self.response = self.client.get(self.url)
         self.assertEqual(self.response.status_code, 200)
-        self.assertEqual(
-            len(self.response.context["items"]), len(self.items)
-        )
-        self.assertListResponseContains(
-            [item.resolved_title for item in self.items]
-        )
+        self.assertEqual(len(self.response.context["items"]), len(self.items))
+        self.assertListResponseContains([item.resolved_title for item in self.items])
 
 
 class TestTagListView(ScrutinyTestListView):
@@ -122,9 +118,5 @@ class TestTagListView(ScrutinyTestListView):
     def test_items(self) -> None:
         self.response = self.client.get(self.url)
         self.assertEqual(self.response.status_code, 200)
-        self.assertEqual(
-            len(self.response.context["items"]), len(self.items)
-        )
-        self.assertListResponseContains(
-            [item.value for item in self.items]
-        )
+        self.assertEqual(len(self.response.context["items"]), len(self.items))
+        self.assertListResponseContains([item.value for item in self.items])

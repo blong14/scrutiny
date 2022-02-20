@@ -2,9 +2,14 @@ from django.contrib import admin
 from django.urls import include, path
 
 from jobs.views import JobsApiUpdateView, JobsStatusView
-from library.views import IndexView, PocketListView, TagListView
+from library.views import IndexView, ArticleListView, ArticleMiniListView, TagListView
 from news.views import NewsApiDashboardView, NewsApiListView, NewsListView
-from notes.views import GraftApiDashboardView, GraftListView
+from notes.views import (
+    ProjectDashboardView,
+    ProjectDetailView,
+    ProjectIndexView,
+    ProjectListView,
+)
 from scrutiny.views import ScrutinyAboutView, ScrutinyIndexView
 
 urlpatterns = [
@@ -15,9 +20,20 @@ urlpatterns = [
     path("about/", ScrutinyAboutView.as_view(), name="scrutiny.about"),
     path("news/", NewsListView.as_view(), name="news.list_view"),
     path("library/", IndexView.as_view(), name="library.index_view"),
-    path("library/list/", PocketListView.as_view(), name="library.list_view"),
+    path("library/list/", ArticleListView.as_view(), name="library.list_view"),
+    path(
+        "library/mini-list/",
+        ArticleMiniListView.as_view(),
+        name="library.mini_list_view",
+    ),
     path("library/tags/", TagListView.as_view(), name="library.tag_view"),
-    path("notes/", GraftListView.as_view(), name="notes.list_view"),
+    path("notes/", ProjectIndexView.as_view(), name="notes.index_view"),
+    path("notes/list/", ProjectListView.as_view(), name="notes.list_view"),
+    path(
+        "notes/detail/<slug:slug>/",
+        ProjectDetailView.as_view(),
+        name="notes.detail_view",
+    ),
     path("api/jobs/status/", JobsStatusView.as_view(), name="jobs_api.dashboard"),
     path(
         "api/jobs/<slug:name>/",
@@ -30,7 +46,7 @@ urlpatterns = [
     ),
     path(
         "api/notes/dashboard/",
-        GraftApiDashboardView.as_view(),
+        ProjectDashboardView.as_view(),
         name="notes_api.dashboard",
     ),
 ]
