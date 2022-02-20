@@ -1,97 +1,40 @@
 import asyncio
 import logging
 import random
-from typing import Any, Callable, List, Optional, Tuple, Type, TypeVar, Union, overload
+from typing import Any, List, Tuple
 
 import aiohttp
 from asgiref.sync import sync_to_async
 from django.core.management.base import BaseCommand
-from pydantic.dataclasses import dataclass as pyd_dataclass
-from pydantic.fields import Field, FieldInfo
+from pydantic.dataclasses import dataclass
 
 from notes.models import Note, Project
 
 
 logger = logging.getLogger(__name__)
-_T = TypeVar("_T")
 
 
-def __dataclass_transform__(
-    *,
-    eq_default: bool = True,
-    order_default: bool = False,
-    kw_only_default: bool = False,
-    field_descriptors: Tuple[Union[type, Callable[..., Any]], ...] = (()),
-) -> Callable[[_T], _T]:
-    return lambda a: a
-
-
-@__dataclass_transform__(kw_only_default=True, field_descriptors=(Field, FieldInfo))
-@overload
-def dataclass(
-    *,
-    init: bool = True,
-    repr: bool = True,
-    eq: bool = True,
-    order: bool = False,
-    unsafe_hash: bool = False,
-    frozen: bool = False,
-    config: Type[Any] = None,
-) -> Callable[[Type[_T]], Type[_T]]:  # type: ignore
-    ...
-
-
-@__dataclass_transform__(kw_only_default=True, field_descriptors=(Field, FieldInfo))
-@overload
-def dataclass(
-    _cls: Type[_T],
-    *,
-    init: bool = True,
-    repr: bool = True,
-    eq: bool = True,
-    order: bool = False,
-    unsafe_hash: bool = False,
-    frozen: bool = False,
-    config: Type[Any] = None,
-) -> Type[_T]:
-    ...
-
-
-@__dataclass_transform__(kw_only_default=True, field_descriptors=(Field, FieldInfo))
-def dataclass(
-    cls: Optional[Type[_T]] = None,
-    *,
-    init: bool = True,
-    repr: bool = True,
-    eq: bool = True,
-    order: bool = False,
-    unsafe_hash: bool = False,
-    frozen: bool = False,
-    config: Type[Any] = None,
-) -> Union[Callable[[Type[Any]], Type[_T]], Type[_T]]:
-    return pyd_dataclass(cls, init=init, repr=repr, eq=eq, order=order, unsafe_hash=unsafe_hash, frozen=frozen, config=config)  # type: ignore
-
-
-@dataclass(frozen=True, init=True)
+@dataclass
 class HttpRequest:
     session: Any
     token: str = ""
     base_url: str = "https://api.graftapp.co"
     read_timeout: float = 10.0
     user: str = "14benj@gmail.com"
-    password: str = ""
+    password: str = "Xg00rgO2bRpe"
 
+    @property
     def header(self) -> dict:
         return {"Authorization": f"Bearer {self.token}"}
 
 
-@dataclass(frozen=True)
+@dataclass
 class User:
     token: str
     email: str
 
 
-@dataclass(frozen=True)
+@dataclass
 class Response:
     data: dict
     success: bool = False
@@ -103,7 +46,7 @@ ERROR_RESPONSE = Response(data=dict(), success=False)
 
 async def _request(req: HttpRequest, method: str, url: str, **kwargs) -> Response:
     try:
-        kwargs |= dict(headers=req.header())
+        kwargs |= dict(headers=req.header)
         async with req.session.request(method, url, ssl=True, **kwargs) as resp:
             data = await resp.json()
     except asyncio.TimeoutError:

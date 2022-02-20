@@ -1,13 +1,13 @@
-<article>
-    <ul>
-        {% for item in items %}
-            <li>
+<section>
+    {% for item in items %}
+        <aside>
+            <h4>
                 <a title="read notes"
-                   href="{% url 'notes.list_view' %}?slugs={{ item.slug }}"
-                   data-turbo-frame="notes-detail">
+                   href="{% url 'notes.detail_view' item.slug %}"
+                   data-turbo-frame="notes-container">
                     {{ item.title }}
                 </a>
-            </li>
-        {% endfor %}
-    </ul>
-</article>
+            </h4>
+        </aside>
+    {% endfor %}
+</section>

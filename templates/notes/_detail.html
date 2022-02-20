@@ -1,94 +1,73 @@
 <turbo-frame id="notes-detail">
-{% if items %}
-    <article data-slug="{{ items.0.slug }}">
-        <main>
-            <header>
-                <h1>
-                    <a href="https://www.graftapp.co/p/{{ items.0.slug }}/graph"
-                       target="_blank"
-                       title="Read">{{ items.0.title }}</a>
-                </h1>
-            </header>
-            <details>
-                <summary>
-                    Articles
-                </summary>
-                {% if items.0.articles %}
-                    {% for article in items.0.articles.all %}
-                        {% include "library/_detail.html" with item=article %}
-                    {% endfor %}
-                {% else %}
+<article data-slug="{{ items.0.slug }}">
+    <main>
+        <header>
+            <h1>
+                <a href="https://www.graftapp.co/p/{{ items.0.slug }}/graph"
+                   target="_blank"
+                   title="Read">{{ items.0.title }}</a>
+            </h1>
+        </header>
+        <details>
+            <summary>
+                Articles
+            </summary>
+            {% if items.0.articles %}
+                {% for article in items.0.articles.all %}
+                    {% include "library/_detail.html" with item=article %}
+                {% endfor %}
+            {% else %}
+                <p>
+                    No articles.
+                </p>
+            {% endif %}
+            <a src="{% url 'notes.detail_view' %}">Link Article</a>
+        </details>
+        <details>
+            <summary>
+                Notes
+            </summary>
+            {% for note in items.0.notes.all %}
+                {% if note.body %}
+                    <article data-slug="{{ note.slug }}">
+                        <p>
+                            {{ note.body | safe }}
+                        </p>
+                        <small>
+                            <time>{{ note.created_at }}</time>
+                            By {{ request.user }}
+                        </small>
+                    </article>
+                {% endif %}
+            {% endfor %}
+            <form action="{% url 'library.list_view' %}"
+                  method="get"
+                  data-turbo-frame="library-list">
+                {% csrf_token %}
+                {% if error_message %}
                     <p>
-                        No articles.
+                        <strong>{{ error_message }}</strong>
                     </p>
                 {% endif %}
-                <details>
-                    <summary>
-                        Link Article
-                    </summary>
-                    <form action="{% url 'library.list_view' %}"
-                          method="get"
-                          data-turbo-frame="library-list">
-                        {% csrf_token %}
-                        {% if error_message %}
-                            <p>
-                                <strong>{{ error_message }}</strong>
-                            </p>
-                        {% endif %}
-                        <section>
-                            {% include "library/_search.html" %}
-                        </section>
-                        <turbo-frame id="library-list" src="{% url 'library.list_view' %}?next=1"></turbo-frame>
-                        <button type="submit">Save</button>
-                    </form>
-                </details>
-            </details>
-            <details>
-                <summary>
-                    Notes
-                </summary>
-                {% for note in items.0.notes.all %}
-                    {% if note.body %}
-                        <article data-slug="{{ note.slug }}">
-                            <p>
-                                {{ note.body | safe }}
-                            </p>
-                            <small>
-                                <time>{{ note.created_at }}</time>
-                                By {{ request.user }}
-                            </small>
-                        </article>
-                    {% endif %}
-                {% endfor %}
-                <form action="{% url 'library.list_view' %}"
-                      method="get"
-                      data-turbo-frame="library-list">
-                    {% csrf_token %}
-                    {% if error_message %}
-                        <p>
-                            <strong>{{ error_message }}</strong>
-                        </p>
-                    {% endif %}
-                    <header>
-                        <h3>Add Note</h3>
-                    </header>
-                    <label for="title">Title</label>
-                    <input type="text" id="title" name="title" size="20">
-                    <label for="body">Body</label>
-                    <textarea cols="40" rows="5" id="body"></textarea>
-                    <label for="article">Article</label>
-                    <select id="article">
-                        <option value="option1">
-                            option1
-                        </option>
-                        <option value="option2">
-                            option2
-                        </option>
-                    </select>
-                    <button type="submit">Save</button>
-                </form>
-            </details>
-        </main>
-    </article>
-{% endif %}
+                <header>
+                    <h3>Add Note</h3>
+                </header>
+                <label for="title">Title</label>
+                <input type="text" id="title" name="title" size="20">
+                <label for="body">Body</label>
+                <textarea cols="40" rows="5" id="body"></textarea>
+                <label for="article">Article</label>
+                <select id="article">
+                    <option value="option1">
+                        option1
+                    </option>
+                    <option value="option2">
+                        option2
+                    </option>
+                </select>
+                <button type="submit">Save</button>
+            </form>
+        </details>
+    </main>
+</article>
 </turbo-frame>

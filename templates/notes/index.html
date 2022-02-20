@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block page_content %}
+    <section>
+        <h1>My Projects</h1>
+    </section>
+    <turbo-frame id="notes-dashboard" src="{% url 'notes_api.dashboard' %}">
+    </turbo-frame>
+    <turbo-frame id="notes-container" src="{% url 'notes.list_view' %}?page=1">
+    <style>
+        footer {
+            top: 100vh;
+            position: fixed;
+            width: 100%;
+        }
+    </style>
+    </turbo-frame>
+{% endblock %}
