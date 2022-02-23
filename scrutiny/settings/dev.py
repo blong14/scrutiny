@@ -164,7 +164,7 @@ JWT_PUBLISH_TOKEN = jwt.encode(
 
 LOGGING = {
     "version": 1,
-    "disable_existing_loggers": False,
+    "disable_existing_loggers": True,
     "handlers": {
         "console": {
             "class": "logging.StreamHandler",
@@ -175,10 +175,6 @@ LOGGING = {
             "level": "DEBUG",
             "handlers": ["console"],
         },
-    },
-    "root": {
-        "handlers": ["console"],
-        "level": "INFO",
     },
 }
 
