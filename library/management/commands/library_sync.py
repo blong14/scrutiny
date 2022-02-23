@@ -1,6 +1,6 @@
 import asyncio
 import logging
-from typing import Any, List
+from typing import Any, Awaitable, List
 
 import aiohttp
 from asgiref.sync import sync_to_async
@@ -67,6 +67,7 @@ async def articles(req: HttpRequest, usr: UserSocialAuth) -> List[Article]:
     if not resp.success:
         return []
     new_articles: List[Article] = []
+    future_articles = []
     for _, item in resp.data.get("list", {}).items():
         tags = item.get("tags")
         article = Article(
@@ -77,13 +78,36 @@ async def articles(req: HttpRequest, usr: UserSocialAuth) -> List[Article]:
             listen_duration_estimate=item.get("listen_duration_estimate"),
             resolved_title=item.get("resolved_title"),
         )
-        article.save()
-        for t in tags:
-            tag, _ = await sync_to_async(
-                Tag.objects.update_or_create,
-                thread_sensitive=True,
-            )(defaults={"value": t, "user": usr.user}, value=t)
-            article.tags.add(tag)
+
+        def save(art, tgs):
+            art.save()
+            return art, tgs
+
+        future_articles.append(
+            asyncio.ensure_future(
+                sync_to_async(save, thread_sensitive=True)(article, tags),
+            ),
+        )
+    all_tags = set()
+    for article, tags in await asyncio.gather(*future_articles):
+        future_tags: List[Awaitable] = []
+        for tag in tags:
+            if tag in all_tags:
+                article.tags.add(tag, bulk=True)
+                continue
+            future_tags.append(
+                asyncio.ensure_future(
+                    sync_to_async(
+                        Tag.objects.update_or_create,
+                        thread_sensitive=True,
+                    )(defaults={"value": tag, "user": usr.user}, value=tag),
+                )
+            )
+        tags_for_article: List[Tag] = []
+        for tag, _ in await asyncio.gather(*future_tags):
+            all_tags.add(tag)
+            tags_for_article.append(tag)
+        article.tags.set(tags_for_article)
         new_articles.append(article)
     return new_articles
 

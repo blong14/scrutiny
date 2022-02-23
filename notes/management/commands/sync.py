@@ -1,10 +1,10 @@
 import asyncio
 import logging
-import random
 from typing import Any, List, Tuple
 
 import aiohttp
 from asgiref.sync import sync_to_async
+from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand
 from pydantic.dataclasses import dataclass
 
@@ -26,12 +26,6 @@ class HttpRequest:
     @property
     def header(self) -> dict:
         return {"Authorization": f"Bearer {self.token}"}
-
-
-@dataclass
-class User:
-    token: str
-    email: str
 
 
 @dataclass
@@ -69,20 +63,7 @@ async def get_token(session: aiohttp.ClientSession) -> Response:
         f"{req.base_url}/v1/auth/login/",
         json=dict(email=req.user, password=req.password),
     )
-    return resp
-
-
-async def user(req: HttpRequest) -> User:
-    resp = await _request(
-        req,
-        aiohttp.hdrs.METH_POST,
-        f"{req.base_url}/v1/auth/login/",
-        json=dict(email=req.user, password=req.password),
-    )
-    return User(
-        token=resp.data.get("access_token", ""),
-        email=resp.data.get("user", dict()).get("email", ""),
-    )
+    return resp.data.get("access_token")
 
 
 async def create_project_with_notes(
@@ -94,10 +75,9 @@ async def create_project_with_notes(
         f"{req.base_url}/v1/projects/{kwargs.get('slug')}/notes/",
     )
     prj = Project(**kwargs)
-    logger.info(resp.data.get("items"))
+    await sync_to_async(prj.save, thread_sensitive=True)()
     notes = [
         Note(
-            id=random.randint(1, 1_000_000),
             project_id=prj.id,
             slug=n["id"],
             title=n["title"],
@@ -108,7 +88,7 @@ async def create_project_with_notes(
     return prj, notes
 
 
-async def projects(req: HttpRequest) -> List[Tuple[Project, List[Note]]]:
+async def projects(req: HttpRequest, usr: User) -> List[Tuple[Project, List[Note]]]:
     resp = await _request(req, aiohttp.hdrs.METH_GET, f"{req.base_url}/v1/projects/")
     if not resp.success:
         return []
@@ -116,9 +96,8 @@ async def projects(req: HttpRequest) -> List[Tuple[Project, List[Note]]]:
     future_projects = [
         asyncio.ensure_future(
             create_project_with_notes(
-                # TODO: remove random int hack
                 req,
-                id=random.randint(1, 1_000_000),
+                user=usr,
                 slug=data.get("id"),
                 title=data.get("title"),
             ),
@@ -131,21 +110,26 @@ async def projects(req: HttpRequest) -> List[Tuple[Project, List[Note]]]:
 
 
 async def main():
+    await sync_to_async(Project.objects.all().delete, thread_sensitive=True)()
+    await sync_to_async(Note.objects.all().delete, thread_sensitive=True)()
+    usr = await sync_to_async(
+        User.objects.filter(username="14benj@gmail.com", is_superuser=False).first,
+        thread_sensitive=True,
+    )()
     async with aiohttp.ClientSession(
         trust_env=False,
         raise_for_status=True,
         timeout=aiohttp.ClientTimeout(total=READ_TIMEOUT),
     ) as session:
         logger.info("starting requests...")
-        usr = await user(HttpRequest(session=session, token=""))
+        token = await get_token(session)
         logger.info("requesting data...")
         tasks = [
-            asyncio.ensure_future(fn(HttpRequest(session=session, token=usr.token)))
+            asyncio.ensure_future(fn(HttpRequest(session=session, token=token), usr))
             for fn in (projects,)
         ]
         for data in await asyncio.gather(*tasks):
-            for project, notes in data:
-                await sync_to_async(project.save, thread_sensitive=True)()
+            for _, notes in data:
                 await sync_to_async(Note.objects.bulk_create, thread_sensitive=True)(
                     notes
                 )
