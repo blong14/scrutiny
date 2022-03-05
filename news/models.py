@@ -1,99 +1,89 @@
-import logging
-import uuid
-from typing import List, Optional
+from collections.abc import KeysView
+from typing import Any, Callable, Dict, List, Optional
 
-from django.db import models
-from django.urls import reverse
-from opentelemetry import trace
-
-
-logger = logging.getLogger(__name__)
-tracer = trace.get_tracer(__name__)
+import feedparser as default_parser
+from pydantic import AnyHttpUrl
+from pydantic.dataclasses import dataclass
 
 
-class Event(models.Model):
-    EVENT_TYPES = (("STORY_ADDED", "story_added"),)
-
-    id = models.BigAutoField(primary_key=True, serialize=True)
-    event_id = models.UUIDField(default=uuid.uuid4, editable=False)
-    event_type = models.CharField(
-        choices=EVENT_TYPES, default="STORY_ADDED", max_length=32
-    )
-    event_data = models.JSONField(null=False)
-    created_at = models.DateTimeField(auto_now_add=True)
+Parser = Callable[[str], Any]
 
 
-class Item(models.Model):
-    """Item models an "item" from news algolia search API
-    Example:
-        https://hn.algolia.com/api
-        {
-            id: 1,
-            created_at: "2006-10-09T18:21:51.000Z",
-            author: "pg",
-            title: "Y Combinator",
-            url: "http://ycombinator.com",
-            text: null,
-            points: 57,
-            parent_id: null,
-            children: [
-                {
-                    id: 2,
-                    created_at: "2006-10-09T18:21:51.000Z",
-                    author: "pg",
-                    title: "Y Combinator",
-                    url: "http://ycombinator.com",
-                    text: null,
-                    points: 57,
-                    parent_id: 1,
-                    children: []
-                },
-            ]
-        }
-    """
+@dataclass(frozen=True)
+class Feed:
+    id: str
+    title: str
+    url: AnyHttpUrl
 
-    module = __name__
-    ITEM_TYPES = (
-        ("STORY", "story"),
-        ("COMMENT", "comment"),
-    )
 
-    class Meta:
-        get_latest_by = "points"
-        ordering = ["-added_at"]
+_active_feeds: Dict[str, Feed] = {}
 
-    id = models.BigAutoField(primary_key=True, serialize=True)
-    author = models.CharField(max_length=256)
-    parent = models.ForeignKey(
-        to="Item", on_delete=models.CASCADE, null=True, related_name="children"
-    )
-    points = models.IntegerField()
-    slug = models.CharField(max_length=36)
-    text = models.TextField(null=True, default="")
-    title = models.CharField(max_length=256)
-    type = models.CharField(choices=ITEM_TYPES, default="STORY", max_length=32)
-    url = models.URLField()
-    created_at = models.DateTimeField()
-    added_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
 
-    @property
-    def is_comment(self) -> bool:
-        return self.type == "COMMENT"
+class FeedRegistry:
+    @staticmethod
+    def get(feed: str) -> Optional[Feed]:
+        return _active_feeds.get(feed)
 
     @staticmethod
-    def serializable_fields() -> List[str]:
-        return [field.name for field in Item._meta.get_fields()]
+    def titles() -> KeysView:
+        return _active_feeds.keys()
 
     @staticmethod
-    def max_score_item() -> Optional["Item"]:
-        with tracer.start_as_current_span(f"{Item.module}.max_score_item"):
-            item_with_max = None
-            try:
-                item_with_max = Item.objects.latest("points")
-            except Item.DoesNotExist as e:
-                logger.error("unable to find max score %s", e)
-            return item_with_max
+    def register_feed(feed: str):
+        def wrapper(f: Feed):
+            _active_feeds[feed] = f
+            return f
 
-    def get_absolute_url(self) -> str:
-        return f"{reverse('news.list_view')}?slugs={str(self.slug)}"
+        return wrapper
+
+
+@FeedRegistry.register_feed("hackernews")
+class HackerNewsFeed(Feed):
+    id: str = "hackernews"
+    title: str = "Hacker News"
+    url: AnyHttpUrl = "https://hnrss.org/frontpage"
+
+
+@FeedRegistry.register_feed("slashdot")
+class SlashDotFeed(Feed):
+    id: str = "slashdot"
+    title: str = "SlashDot"
+    url: AnyHttpUrl = "http://rss.slashdot.org/Slashdot/slashdotDevelopers"  # noqa
+
+
+@FeedRegistry.register_feed("nautilus")
+class NautilusFeed(Feed):
+    id: str = "nautilus"
+    title: str = "Nautilus"
+    url: AnyHttpUrl = "https://nautil.us/feed"
+
+
+@FeedRegistry.register_feed("bbcnews")  # noqa
+class BBCNewsFeed(Feed):
+    id: str = "bbcnews"  # noqa
+    title: str = "BBC News"
+    url: AnyHttpUrl = "https://feeds.bbci.co.uk/news/rss.xml"
+
+
+@FeedRegistry.register_feed("nature")
+class NatureFeed(Feed):
+    id: str = "nature"
+    title: str = "Nature"
+    url: AnyHttpUrl = "http://feeds.nature.com/nature/rss/current"  # noqa
+
+
+@dataclass(init=True)
+class FeedResponse:
+    entries: List[dict]
+
+
+def parse_feed(
+    context: dict, feed: Feed, parser: Parser = default_parser.parse, limit: int = 10
+) -> dict:
+    resp = FeedResponse(entries=getattr(parser(feed.url), "entries"))
+    context |= {
+        "id": feed.id,
+        "title": feed.title,
+        "items": resp.entries[0:limit],
+    }
+    return context

@@ -23,7 +23,11 @@
 .deps: .deps/lint .deps/migrate
 	@touch $@
 
-image: .deps/lint .dockerignore Dockerfile Makefile
+build:
+	@docker build -f docker/DockerfileScrutiny -t blong14/scrutiny:latest .
+	@touch docker/DockerfileScrutiny
+
+image: build
 	@docker push blong14/scrutiny:latest
 	@docker images --format="{{json .}}" --no-trunc blong14/scrutiny:latest > $@
 
@@ -62,7 +66,7 @@ cover-ci:
 	COVERAGE_PROCESS_START=$(PWD)/.coveragerc COVERAGE_FILE=$(PWD)/.coverage PYTHONPATH=$(PWD) pytest --durations=0
 	@coverage xml
 
-run: test
+run:
 	@python manage.py runserver 0.0.0.0:8089 --settings=scrutiny.settings.dev
 
 seed: .deps

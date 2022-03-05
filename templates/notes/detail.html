@@ -1,9 +1,5 @@
-<turbo-frame id="notes-container">
+<turbo-frame id="notes-detail-container">
 <article data-slug="{{ item.slug }}">
-    <main>
-        <nav>
-            <a href="{% url 'notes.list_view' %}"><< Back</a>
-        </nav>
         <header>
             <h3>
                 <a href="https://www.graftapp.co/p/{{ item.slug }}/graph"
@@ -15,6 +11,5 @@
         <ul>
             {% for note in item.notes.all %}<li>{{ note.title }}</li>{% endfor %}
         </ul>
-    </main>
 </article>
 </turbo-frame>

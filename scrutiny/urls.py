@@ -3,7 +3,7 @@ from django.urls import include, path
 
 from jobs.views import JobsApiUpdateView, JobsStatusView
 from library.views import IndexView, ArticleListView, ArticleMiniListView, TagListView
-from news.views import NewsApiDashboardView, NewsApiListView, NewsListView
+from news.views import NewsFeedView, NewsListView
 from notes.views import (
     ProjectDashboardView,
     ProjectDetailView,
@@ -19,6 +19,7 @@ urlpatterns = [
     path("", ScrutinyIndexView.as_view(), name="scrutiny.index"),
     path("about/", ScrutinyAboutView.as_view(), name="scrutiny.about"),
     path("news/", NewsListView.as_view(), name="news.list_view"),
+    path("news/feeds/", NewsFeedView.as_view(), name="news.feed_view"),
     path("library/", IndexView.as_view(), name="library.index_view"),
     path("library/list/", ArticleListView.as_view(), name="library.list_view"),
     path(
@@ -39,10 +40,6 @@ urlpatterns = [
         "api/jobs/<slug:name>/",
         JobsApiUpdateView.as_view(),
         name="jobs_api.update_view",
-    ),
-    path("api/news/", NewsApiListView.as_view(), name="news_api.list_view"),
-    path(
-        "api/news/dashboard/", NewsApiDashboardView.as_view(), name="news_api.dashboard"
     ),
     path(
         "api/notes/dashboard/",

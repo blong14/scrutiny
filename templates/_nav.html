@@ -1,6 +1,9 @@
 <nav>
     <ul>
         {% if user.is_authenticated %}
+            <li>
+                <a href="{% url 'scrutiny.index' %}" title="Home">Home</a>
+            </li>
             {% if user.is_superuser %}
                 <li>
                     <a href="{% url 'admin:index' %}" title="Admin">Admin</a>

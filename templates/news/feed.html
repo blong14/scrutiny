@@ -1,0 +1,12 @@
+<turbo-frame id="feed-container" data-feed="{{ id }}">
+<article>
+    <h4>{{ title }}</h4>
+    <ol>
+        {% for item in items %}
+            <li>
+                <a title="Read Item" href="{{ item.link }}" target="_blank">{{ item.title }}</a>
+            </li>
+        {% endfor %}
+    </ol>
+</article>
+</turbo-frame>

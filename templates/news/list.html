@@ -1,23 +1,27 @@
 {% extends "base.html" %}
 {% block page_content %}
-    <section>
-        <h1>Hacker News Top Stories</h1>
-    </section>
-    <section>
-        <turbo-frame id="news-dashboard" src="{% url 'news_api.dashboard' %}">
-        {% include "news/dashboard.html" %}
-        </turbo-frame>
-        <turbo-frame id="jobs-dashboard" src="{% url 'jobs_api.dashboard' %}?name=hackernews">
-        {% include "jobs/dashboard.html" %}
-        </turbo-frame>
-    </section>
-    <turbo-frame id="news">
-    {% include "news/_list.html" with items=items %}
-    </turbo-frame>
-    {% if sse %}
-        <script>{% include "news/list.js" %}</script>
-    {% endif %}
-    {% if items %}
-        {% include "news/_detail.html" with items=items %}
-    {% endif %}
+    <main>
+        <section>
+            <h1>Current Feeds</h1>
+        </section>
+        <section>
+            <nav id="most-recent">
+                <ul>
+                    {% for item in items %}
+                        <li data-feed="{{ item }}">
+                            <a title="Read News"
+                               href="{% url 'news.feed_view' %}?feed={{ item }}"
+                               data-turbo-frame="feed-container">
+                                {{ item.title }}
+                            </a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </nav>
+        </section>
+        <section>
+            <turbo-frame id="feed-container" src="{% url 'news.feed_view' %}?feed=hackernews">
+            </turbo-frame>
+        </section>
+    </main>
 {% endblock %}

@@ -1,13 +1,22 @@
 <section>
-    {% for item in items %}
-        <aside>
-            <h4>
-                <a title="read notes"
-                   href="{% url 'notes.detail_view' item.slug %}"
-                   data-turbo-frame="notes-container">
-                    {{ item.title }}
-                </a>
-            </h4>
-        </aside>
-    {% endfor %}
+    <details open="">
+        <summary>
+            Filter by Project
+        </summary>
+        <nav>
+            <ul>
+                {% for item in items %}
+                    <li>
+                        <a title="read notes"
+                           href="{% url 'notes.detail_view' item.slug %}"
+                           data-turbo-frame="notes-detail-container">
+                            {{ item.title }}
+                        </a>
+                    </li>
+                {% endfor %}
+            </ul>
+        </nav>
+    </details>
 </section>
+<turbo-frame id="notes-detail-container">
+</turbo-frame>
