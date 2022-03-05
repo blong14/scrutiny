@@ -1,29 +1,27 @@
 <footer>
-        <nav>
-            <ul>
+    <nav>
+        <ul>
+            <li>
+                <a class="footer-link" href="{% url 'scrutiny.index' %}" title="Home">Home</a>
+            </li>
+            {% if user.is_superuser %}
                 <li>
-                    <a class="footer-link" href="{% url 'scrutiny.index' %}" title="Home">
-                        Home
-                    </a>
+                    <a class="footer-link" href="{% url 'admin:index' %}" title="Admin">Admin</a>
                 </li>
-                {% if user.is_superuser %}
-                    <li>
-                        <a class="footer-link" href="{% url 'admin:index' %}" title="Admin">Admin</a>
-                    </li>
+            {% endif %}
+            <li>
+                <a class="footer-link" href="{% url 'scrutiny.about' %}" title="About">About</a>
+            </li>
+            <li>
+                {% if not user.is_authenticated %}
+                    <a class="footer-link"
+                       href="{% url "social:begin" "pocket" %}"
+                       title="Login">Login</a>
+                {% else %}
+                    <a class="footer-link" href="{% url 'logout' %}" title="Logout">Logout</a>
                 {% endif %}
-                <li>
-                    <a class="footer-link" href="{% url 'scrutiny.about' %}" title="About">About</a>
-                </li>
-                <li>
-                    {% if not user.is_authenticated %}
-                        <a class="footer-link"
-                           href="{% url "social:begin" "pocket" %}"
-                           title="Login">Login</a>
-                    {% else %}
-                        <a class="footer-link" href="{% url 'logout' %}" title="Logout">Logout</a>
-                    {% endif %}
-                </li>
-            </ul>
-        </nav>
-        <small>Copyright © Scrutiny {% now "Y" %}</small>
+            </li>
+        </ul>
+    </nav>
+    <small>Copyright © Scrutiny {% now "Y" %}</small>
 </footer>

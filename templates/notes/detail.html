@@ -1,15 +1,15 @@
 <turbo-frame id="notes-detail-container">
 <article data-slug="{{ item.slug }}">
-        <header>
-            <h3>
-                <a href="https://www.graftapp.co/p/{{ item.slug }}/graph"
-                   target="_blank"
-                   title="Graph View">{{ item.title }}</a>
-            </h3>
-        </header>
-        <h4>Notes</h4>
-        <ul>
-            {% for note in item.notes.all %}<li>{{ note.title }}</li>{% endfor %}
-        </ul>
+    <header>
+        <h3>
+            <a href="https://www.graftapp.co/p/{{ item.slug }}/graph"
+               target="_blank"
+               title="Graph View">{{ item.title }}</a>
+        </h3>
+    </header>
+    <h4>Notes</h4>
+    <ul>
+        {% for note in item.notes.all %}<li>{{ note.title }}</li>{% endfor %}
+    </ul>
 </article>
 </turbo-frame>
