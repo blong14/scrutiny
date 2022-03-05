@@ -1,11 +1,11 @@
 black==22.1.0
-Django==4.0.2
+Django==4.0.3
 django-cockroachdb==4.0
 djangorestframework==3.13.1
 djlint==0.7.5
 feedparser==6.0.8
-ipython==8.0.1
-locust==2.8.2
+ipython==8.1.1
+locust==2.8.3
 opentelemetry-api==1.9.1
 opentelemetry-sdk==1.9.1
 opentelemetry-exporter-jaeger==1.9.1
