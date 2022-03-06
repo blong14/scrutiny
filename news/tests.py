@@ -53,8 +53,8 @@ class TestFeedView(TestCase):
     @mock.patch("news.views.default_parser.parse")
     def test_feeds(self, mock_parse) -> None:
         feeds = {
-            feed: f"{reverse('news.feed_view')}?feed={feed}"
-            for feed in FeedRegistry.titles()
+            feed.id: f"{reverse('news.feed_view')}?feed={feed.id}"
+            for feed in FeedRegistry.feeds()
         }
         for feed, url in feeds.items():
             mock_parse.return_value = FeedResponse(entries=[{"title": "hello"}])  # noqa
