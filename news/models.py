@@ -25,7 +25,7 @@ class FeedRegistry:
 
     @staticmethod
     def feeds() -> List[Feed]:
-        return [f for _, f in _active_feeds.items()]
+        return [f for f in _active_feeds.values()]
 
     @staticmethod
     def register_feed(feed: str):

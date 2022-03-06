@@ -7,12 +7,12 @@
         <section>
             <nav id="most-recent">
                 <ul>
-                    {% for item in items %}
-                        <li data-feed="{{ item }}">
+                    {% for id, title in items.items %}
+                        <li data-feed="{{ id }}">
                             <a title="Read News"
-                               href="{% url 'news.feed_view' %}?feed={{ item }}"
+                               href="{% url 'news.feed_view' %}?feed={{ id }}"
                                data-turbo-frame="feed-container">
-                                {{ item.title }}
+                                {{ title }}
                             </a>
                         </li>
                     {% endfor %}

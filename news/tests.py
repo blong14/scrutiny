@@ -28,6 +28,7 @@ class TestListView(TestCase):
         self.assertTemplateUsed(self.resp, "news/list.html")
         for feed in FeedRegistry.feeds():
             self.assertContains(self.resp, feed.id)
+            self.assertContains(self.resp, feed.title)
 
 
 class TestFeedView(TestCase):
