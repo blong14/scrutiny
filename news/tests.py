@@ -26,8 +26,8 @@ class TestListView(TestCase):
         self.resp = self.client.get(self.url)
         self.assertEqual(self.resp.status_code, 200)
         self.assertTemplateUsed(self.resp, "news/list.html")
-        for feed in FeedRegistry.titles():
-            self.assertContains(self.resp, feed)
+        for feed in FeedRegistry.feeds():
+            self.assertContains(self.resp, feed.id)
 
 
 class TestFeedView(TestCase):
@@ -53,8 +53,8 @@ class TestFeedView(TestCase):
     @mock.patch("news.views.default_parser.parse")
     def test_feeds(self, mock_parse) -> None:
         feeds = {
-            feed: f"{reverse('news.feed_view')}?feed={feed}"
-            for feed in FeedRegistry.titles()
+            feed.id: f"{reverse('news.feed_view')}?feed={feed.id}"
+            for feed in FeedRegistry.feeds()
         }
         for feed, url in feeds.items():
             mock_parse.return_value = FeedResponse(entries=[{"title": "hello"}])  # noqa

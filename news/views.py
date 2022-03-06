@@ -10,7 +10,7 @@ class NewsListView(auth.LoginRequiredMixin, generic.TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["items"] = FeedRegistry.titles()
+        context["items"] = [f.id for f in FeedRegistry.feeds()]
         return context
 
 

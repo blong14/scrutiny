@@ -1,4 +1,3 @@
-from collections.abc import KeysView
 from typing import Any, Callable, Dict, List, Optional
 
 import feedparser as default_parser
@@ -25,8 +24,8 @@ class FeedRegistry:
         return _active_feeds.get(feed)
 
     @staticmethod
-    def titles() -> KeysView:
-        return _active_feeds.keys()
+    def feeds() -> List[Feed]:
+        return [f for _, f in _active_feeds.items()]
 
     @staticmethod
     def register_feed(feed: str):
@@ -73,7 +72,7 @@ class NatureFeed(Feed):
 
 
 @FeedRegistry.register_feed("rachelbythebay")  # noqa
-class NatureFeed(Feed):
+class RachelByTheBayFeed(Feed):
     id: str = "rachelbythebay"  # noqa
     title: str = "Rachel by the Bay"
     url: AnyHttpUrl = "https://rachelbythebay.com/w/atom.xml"
