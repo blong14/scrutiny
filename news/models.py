@@ -43,6 +43,13 @@ class HackerNewsFeed(Feed):
     url: AnyHttpUrl = "https://hnrss.org/frontpage"
 
 
+@FeedRegistry.register_feed("lobsters")
+class LobstersFeed(Feed):
+    id: str = "lobsters"
+    title: str = "Lobsters"
+    url: AnyHttpUrl = "https://lobste.rs/rss"
+
+
 @FeedRegistry.register_feed("slashdot")
 class SlashDotFeed(Feed):
     id: str = "slashdot"
