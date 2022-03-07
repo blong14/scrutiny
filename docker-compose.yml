@@ -9,17 +9,10 @@ services:
             - "5099:5099"
         volumes:
             - ./Caddyfile:/etc/caddy/Caddyfile
-    varnish:
-        image: varnish:latest
-        volumes:
-            - ./default.vcl:/etc/varnish/default.vcl:ro
-        ports:
-            - "8082:80"
-        depends_on:
-            - web
-            - static
     static:
         image: nginx:latest
+        ports:
+            - "8090:80"
         volumes:
             - ./scrutiny/static:/usr/share/nginx/html
     web:
