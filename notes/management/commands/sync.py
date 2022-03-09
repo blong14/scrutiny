@@ -1,6 +1,6 @@
 import asyncio
 import logging
-from typing import Any, List, Tuple
+from typing import Any, Dict, List
 
 import aiohttp
 from asgiref.sync import sync_to_async
@@ -12,6 +12,14 @@ from notes.models import Note, Project
 
 
 logger = logging.getLogger(__name__)
+
+
+@dataclass
+class Position:
+    project_id: int
+    note_id: str
+    x: float
+    y: float
 
 
 @dataclass
@@ -66,36 +74,65 @@ async def get_token(session: aiohttp.ClientSession) -> Response:
     return resp.data.get("access_token")
 
 
-async def create_project_with_notes(
-    req: HttpRequest, **kwargs
-) -> Tuple[Project, List[Note]]:
+async def get_positions(
+    req: HttpRequest, project: Project, **kwargs
+) -> Dict[str, Position]:
+    resp = await _request(
+        req,
+        aiohttp.hdrs.METH_GET,
+        f"{req.base_url}/v1/projects/{kwargs.get('slug')}/positions/",
+    )
+    positions = {
+        p["note_id"]: Position(
+            project_id=project.id,
+            note_id=p["note_id"],
+            x=p["fx"],
+            y=p["fy"],
+        )
+        for p in resp.data.get("items", [])
+    }
+    return positions
+
+
+async def get_notes(req: HttpRequest, project: Project, **kwargs) -> List[Note]:
     resp = await _request(
         req,
         aiohttp.hdrs.METH_GET,
         f"{req.base_url}/v1/projects/{kwargs.get('slug')}/notes/",
     )
-    prj = Project(**kwargs)
-    await sync_to_async(prj.save, thread_sensitive=True)()
     notes = [
         Note(
-            project_id=prj.id,
+            project_id=project.id,
             slug=n["id"],
             title=n["title"],
             body=n["body"],
         )
         for n in resp.data.get("items", [])
     ]
-    return prj, notes
+    return notes
 
 
-async def projects(req: HttpRequest, usr: User) -> List[Tuple[Project, List[Note]]]:
+async def create_project_with_notes_and_positions(
+    req: HttpRequest, **kwargs
+) -> List[Note]:
+    prj = Project(**kwargs)
+    await sync_to_async(prj.save, thread_sensitive=True)()
+    notes = await get_notes(req, project=prj, **kwargs)
+    positions = await get_positions(req, project=prj, **kwargs)
+    for n in notes:
+        position = positions.get(n.slug)
+        if position:
+            n.position = {"x": position.x, "y": position.y}
+    return notes
+
+
+async def projects(req: HttpRequest, usr: User) -> List[List[Note]]:
     resp = await _request(req, aiohttp.hdrs.METH_GET, f"{req.base_url}/v1/projects/")
     if not resp.success:
         return []
-    logger.info(resp.data.get("items"))
     future_projects = [
         asyncio.ensure_future(
-            create_project_with_notes(
+            create_project_with_notes_and_positions(
                 req,
                 user=usr,
                 slug=data.get("id"),
@@ -104,9 +141,7 @@ async def projects(req: HttpRequest, usr: User) -> List[Tuple[Project, List[Note
         )
         for data in resp.data.get("items", [])
     ]
-    return [
-        (project, notes) for project, notes in await asyncio.gather(*future_projects)
-    ]
+    return [notes for notes in await asyncio.gather(*future_projects)]
 
 
 async def main():
@@ -129,7 +164,7 @@ async def main():
             for fn in (projects,)
         ]
         for data in await asyncio.gather(*tasks):
-            for _, notes in data:
+            for notes in data:
                 await sync_to_async(Note.objects.bulk_create, thread_sensitive=True)(
                     notes
                 )

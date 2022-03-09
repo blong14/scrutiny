@@ -7,6 +7,11 @@
                title="Graph View">{{ item.title }}</a>
         </h3>
     </header>
+    <section>
+        <figure>
+            {{ svg | safe }}
+        </figure>
+    </section>
     <h4>Notes</h4>
     <ul>
         {% for note in item.notes.all %}<li>{{ note.title }}</li>{% endfor %}

@@ -11,9 +11,7 @@
                         <li data-feed="{{ id }}">
                             <a title="Read News"
                                href="{% url 'news.feed_view' %}?feed={{ id }}"
-                               data-turbo-frame="feed-container">
-                                {{ title }}
-                            </a>
+                               data-turbo-frame="feed-container">{{ title }}</a>
                         </li>
                     {% endfor %}
                 </ul>

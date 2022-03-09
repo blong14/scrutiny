@@ -1,5 +1,9 @@
+from io import StringIO
+from typing import Dict, List
+
 from django.contrib.auth import mixins as auth
 from django.views import generic
+import matplotlib.pyplot as plt
 
 from .models import Note, Project
 
@@ -37,4 +41,18 @@ class ProjectDetailView(auth.LoginRequiredMixin, generic.DetailView):
 
     def get_queryset(self):
         query = super().get_queryset()
-        return query.filter(user=self.request.user)
+        return query.prefetch_related("notes").filter(user=self.request.user)
+
+    def get_svg(self, positions: List[Dict[str, float]]) -> str:
+        svg = StringIO()
+        fig = plt.figure()
+        plt.scatter([p["x"] for p in positions if p], [p["y"] for p in positions if p])
+        fig.savefig(svg, format="svg")
+        svg.seek(0)
+        return svg.getvalue()
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        positions = [note.position for note in context["item"].notes.all()]
+        context["svg"] = self.get_svg(list(positions))
+        return context
