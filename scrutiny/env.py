@@ -10,7 +10,9 @@ def get_mercure_token() -> str:
 
 
 def get_mercure_url() -> str:
-    return getattr(settings, "MERCURE_URL", "")
+    return getattr(
+        settings, "MERCURE_URL", "https://scrutiny.local:8089/.well-known/mercure"
+    )
 
 
 def should_trace() -> bool:

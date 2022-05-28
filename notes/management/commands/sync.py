@@ -1,5 +1,6 @@
 import asyncio
 import logging
+from itertools import chain
 from typing import Any, Dict, List
 
 import aiohttp
@@ -63,6 +64,13 @@ async def _request(req: HttpRequest, method: str, url: str, **kwargs) -> Respons
         return Response(success=True, data=data)
 
 
+async def get_user() -> User:
+    return await sync_to_async(
+        User.objects.filter(username="14benj@gmail.com", is_superuser=False).first,
+        thread_sensitive=True,
+    )()
+
+
 async def get_token(session: aiohttp.ClientSession) -> Response:
     req = HttpRequest(session=session)
     resp = await _request(
@@ -106,6 +114,7 @@ async def get_notes(req: HttpRequest, project: Project, **kwargs) -> List[Note]:
             slug=n["id"],
             title=n["title"],
             body=n["body"],
+            neighbors=n["neighbors"],
         )
         for n in resp.data.get("items", [])
     ]
@@ -117,8 +126,10 @@ async def create_project_with_notes_and_positions(
 ) -> List[Note]:
     prj = Project(**kwargs)
     await sync_to_async(prj.save, thread_sensitive=True)()
-    notes = await get_notes(req, project=prj, **kwargs)
-    positions = await get_positions(req, project=prj, **kwargs)
+    notes, positions = await asyncio.gather(
+        asyncio.ensure_future(get_notes(req, project=prj, **kwargs)),
+        asyncio.ensure_future(get_positions(req, project=prj, **kwargs)),
+    )
     for n in notes:
         position = positions.get(n.slug)
         if position:
@@ -144,31 +155,25 @@ async def projects(req: HttpRequest, usr: User) -> List[List[Note]]:
     return [notes for notes in await asyncio.gather(*future_projects)]
 
 
-async def main():
-    await sync_to_async(Project.objects.all().delete, thread_sensitive=True)()
-    await sync_to_async(Note.objects.all().delete, thread_sensitive=True)()
-    usr = await sync_to_async(
-        User.objects.filter(username="14benj@gmail.com", is_superuser=False).first,
+async def clean():
+    await sync_to_async(
+        Project.objects.all().delete,
         thread_sensitive=True,
     )()
+
+
+async def sync():
     async with aiohttp.ClientSession(
         trust_env=False,
         raise_for_status=True,
         timeout=aiohttp.ClientTimeout(total=READ_TIMEOUT),
     ) as session:
-        logger.info("starting requests...")
-        token = await get_token(session)
-        logger.info("requesting data...")
-        tasks = [
-            asyncio.ensure_future(fn(HttpRequest(session=session, token=token), usr))
-            for fn in (projects,)
-        ]
-        for data in await asyncio.gather(*tasks):
-            for notes in data:
-                await sync_to_async(Note.objects.bulk_create, thread_sensitive=True)(
-                    notes
-                )
-        logger.info("finished")
+        usr, token = await asyncio.gather(
+            asyncio.ensure_future(get_user()), asyncio.ensure_future(get_token(session))
+        )
+        await sync_to_async(Note.objects.bulk_create, thread_sensitive=True)(
+            list(chain(*await projects(HttpRequest(session=session, token=token), usr)))
+        )
 
 
 class Command(BaseCommand):
@@ -176,5 +181,6 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options) -> None:
         self.stdout.write(self.style.SUCCESS("syncing graft api"))
-        asyncio.run(main())
+        asyncio.run(clean())
+        asyncio.run(sync())
         self.stdout.write(self.style.SUCCESS("finished syncing graft api"))

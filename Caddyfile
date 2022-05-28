@@ -5,7 +5,7 @@
     }
 }
 
-scrutiny.local:8081 {
+scrutiny.local:8089 {
     encode zstd gzip
     route {
         mercure {
@@ -13,6 +13,11 @@ scrutiny.local:8081 {
             subscriber_jwt !ChangeMe!
             anonymous true
             ui true
+        }
+        reverse_proxy web:8080 {
+            transport http {
+                max_conns_per_host 10
+            }
         }
         respond "Not Found" 404
     }

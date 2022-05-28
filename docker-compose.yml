@@ -5,7 +5,7 @@ services:
         image: dunglas/mercure
         restart: unless-stopped
         ports:
-            - "8081:8081"
+            - "8089:8089"
             - "5099:5099"
         volumes:
             - ./Caddyfile:/etc/caddy/Caddyfile
@@ -16,7 +16,7 @@ services:
         volumes:
             - ./scrutiny/static:/usr/share/nginx/html
     web:
-        image: blong14/scrutiny-python
+        image: blong14/scrutiny
         restart: unless-stopped
         environment:
             - CR_HOST=cockroach-0
@@ -25,7 +25,7 @@ services:
             - OTEL_TRACES_SAMPLER=parentbased_traceidratio
             - OTEL_TRACES_SAMPLER_ARG=0.1
         ports:
-            - "8089:8080"
+            - "8082:8080"
         volumes:
             - .:/app
         depends_on:

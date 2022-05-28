@@ -2,15 +2,18 @@
 <article data-slug="{{ item.slug }}">
     <header>
         <h3>
-            <a href="https://www.graftapp.co/p/{{ item.slug }}/graph"
-               target="_blank"
-               title="Graph View">{{ item.title }}</a>
+            <a href="{% url "notes.graph_animation_view" item.slug %}"
+               title="Graph View"
+               data-turbo-frame="graph-animation">{{ item.title }}</a>
         </h3>
     </header>
     <section>
         <figure>
-            {{ svg | safe }}
+            <turbo-frame id="graph-animation">
+            {{ graph | safe }}
+            </turbo-frame>
         </figure>
+        <script>{% include "notes/graph.js" %}</script>
     </section>
     <h4>Notes</h4>
     <ul>

@@ -7,6 +7,7 @@ from news.views import NewsFeedView, NewsListView
 from notes.views import (
     ProjectDashboardView,
     ProjectDetailView,
+    ProjectAnimateGraphView,
     ProjectIndexView,
     ProjectListView,
 )
@@ -34,6 +35,11 @@ urlpatterns = [
         "notes/detail/<slug:slug>/",
         ProjectDetailView.as_view(),
         name="notes.detail_view",
+    ),
+    path(
+        "notes/animate/<slug:slug>/",
+        ProjectAnimateGraphView.as_view(),
+        name="notes.graph_animation_view",
     ),
     path("api/jobs/status/", JobsStatusView.as_view(), name="jobs_api.dashboard"),
     path(

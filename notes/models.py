@@ -29,5 +29,6 @@ class Note(models.Model):
     body = models.TextField()
     project = models.ForeignKey(Project, related_name="notes", on_delete=models.CASCADE)
     position = models.JSONField(null=True)
+    neighbors = models.JSONField(null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
