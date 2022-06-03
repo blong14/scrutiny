@@ -1,5 +1,5 @@
 black==22.1.0
-Django==4.0.4
+Django==4.0.5
 django-cockroachdb==4.0.1
 djangorestframework==3.13.1
 djlint==0.7.5
@@ -14,7 +14,7 @@ opentelemetry-exporter-jaeger==1.9.1
 opentelemetry-instrumentation-django==0.28b1
 psycopg2==2.9.3
 pyjwt==2.4.0
-pytest==7.0.1
+pytest==7.1.2
 pytest-django==4.5.2
 requests==2.27.1
 social-auth-app-django==5.0.0
