@@ -6,7 +6,7 @@ djlint==0.7.5
 feedparser==6.0.8
 ipython==8.1.1
 locust==2.9.0
-matplotlib==3.5.1
+matplotlib==3.5.2
 networkx==2.7.1
 opentelemetry-api==1.9.1
 opentelemetry-sdk==1.9.1
