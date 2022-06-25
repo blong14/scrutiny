@@ -17,9 +17,7 @@
                     {% include "library/_detail.html" with item=article %}
                 {% endfor %}
             {% else %}
-                <p>
-                    No articles.
-                </p>
+                <p>No articles.</p>
             {% endif %}
             <a src="{% url 'notes.detail_view' %}">Link Article</a>
         </details>
@@ -30,9 +28,7 @@
             {% for note in items.0.notes.all %}
                 {% if note.body %}
                     <article data-slug="{{ note.slug }}">
-                        <p>
-                            {{ note.body | safe }}
-                        </p>
+                        <p>{{ note.body | safe }}</p>
                         <small>
                             <time>{{ note.created_at }}</time>
                             By {{ request.user }}
