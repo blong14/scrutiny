@@ -8,7 +8,7 @@ ipython==8.4.0
 locust==2.10.2
 matplotlib==3.5.2
 networkx==2.8.5
-opentelemetry-api==1.11.1
+opentelemetry-api==1.12.0
 opentelemetry-sdk==1.11.1
 opentelemetry-exporter-jaeger==1.11.1
 opentelemetry-instrumentation-django==0.30b1
