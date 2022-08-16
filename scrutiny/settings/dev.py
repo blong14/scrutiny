@@ -102,16 +102,27 @@ WSGI_APPLICATION = "scrutiny.wsgi.application"
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 
 
+# DATABASES = {
+#     "default": {
+#         "ENGINE": "django_cockroachdb",
+#         "NAME": "app",
+#         "USER": "root",
+#         "PASSWORD": "",
+#         "HOST": os.getenv("CR_HOST", "localhost"),
+#         "PORT": "26257",
+#     }
+# }
 DATABASES = {
-    "default": {
-        "ENGINE": "django_cockroachdb",
-        "NAME": "app",
-        "USER": "root",
-        "PASSWORD": "",
-        "HOST": os.getenv("CR_HOST", "localhost"),
-        "PORT": "26257",
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'scrutiny',
+        'USER': 'pi',
+        'PASSWORD': 'test',
+        'HOST': 'localhost',
+        'PORT': '54321',
     }
 }
+
 
 
 # Password validation

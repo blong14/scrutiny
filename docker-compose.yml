@@ -36,6 +36,14 @@ services:
         ports:
             - "26257:26257"
             - "8080:8080"
+    postgres:
+        image: postgres:14.2
+        ports:
+            - "54321:5432"
+        environment:
+            POSTGRES_USER: pi
+            POSTGRES_PASSWORD: test
+            POSTGRES_DB: scrutiny
     jaeger:
         image: jaegertracing/all-in-one
         ports:

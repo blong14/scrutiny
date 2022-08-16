@@ -26,17 +26,28 @@ DEPLOY_ENV = "prod"
 #         },
 #     }
 # }
-
+# DATABASES = {
+#     "default": {
+#         "ENGINE": "django_cockroachdb",
+#         "NAME": "app",
+#         "USER": "root",
+#         "PASSWORD": "",
+#         "HOST": "cockroachdb-public",
+#         "PORT": "26257",
+#     },
+# }
 DATABASES = {
-    "default": {
-        "ENGINE": "django_cockroachdb",
-        "NAME": "app",
-        "USER": "root",
-        "PASSWORD": "",
-        "HOST": "cockroachdb-public",
-        "PORT": "26257",
-    },
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': os.getenv("PG_DATABASE", ""),
+        'USER': os.getenv("PG_USER", ""),
+        'PASSWORD': os.getenv("PG_PASSWORD", ""),
+        'HOST': os.getenv("PG_HOST", ""),
+        'PORT': os.getenv("PG_PORT", "5432"),
+    }
 }
+
+
 # turns server side events on
 MERCURE_URL = "http://scrutiny-caddy.default.svc.cluster.local:8443/.well-known/mercure"
 SSE = True

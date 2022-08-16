@@ -4,6 +4,7 @@
 .git
 .gitignore
 .idea
+.pytest_cache
 assets
 venv
 vendor
