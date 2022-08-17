@@ -137,11 +137,7 @@ class _LoggingApplication:
 
 
 def default_application(*args, **kwargs) -> Callable:
-    provider = trace.get_tracer_provider()
-    return _TracingApplication(
-        wsgi=_LoggingApplication(application, *args, **kwargs),
-        tracer_provider=provider,
-    )
+    return _LoggingApplication(application, *args, **kwargs)
 
 
 class Command(BaseCommand):
