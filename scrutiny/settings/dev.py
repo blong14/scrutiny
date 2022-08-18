@@ -114,16 +114,15 @@ WSGI_APPLICATION = "scrutiny.wsgi.application"
 #     }
 # }
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'scrutiny',
-        'USER': 'pi',
-        'PASSWORD': 'test',
-        'HOST': 'localhost',
-        'PORT': '54321',
+    "default": {
+        "ENGINE": "django.db.backends.postgresql_psycopg2",
+        "NAME": "scrutiny",
+        "USER": "pi",
+        "PASSWORD": "test",
+        "HOST": "localhost",
+        "PORT": "54321",
     }
 }
-
 
 
 # Password validation
