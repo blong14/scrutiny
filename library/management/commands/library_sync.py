@@ -90,6 +90,8 @@ async def articles(req: HttpRequest, usr: UserSocialAuth) -> List[Article]:
         )
     all_tags = set()
     for article, tags in await asyncio.gather(*future_articles):
+        if not tags:
+            continue
         future_tags: List[Awaitable] = []
         for tag in tags:
             if tag in all_tags:
