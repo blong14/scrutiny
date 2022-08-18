@@ -8,15 +8,12 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.http import HttpRequest
 from django.template.loader import render_to_string
-from opentelemetry import trace
 
 from jobs.models import Job
 from jobs.views import JobsStatusView
 
 
 logger = logging.getLogger(__name__)
-tracer = trace.get_tracer(__name__)
-module = "jobs.signals"
 
 
 def _send(sender: Job, msg: str):
@@ -44,11 +41,8 @@ def _send(sender: Job, msg: str):
 
 @receiver(post_save, sender=Job)
 def dispatch_update_jobs_dashboard(sender: Job, **kwargs) -> None:
-    with tracer.start_as_current_span(f"{module}.dispatch_update_jobs_dashboard"):
-        view = JobsStatusView()
-        view.setup(request=HttpRequest())
-        context = view.get_context_data(name="hackernews")
-        with tracer.start_as_current_span(f"{module}.render_to_string"):
-            msg = render_to_string("jobs/_dashboard.turbo.html", context=context)
-        with tracer.start_as_current_span(f"{module}._send"):
-            _send(sender, msg)
+    view = JobsStatusView()
+    view.setup(request=HttpRequest())
+    context = view.get_context_data(name="hackernews")
+    msg = render_to_string("jobs/_dashboard.turbo.html", context=context)
+    _send(sender, msg)
