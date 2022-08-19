@@ -37,13 +37,6 @@ sub vcl_recv {
   } else {
     set req.backend_hint = web;
   }
-
-  if (req.http.Authorization) {
-    /* Not cacheable by default */
-    return (pass);
-  }
-
-  return(hash);
 }
 
 sub vcl_hash {
