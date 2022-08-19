@@ -48,9 +48,8 @@ sub vcl_recv {
 
 sub vcl_hash {
   if (req.http.cookie ~ "sessionid=") {
-    set req.http.X-TMP = regsub(req.http.cookie, "^.*?sessionid=([^;]+);*.*$", "\1")
+    set req.http.X-TMP = regsub(req.http.cookie, "^.*?sessionid=([^;]+);*.*$", "\1");
     hash_data(req.http.X-TMP);
     remove req.http.X-TMP;
   }
-  # the builtin.vcl will take care of also varying cache on Host/IP and URL
 }
