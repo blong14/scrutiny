@@ -47,11 +47,7 @@ sub vcl_recv {
 }
 
 sub vcl_hash {
-  if (req.url ~ "(admin)/*") {
-    return(lookup);
-  }
-
-  if (req.http.cookie ~ "sessionid=") {
+  if (req.url !~ "(admin)/*" && req.http.cookie ~ "sessionid=") {
     set req.http.X-TMP = regsub(req.http.cookie, "^.*?sessionid=([^;]+);*.*$", "\1");
     hash_data(req.http.X-TMP);
     unset req.http.X-TMP;
