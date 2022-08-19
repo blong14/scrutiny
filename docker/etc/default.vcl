@@ -48,7 +48,7 @@ sub vcl_recv {
 
 sub vcl_hash {
   if (req.url ~ "(admin)/*") {
-    return(pass);
+    return(hash);
   }
 
   if (req.http.cookie ~ "sessionid=") {
