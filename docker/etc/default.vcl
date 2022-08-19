@@ -33,7 +33,7 @@ sub vcl_recv {
   } else if (req.url ~ "(images|static)/*") {
     set req.backend_hint = static;
     unset req.http.cookie;
-    return(hash):
+    return(hash);
   } else {
     set req.backend_hint = web;
   }
