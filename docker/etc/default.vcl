@@ -50,6 +50,6 @@ sub vcl_hash {
   if (req.http.cookie ~ "sessionid=") {
     set req.http.X-TMP = regsub(req.http.cookie, "^.*?sessionid=([^;]+);*.*$", "\1");
     hash_data(req.http.X-TMP);
-    remove req.http.X-TMP;
+    unset req.http.X-TMP;
   }
 }
