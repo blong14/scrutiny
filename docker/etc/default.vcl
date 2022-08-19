@@ -32,7 +32,25 @@ sub vcl_recv {
     return (pass);
   } else if (req.url ~ "(images|static)/*") {
     set req.backend_hint = static;
+    unset req.http.cookie;
+    return(hash):
   } else {
     set req.backend_hint = web;
   }
+
+  if (req.http.Authorization) {
+    /* Not cacheable by default */
+    return (pass);
+  }
+
+  return(hash);
+}
+
+sub vcl_hash {
+  if (req.http.cookie ~ "sessionid=") {
+    set req.http.X-TMP = regsub(req.http.cookie, "^.*?sessionid=([^;]+);*.*$", "\1")
+    hash_data(req.http.X-TMP);
+    remove req.http.X-TMP;
+  }
+  # the builtin.vcl will take care of also varying cache on Host/IP and URL
 }
