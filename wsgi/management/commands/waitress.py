@@ -1,5 +1,5 @@
 import time
-from typing import Callable
+from typing import Callable, Protocol
 
 from django.core.management.base import BaseCommand
 from django.utils.timezone import now as utc_now
@@ -16,8 +16,13 @@ def _request_info(environ):
     return environ.get("SERVER_PROTOCOL"), environ.get("REQUEST_METHOD"), req_uri
 
 
+class IOWrapper(Protocol):
+    def write(self, msg: str) -> None:
+        pass
+
+
 class Logger:
-    def __init__(self, stdout, style):
+    def __init__(self, stdout: IOWrapper, style):
         self.formatter = "[{time}] '{REQUEST_METHOD} {REQUEST_URI} {HTTP_VERSION}' {status} {duration}s"
         self.stdout = stdout
         self.style = style
