@@ -1,4 +1,3 @@
-import logging
 import time
 from typing import Callable
 
@@ -10,9 +9,6 @@ from waitress import serve
 from scrutiny.wsgi import application
 
 
-logger = logging.getLogger(__name__)
-
-
 def _request_info(environ):
     req_uri = f"{environ.get('SCRIPT_NAME', '')} {environ.get('PATH_INFO', '')}"
     if environ.get("QUERY_STRING"):
@@ -20,25 +16,14 @@ def _request_info(environ):
     return environ.get("SERVER_PROTOCOL"), environ.get("REQUEST_METHOD"), req_uri
 
 
-class _LoggingApplication:
-    def __init__(self, wsgi, lgr, style):
-        self.application = wsgi
-        self.logger = lgr
-        self.style = style
+class Logger:
+    def __init__(self, stdout, style):
         self.formatter = "[{time}] '{REQUEST_METHOD} {REQUEST_URI} {HTTP_VERSION}' {status} {duration}s"
+        self.stdout = stdout
+        self.style = style
+        self.success = self.style.HTTP_SUCCESS
 
-    def __call__(self, environ, start_response):
-        trace_start = time.perf_counter()
-        start = utc_now()
-
-        def replacement_start_response(status, headers):
-            duration = time.perf_counter() - trace_start
-            self.write_log(environ, start, duration, status, self.style.HTTP_SUCCESS)
-            return start_response(status, headers)
-
-        return self.application(environ, replacement_start_response)
-
-    def write_log(self, environ, start, duration, status, level):
+    def write(self, environ, start, duration, status):
         protocol, method, uri = _request_info(environ)
         d = {
             "time": start,
@@ -49,7 +34,24 @@ class _LoggingApplication:
             "duration": f"{duration:0.3f}",
         }
         message = self.formatter.format(**d)
-        self.logger.write(level(message))
+        self.stdout.write(self.success(message))
+
+
+class _LoggingApplication:
+    def __init__(self, wsgi, lgr: Logger):
+        self.application = wsgi
+        self.logger = lgr
+
+    def __call__(self, environ, start_response):
+        trace_start = time.perf_counter()
+        start = utc_now()
+
+        def replacement_start_response(status, headers):
+            duration = time.perf_counter() - trace_start
+            self.logger.write(environ, start, duration, status)
+            return start_response(status, headers)
+
+        return self.application(environ, replacement_start_response)
 
 
 def default_application(*args, **kwargs) -> Callable:
@@ -66,7 +68,7 @@ class Command(BaseCommand):
         self.stdout.write(self.style.SUCCESS("starting wsgi server"))
         try:
             serve(
-                default_application(self.stdout, self.style),
+                default_application(Logger(self.stdout, self.style)),
                 port=options.get("port") or 8080,
             )
         except Exception as e:

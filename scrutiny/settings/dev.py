@@ -60,8 +60,6 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "social_django",
     "rest_framework",
-    "features",
-    "jobs",
     "library",
     "news",
     "notes",
