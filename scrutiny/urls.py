@@ -1,7 +1,6 @@
 from django.contrib import admin
 from django.urls import include, path
 
-from jobs.views import JobsApiUpdateView, JobsStatusView
 from library.views import IndexView, ArticleListView, ArticleMiniListView, TagListView
 from news.views import NewsFeedView, NewsListView
 from notes.views import (
@@ -40,12 +39,6 @@ urlpatterns = [
         "notes/animate/<slug:slug>/",
         ProjectAnimateGraphView.as_view(),
         name="notes.graph_animation_view",
-    ),
-    path("api/jobs/status/", JobsStatusView.as_view(), name="jobs_api.dashboard"),
-    path(
-        "api/jobs/<slug:name>/",
-        JobsApiUpdateView.as_view(),
-        name="jobs_api.update_view",
     ),
     path(
         "api/notes/dashboard/",

@@ -5,8 +5,6 @@ import (
 	"log"
 
 	"github.com/spf13/cobra"
-
-	cmd "scrutiny/jobs/management/commands"
 )
 
 var rootCmd = &cobra.Command{
@@ -15,7 +13,6 @@ var rootCmd = &cobra.Command{
 }
 
 func init() {
-	rootCmd.AddCommand(cmd.NewsCmd)
 	cobra.OnInitialize(func() {
 		log.Println("executing cmd")
 	})
