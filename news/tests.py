@@ -58,7 +58,11 @@ class TestFeedView(TestCase):
             for feed in FeedRegistry.feeds()
         }
         for feed, url in feeds.items():
-            mock_parse.return_value = FeedResponse(entries=[{"title": "hello"}])  # noqa
+            mock_parse.return_value = FeedResponse(
+                entries=[
+                    {"title": "hello", "link": "test.link", "comments": "comments.link"}
+                ]
+            )  # noqa
             self.resp = self.client.get(url)
             self.assertEqual(self.resp.status_code, 200)
             self.assertTemplateUsed(self.resp, "news/feed.html")

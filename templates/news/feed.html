@@ -4,7 +4,13 @@
     <ol>
         {% for item in items %}
             <li>
-                <a title="Read Item" href="{{ item.link }}" target="_blank">{{ item.title }}</a>
+                <article>
+                    <a title="Read Comments"
+                       href="{{ item.comments|default:item.link }}"
+                       target="_blank">{{ item.title }}</a>
+                    <br>
+                    {% if item.comments %}<small><a href="{{ item.link }}" target="_blank">read</a></small>{% endif %}
+                </article>
             </li>
         {% endfor %}
     </ol>
