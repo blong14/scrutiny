@@ -8,18 +8,18 @@
             {% include "library/_search.html" %}
         </section>
         <turbo-frame id="tag-list" src="{% url 'library.tag_view' %}" loading="lazy">
-            <details>
-                <summary>
-                    Filter by Tag
-                </summary>
-            </details>
+        <details>
+            <summary>
+                Filter by Tag
+            </summary>
+        </details>
         </turbo-frame>
         <turbo-frame id="library-list" src="{% url 'library.list_view' %}?page=1">
-           <article>
-    <section>
-        {% include "library/_pagination.html" with items=items %}
-    </section>
-           </article>
+        <article>
+            <section>
+                {% include "library/_pagination.html" with items=items %}
+            </section>
+        </article>
         </turbo-frame>
     </main>
     <style>
