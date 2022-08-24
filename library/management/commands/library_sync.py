@@ -1,6 +1,6 @@
 import asyncio
 import logging
-from typing import Any, Union, Dict, Awaitable, List
+from typing import Any, Union, Dict, List
 
 import aiohttp
 from asgiref.sync import sync_to_async
@@ -100,41 +100,47 @@ async def articles(req: HttpRequest, usr: UserSocialAuth) -> List[Article]:
                 tag_set.add(tag.value)
                 all_tags.append(tag)
 
-    await sync_to_async(
-        Article.objects.bulk_create,
-        thread_sensitive=True,
-    )(
-        all_articles,
-        ignore_conflicts=True,
-        update_fields=[
-            "authors",
-            "excerpt",
-            "slug",
-            "resolved_title",
-            "listen_duration_estimate",
-        ],
-        unique_fields=["id"],
-    )
-
-    await sync_to_async(
-        Tag.objects.bulk_create,
-        thread_sensitive=True,
-    )(
-        all_tags,
-        ignore_conflicts=True,
-        unique_fields=["value"],
-    )
-
-    futures = [
+    await asyncio.gather(
         asyncio.ensure_future(
-            sync_to_async(d.get("article").tags.set, thread_sensitive=True)(
-                [t for tag in d.get("tags", []) for t in all_tags if t.value == tag.value]
+            sync_to_async(Article.objects.bulk_create, thread_sensitive=True)(
+                all_articles,
+                ignore_conflicts=True,
+                update_fields=[
+                    "authors",
+                    "excerpt",
+                    "slug",
+                    "resolved_title",
+                    "listen_duration_estimate",
+                ],
+                unique_fields=["id"],
             )
-        )
-        for _, d in articles_and_tags.items()
-        if d.get("tags", [])
-    ]
-    return [finished for finished in await asyncio.gather(*futures)]
+        ),
+        asyncio.ensure_future(
+            sync_to_async(Tag.objects.bulk_create, thread_sensitive=True)(
+                all_tags,
+                ignore_conflicts=True,
+                unique_fields=["value"],
+            )
+        ),
+    )
+
+    await asyncio.gather(
+        *[
+            asyncio.ensure_future(
+                sync_to_async(d.get("article").tags.set, thread_sensitive=True)(
+                    [
+                        t
+                        for tag in d.get("tags", [])
+                        for t in all_tags
+                        if t.value == tag.value
+                    ]
+                )
+            )
+            for _, d in articles_and_tags.items()
+            if d.get("tags", [])
+        ]
+    )
+    return all_articles
 
 
 async def main():
