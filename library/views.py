@@ -36,7 +36,12 @@ class ArticleListView(auth.LoginRequiredMixin, generic.ListView):
         return context
 
     def get_queryset(self):
-        query = self.model.objects.filter(user=self.request.user).order_by(*self.order)
+        query = super().get_queryset()
+        query = (
+            query.prefetch_related("tags")
+            .filter(user=self.request.user)
+            .order_by(*self.order)
+        )
         tag = self.request.GET.get("tag")
         if tag:
             query = query.filter(tags__value=tag)

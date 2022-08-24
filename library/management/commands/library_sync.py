@@ -1,6 +1,6 @@
 import asyncio
 import logging
-from typing import Any, Awaitable, List
+from typing import Any, Union, Dict, Awaitable, List
 
 import aiohttp
 from asgiref.sync import sync_to_async
@@ -51,7 +51,7 @@ async def _request(req: HttpRequest, method: str, url: str, **kwargs) -> Respons
         return Response(success=True, data=data)
 
 
-async def articles(req: HttpRequest, usr: UserSocialAuth) -> List[Article]:
+async def fetch_data(req, usr) -> Dict[int, Dict[str, Union[Article | List[Tag]]]]:
     resp = await _request(
         req,
         aiohttp.hdrs.METH_POST,
@@ -65,58 +65,81 @@ async def articles(req: HttpRequest, usr: UserSocialAuth) -> List[Article]:
         },
     )
     if not resp.success:
-        return []
-    new_articles: List[Article] = []
-    future_articles = []
-    for _, item in resp.data.get("list", {}).items():
-        tags = item.get("tags")
-        article = Article(
-            id=item.get("item_id"),
-            authors=item.get("authors", {}),
-            excerpt=item.get("excerpt"),
-            user=usr.user,
-            listen_duration_estimate=item.get("listen_duration_estimate"),
-            resolved_title=item.get("resolved_title"),
-        )
-
-        def save(art, tgs):
-            art.save()
-            return art, tgs
-
-        future_articles.append(
-            asyncio.ensure_future(
-                sync_to_async(save, thread_sensitive=True)(article, tags),
+        return {}
+    return {
+        item.get("item_id"): {
+            "article": Article(
+                id=item.get("item_id"),
+                authors=item.get("authors", {}),
+                excerpt=item.get("excerpt"),
+                user=usr.user,
+                listen_duration_estimate=item.get("listen_duration_estimate"),
+                resolved_title=item.get("resolved_title"),
             ),
-        )
-    all_tags = set()
-    for article, tags in await asyncio.gather(*future_articles):
-        if not tags:
-            continue
-        future_tags: List[Awaitable] = []
-        for tag in tags:
-            if tag in all_tags:
-                article.tags.add(tag, bulk=True)
-                continue
-            future_tags.append(
-                asyncio.ensure_future(
-                    sync_to_async(
-                        Tag.objects.update_or_create,
-                        thread_sensitive=True,
-                    )(defaults={"value": tag, "user": usr.user}, value=tag),
+            "tags": [
+                Tag(
+                    pk=tag.get("item_id"),
+                    value=tag.get("tag"),
+                    user=usr.user,
                 )
+                for tag in item.get("tags", {}).values()
+                if tag.get("item_id")
+            ],
+        }
+        for _, item in resp.data.get("list", {}).items()
+    }
+
+
+async def articles(req: HttpRequest, usr: UserSocialAuth) -> List[Article]:
+    articles_and_tags = await fetch_data(req, usr)
+    all_articles, all_tags, tag_set = [], [], set()
+    for article_id, data in articles_and_tags.items():
+        all_articles.append(data.get("article"))
+        for tag in data.get("tags"):
+            if tag.value not in tag_set:
+                tag_set.add(tag.value)
+                all_tags.append(tag)
+
+    await sync_to_async(
+        Article.objects.bulk_create,
+        thread_sensitive=True,
+    )(
+        all_articles,
+        ignore_conflicts=True,
+        update_fields=[
+            "authors",
+            "excerpt",
+            "slug",
+            "resolved_title",
+            "listen_duration_estimate",
+        ],
+        unique_fields=["id"],
+    )
+
+    await sync_to_async(
+        Tag.objects.bulk_create,
+        thread_sensitive=True,
+    )(
+        all_tags,
+        ignore_conflicts=True,
+        unique_fields=["value"],
+    )
+
+    futures = [
+        asyncio.ensure_future(
+            sync_to_async(d.get("article").tags.set, thread_sensitive=True)(
+                [t for tag in d.get("tags", []) for t in all_tags if t.value == tag.value]
             )
-        tags_for_article: List[Tag] = []
-        for tag, _ in await asyncio.gather(*future_tags):
-            all_tags.add(tag)
-            tags_for_article.append(tag)
-        article.tags.set(tags_for_article)
-        new_articles.append(article)
-    return new_articles
+        )
+        for _, d in articles_and_tags.items()
+        if d.get("tags", [])
+    ]
+    return [finished for finished in await asyncio.gather(*futures)]
 
 
 async def main():
-    await sync_to_async(Article.objects.all().delete, thread_sensitive=True)()
-    await sync_to_async(Tag.objects.all().delete, thread_sensitive=True)()
+    # await sync_to_async(Article.objects.all().delete, thread_sensitive=True)()
+    # await sync_to_async(Tag.objects.all().delete, thread_sensitive=True)()
     async with aiohttp.ClientSession(
         trust_env=False,
         raise_for_status=True,
