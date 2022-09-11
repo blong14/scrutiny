@@ -13,7 +13,16 @@
             </small>
             <small>
                 |
-                {% for tag in item.tags.all %}<samp>{{ tag.value }}</samp>{% endfor %}
+                {% for tag in item.tags.all %}
+                    <samp>
+                        <a style="padding: 0.25rem;"
+                           title="Filter by {{ tag.value }}"
+                           href="{% url 'library.list_view' %}?tag={{ tag.value }}"
+                           data-turbo-frame="library-list">
+                            {{ tag.value }}
+                        </a>
+                    </samp>
+                {% endfor %}
             </small>
         </h4>
         <p>{{ item.excerpt | safe }}</p>

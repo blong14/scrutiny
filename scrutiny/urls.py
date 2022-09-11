@@ -22,6 +22,7 @@ urlpatterns = [
     path("news/feeds/", NewsFeedView.as_view(), name="news.feed_view"),
     path("library/", IndexView.as_view(), name="library.index_view"),
     path("library/list/", ArticleListView.as_view(), name="library.list_view"),
+    path("library/save/", ArticleListView.as_view(), name="library.save_view"),
     path(
         "library/mini-list/",
         ArticleMiniListView.as_view(),

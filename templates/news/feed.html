@@ -1,18 +1,35 @@
 <turbo-frame id="feed-container" data-feed="{{ id }}">
 <article>
-    <h4>{{ title }}</h4>
-    <ol>
-        {% for item in items %}
-            <li>
-                <article>
-                    <a title="Read Comments"
-                       href="{{ item.comments|default:item.link }}"
-                       target="_blank">{{ item.title }}</a>
-                    <br>
-                    {% if item.comments %}<small><a href="{{ item.link }}" target="_blank">read</a></small>{% endif %}
-                </article>
-            </li>
-        {% endfor %}
-    </ol>
+    <h3>{{ title }}</h3>
+    {% for item in items %}
+        <details>
+            <summary>
+                {{ item.title }}
+            </summary>
+            <form action="{% url 'library.save_view' %}"
+                  style="border: none;
+                         box-shadow: none;">
+                <samp>
+                    <small style="color: var(--color-text-primary);">{{ item.summary|safe }}</small>
+                </samp>
+                <nav>
+                    <ul>
+                        <li>
+                            <a href="{{ item.link }}" target="_blank">Read</a>
+                        </li>
+                        <li>
+                            {% csrf_token %}
+                            <input type="submit" value="save">
+                            {% if error_message %}
+                                <p>
+                                    <strong>{{ error_message }}</strong>
+                                </p>
+                            {% endif %}
+                        </li>
+                    </ul>
+                </nav>
+            </form>
+        </details>
+    {% endfor %}
 </article>
 </turbo-frame>
