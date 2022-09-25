@@ -144,8 +144,8 @@ async def articles(req: HttpRequest, usr: UserSocialAuth) -> List[Article]:
 
 
 async def main():
-    # await sync_to_async(Article.objects.all().delete, thread_sensitive=True)()
-    # await sync_to_async(Tag.objects.all().delete, thread_sensitive=True)()
+    await sync_to_async(Article.objects.all().delete, thread_sensitive=True)()
+    await sync_to_async(Tag.objects.all().delete, thread_sensitive=True)()
     async with aiohttp.ClientSession(
         trust_env=False,
         raise_for_status=True,
@@ -166,6 +166,6 @@ class Command(BaseCommand):
     help = "Start Pocket API Sync"
 
     def handle(self, *args, **options) -> None:
-        self.stdout.write(self.style.SUCCESS("syncing graft api"))
+        self.stdout.write(self.style.SUCCESS("syncing library"))
         asyncio.run(main())
-        self.stdout.write(self.style.SUCCESS("finished syncing graft api"))
+        self.stdout.write(self.style.SUCCESS("finished syncing library"))
