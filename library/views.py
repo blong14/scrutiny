@@ -48,7 +48,9 @@ class ArticleListView(auth.LoginRequiredMixin, generic.ListView):
         search = self.request.GET.get("search")
         if search:
             query = query.filter(
-                Q(resolved_title__contains=search) | Q(excerpt__contains=search) | Q(tags__value=search)
+                Q(resolved_title__contains=search)
+                | Q(excerpt__contains=search)
+                | Q(tags__value=search)
             )
         return query
 

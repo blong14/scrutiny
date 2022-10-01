@@ -1,11 +1,11 @@
-<article>
-    <section>
-        {% include "library/_pagination.html" with items=items %}
-    </section>
+<section>
+    {% include "library/_pagination.html" with items=items %}
+</section>
+<section>
     {% for item in items %}
         {% include "library/_detail.html" with item=item %}
     {% endfor %}
-    <section>
-        {% include "library/_pagination.html" with items=items %}
-    </section>
-</article>
+</section>
+<section>
+    {% include "library/_pagination.html" with items=items %}
+</section>
