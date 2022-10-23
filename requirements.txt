@@ -1,4 +1,4 @@
-black==22.8.0
+black==22.10.0
 Django==4.1.2
 django-cockroachdb==4.1
 djangorestframework==3.14.0
