@@ -5,7 +5,7 @@ djangorestframework==3.14.0
 djlint==1.19.2
 feedparser==6.0.10
 ipython==8.5.0
-locust==2.12.2
+locust==2.13.0
 matplotlib==3.6.1
 networkx==2.8.7
 psycopg2==2.9.4
