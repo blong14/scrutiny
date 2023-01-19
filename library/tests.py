@@ -1,9 +1,14 @@
+import urllib
+from datetime import datetime
+
 from django.contrib.auth.models import User
 from django.test import Client, TestCase
 from django.urls import reverse
 from social_django.models import UserSocialAuth
 
 from library.models import Article, Tag
+from library.client import PocketClient, HttpRequest
+from scrutiny.env import get_pocket_consumer_key
 from scrutiny.tests import ScrutinyTestListView
 
 
@@ -120,3 +125,28 @@ class TestTagListView(ScrutinyTestListView):
         self.assertEqual(self.response.status_code, 200)
         self.assertEqual(len(self.response.context["items"]), len(self.items))
         self.assertListResponseContains([item.value for item in self.items])
+
+
+class TestClient(TestCase):
+    def setUp(self) -> None:
+        super().setUp()
+        self.user = User.objects.filter(
+            username="14benj@gmail.com", is_superuser=False
+        ).first()
+        self.client = PocketClient()
+
+    def test_add(self) -> None:
+        resp = self.client.add(
+            HttpRequest(
+                data=dict(
+                    url=urllib.parse.quote(
+                        "https://www.bbc.com/news/business-62806697", safe=""
+                    ),
+                    time=int(datetime.utcnow().timestamp()),
+                    consumer_key=get_pocket_consumer_key(),
+                    access_token=self.user.social_auth.first().extra_data.get(
+                        "access_token", ""
+                    ),
+                ),
+            )
+        )

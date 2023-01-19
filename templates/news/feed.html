@@ -7,6 +7,7 @@
                 {{ item.title }}
             </summary>
             <form action="{% url 'library.save_view' %}"
+                  method="post"
                   style="border: none;
                          box-shadow: none">
                 <samp>
@@ -19,6 +20,7 @@
                         </li>
                         <li>
                             {% csrf_token %}
+                            <input type="hidden" name="url" value="{{ item.link }}">
                             <input type="submit" value="save">
                             {% if error_message %}
                                 <p>

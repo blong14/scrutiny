@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.urls import include, path
 
-from library.views import IndexView, ArticleListView, ArticleMiniListView, TagListView
+from library.views import IndexView, ArticleFormView, ArticleListView, TagListView
 from news.views import NewsFeedView, NewsListView
 from notes.views import (
     ProjectDashboardView,
@@ -22,12 +22,7 @@ urlpatterns = [
     path("news/feeds/", NewsFeedView.as_view(), name="news.feed_view"),
     path("library/", IndexView.as_view(), name="library.index_view"),
     path("library/list/", ArticleListView.as_view(), name="library.list_view"),
-    path("library/save/", ArticleListView.as_view(), name="library.save_view"),
-    path(
-        "library/mini-list/",
-        ArticleMiniListView.as_view(),
-        name="library.mini_list_view",
-    ),
+    path("library/save/", ArticleFormView.as_view(), name="library.save_view"),
     path("library/tags/", TagListView.as_view(), name="library.tag_view"),
     path("notes/", ProjectIndexView.as_view(), name="notes.index_view"),
     path("notes/list/", ProjectListView.as_view(), name="notes.list_view"),
