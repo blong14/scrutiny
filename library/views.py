@@ -51,7 +51,7 @@ class ArticleListView(auth.LoginRequiredMixin, generic.ListView):
                 Q(resolved_title__contains=search)
                 | Q(excerpt__contains=search)
                 | Q(tags__value=search)
-            )
+            ).distinct()
         return query
 
 

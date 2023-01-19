@@ -72,6 +72,7 @@ class TestListView(ScrutinyTestListView):
             article(resolved_title="hello", user=self.user),
             article(resolved_title="hello 1", user=self.user),
             article(resolved_title="hello 2", user=self.user),
+            article(resolved_title="world", user=self.user),
         ]
         UserSocialAuth.objects.create(user=self.user, provider="pocket")
         self.client.login(username="foo", password="pass")
@@ -89,6 +90,14 @@ class TestListView(ScrutinyTestListView):
         self.assertEqual(self.response.status_code, 200)
         self.assertEqual(len(self.response.context["items"]), len(self.items))
         self.assertListResponseContains([item.resolved_title for item in self.items])
+
+    def test_items_search(self) -> None:
+        url = reverse("library.list_view")
+        self.response = self.client.get(f"{url}?search=world")
+        self.assertEqual(self.response.status_code, 200)
+        self.assertEqual(len(self.response.context["items"]), 1)
+        self.assertListResponseContains(["world"])
+
 
 
 class TestTagListView(ScrutinyTestListView):
