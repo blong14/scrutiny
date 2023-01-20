@@ -99,7 +99,6 @@ class TestListView(ScrutinyTestListView):
         self.assertListResponseContains(["world"])
 
 
-
 class TestTagListView(ScrutinyTestListView):
     client_class = Client
     model = Tag
