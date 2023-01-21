@@ -7,7 +7,7 @@
         <nav>
             <ul>
                 {% for tag in items %}
-                    <li>{% include "library/_tag.html" with item=tag %}</li>
+                    {% ifchanged %}<li>{% include "library/_tag.html" with item=tag %}</li>{% endifchanged %}
                 {% endfor %}
             </ul>
         </nav>
