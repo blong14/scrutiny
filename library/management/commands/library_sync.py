@@ -1,19 +1,18 @@
 import asyncio
 import logging
-from typing import Any, Union, Dict, List
+import time
+from typing import Any, List
 
 import aiohttp
 from asgiref.sync import sync_to_async
+from asyncio.tasks import Task
 from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand
+from pydantic import BaseModel
 from pydantic.dataclasses import dataclass
-from social_django.models import UserSocialAuth
 
 from library.models import Article, Tag
 from scrutiny.env import get_pocket_consumer_key
-
-
-logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -30,6 +29,14 @@ class Response:
     success: bool = False
 
 
+class ArticleModel(BaseModel):
+    class Config:
+        arbitrary_types_allowed = True
+
+    article: Article
+    tags: List[Tag]
+
+
 READ_TIMEOUT = 10.0
 ERROR_RESPONSE = Response(data=dict(), success=False)
 
@@ -40,18 +47,17 @@ async def _request(req: HttpRequest, method: str, url: str, **kwargs) -> Respons
         async with req.session.request(method, url, ssl=True, **kwargs) as resp:
             data = await resp.json()
     except asyncio.TimeoutError:
-        logger.error(f"asyncio.TimeOutError {req.read_timeout}")
+        logging.error(f"asyncio.TimeOutError {req.read_timeout}")
         return ERROR_RESPONSE
     except aiohttp.ClientResponseError as e:
-        logger.error(e)
-        logger.warning("sleeping...")
+        logging.error(e)
         await asyncio.sleep(3)
         return ERROR_RESPONSE
     else:
         return Response(success=True, data=data)
 
 
-async def fetch_data(req, usr) -> Dict[int, Dict[str, Union[Article | List[Tag]]]]:
+async def get_pocket_data(req, usr) -> List[ArticleModel]:
     resp = await _request(
         req,
         aiohttp.hdrs.METH_POST,
@@ -65,18 +71,18 @@ async def fetch_data(req, usr) -> Dict[int, Dict[str, Union[Article | List[Tag]]
         },
     )
     if not resp.success:
-        return {}
-    return {
-        item.get("item_id"): {
-            "article": Article(
-                id=item.get("item_id"),
+        return []
+    return [
+        ArticleModel(
+            article=Article(
+                id=int(item.get("item_id")),
                 authors=item.get("authors", {}),
                 excerpt=item.get("excerpt"),
                 user=usr.user,
                 listen_duration_estimate=item.get("listen_duration_estimate"),
                 resolved_title=item.get("resolved_title"),
             ),
-            "tags": [
+            tags=[
                 Tag(
                     pk=tag.get("item_id"),
                     value=tag.get("tag"),
@@ -85,81 +91,101 @@ async def fetch_data(req, usr) -> Dict[int, Dict[str, Union[Article | List[Tag]]
                 for tag in item.get("tags", {}).values()
                 if tag.get("item_id")
             ],
-        }
+        )
         for _, item in resp.data.get("list", {}).items()
-    }
+    ]
 
 
-async def articles(req: HttpRequest, usr: UserSocialAuth) -> List[Article]:
-    articles_and_tags = await fetch_data(req, usr)
-    all_articles, all_tags, tag_set = [], [], set()
-    for article_id, data in articles_and_tags.items():
-        all_articles.append(data.get("article"))
-        for tag in data.get("tags"):
-            if tag.value not in tag_set:
-                tag_set.add(tag.value)
-                all_tags.append(tag)
-
-    await asyncio.gather(
-        asyncio.ensure_future(
-            sync_to_async(Article.objects.bulk_create, thread_sensitive=True)(
-                all_articles,
-                ignore_conflicts=True,
-                update_fields=[
-                    "authors",
-                    "excerpt",
-                    "slug",
-                    "resolved_title",
-                    "listen_duration_estimate",
-                ],
-                unique_fields=["id"],
-            )
-        ),
-        asyncio.ensure_future(
-            sync_to_async(Tag.objects.bulk_create, thread_sensitive=True)(
-                all_tags,
-                ignore_conflicts=True,
-                unique_fields=["value"],
-            )
-        ),
+def get_articles() -> Task:
+    return asyncio.ensure_future(
+        sync_to_async(Article.objects.all().values_list)("id", flat=True)
     )
 
-    await asyncio.gather(
-        *[
-            asyncio.ensure_future(
-                sync_to_async(d.get("article").tags.set, thread_sensitive=True)(
-                    [
-                        t
-                        for tag in d.get("tags", [])
-                        for t in all_tags
-                        if t.value == tag.value
-                    ]
-                )
-            )
-            for _, d in articles_and_tags.items()
-            if d.get("tags", [])
-        ]
+
+def create_articles(data: List[Article]) -> Task:
+    return asyncio.ensure_future(
+        sync_to_async(Article.objects.bulk_create)(
+            data,
+            ignore_conflicts=True,
+            update_fields=[
+                "authors",
+                "excerpt",
+                "slug",
+                "resolved_title",
+                "listen_duration_estimate",
+            ],
+            unique_fields=["id"],
+        )
     )
-    return all_articles
+
+
+def create_tags(data: List[Tag]) -> Task:
+    return asyncio.ensure_future(
+        sync_to_async(Tag.objects.bulk_create)(
+            data,
+            ignore_conflicts=True,
+            unique_fields=["id"],
+        )
+    )
+
+
+async def create_article_tags(data: List[ArticleModel]) -> list:
+    results = [
+        result
+        for result in await asyncio.gather(
+            *[
+                asyncio.ensure_future(sync_to_async(item.article.tags.set)(item.tags))
+                for item in data
+                if item.tags
+            ]
+        )
+    ]
+    return results
 
 
 async def main():
-    await sync_to_async(Article.objects.all().delete, thread_sensitive=True)()
-    await sync_to_async(Tag.objects.all().delete, thread_sensitive=True)()
+    logging.info("starting requests...")
+    usr = await sync_to_async(
+        User.objects.filter(
+            username="14benj@gmail.com",
+            is_superuser=False,
+        )
+        .first()
+        .social_auth.first,
+        thread_sensitive=True,
+    )()
     async with aiohttp.ClientSession(
         trust_env=False,
         raise_for_status=True,
         timeout=aiohttp.ClientTimeout(total=READ_TIMEOUT),
     ) as session:
-        logger.info("starting requests...")
-        usr = await sync_to_async(
-            User.objects.filter(username="14benj@gmail.com", is_superuser=False)
-            .first()
-            .social_auth.first,
-            thread_sensitive=True,
-        )()
-        items = await articles(HttpRequest(session=session), usr)
-        logger.info("finished creating %d", len(items))
+        items, existing_articles = await asyncio.gather(
+            get_pocket_data(HttpRequest(session=session), usr),
+            get_articles(),
+        )
+    new_articles = [
+        item.article for item in items if item.article.id not in existing_articles
+    ]
+    new_tags = [
+        tag
+        for item in items
+        for tag in item.tags
+        if item.article.id not in existing_articles
+    ]
+    new_article_tags = [
+        ArticleModel(article=item.article, tags=item.tags)
+        for item in items
+        if item.article.id not in existing_articles
+    ]
+    _ = [
+        result
+        for result in await asyncio.gather(
+            create_tags(new_tags),
+            create_articles(new_articles),
+        )
+    ]
+    await create_article_tags(new_article_tags)
+    logging.info("finished creating %d", len(items))
 
 
 class Command(BaseCommand):
@@ -167,5 +193,9 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options) -> None:
         self.stdout.write(self.style.SUCCESS("syncing library"))
+        trace_start = time.perf_counter()
         asyncio.run(main())
-        self.stdout.write(self.style.SUCCESS("finished syncing library"))
+        duration = time.perf_counter() - trace_start
+        self.stdout.write(
+            self.style.SUCCESS(f"finished syncing library in {duration:0.3f}s")
+        )

@@ -7,7 +7,7 @@ from django.db import models
 class Tag(models.Model):
 
     id = models.BigAutoField(primary_key=True)
-    value = models.CharField(max_length=256, unique=True)
+    value = models.CharField(max_length=256)
     user = models.ForeignKey(User, related_name="tags", on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
