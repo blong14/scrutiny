@@ -11,7 +11,7 @@ from django.core.management.base import BaseCommand
 from pydantic import BaseModel
 from pydantic.dataclasses import dataclass
 
-from library.models import Article, Tag
+from library.models import Article, JobEvent, Tag
 from scrutiny.env import get_pocket_consumer_key
 
 
@@ -96,6 +96,12 @@ async def get_pocket_data(req, usr) -> List[ArticleModel]:
     ]
 
 
+def create_job_event(data: dict) -> Task:
+    return asyncio.ensure_future(
+        sync_to_async(JobEvent(data=data).save, thread_sensitive=False)()
+    )
+
+
 def get_articles() -> Task:
     return asyncio.ensure_future(
         sync_to_async(Article.objects.all().values_list)("id", flat=True)
@@ -104,7 +110,7 @@ def get_articles() -> Task:
 
 def create_articles(data: List[Article]) -> Task:
     return asyncio.ensure_future(
-        sync_to_async(Article.objects.bulk_create)(
+        sync_to_async(Article.objects.bulk_create, thread_sensitive=False)(
             data,
             ignore_conflicts=True,
             update_fields=[
@@ -121,9 +127,10 @@ def create_articles(data: List[Article]) -> Task:
 
 def create_tags(data: List[Tag]) -> Task:
     return asyncio.ensure_future(
-        sync_to_async(Tag.objects.bulk_create)(
+        sync_to_async(Tag.objects.bulk_create, thread_sensitive=False)(
             data,
             ignore_conflicts=True,
+            update_fields=["value"],
             unique_fields=["id"],
         )
     )
@@ -134,7 +141,11 @@ async def create_article_tags(data: List[ArticleModel]) -> list:
         result
         for result in await asyncio.gather(
             *[
-                asyncio.ensure_future(sync_to_async(item.article.tags.set)(item.tags))
+                asyncio.ensure_future(
+                    sync_to_async(item.article.tags.set, thread_sensitive=False)(
+                        item.tags
+                    )
+                )
                 for item in data
                 if item.tags
             ]
@@ -145,6 +156,7 @@ async def create_article_tags(data: List[ArticleModel]) -> list:
 
 async def main():
     logging.info("starting requests...")
+    await create_job_event({"name": "start", "version": "1"})
     usr = await sync_to_async(
         User.objects.filter(
             username="14benj@gmail.com",
@@ -152,7 +164,7 @@ async def main():
         )
         .first()
         .social_auth.first,
-        thread_sensitive=True,
+        thread_sensitive=False,
     )()
     async with aiohttp.ClientSession(
         trust_env=False,
@@ -172,11 +184,6 @@ async def main():
         for tag in item.tags
         if item.article.id not in existing_articles
     ]
-    new_article_tags = [
-        ArticleModel(article=item.article, tags=item.tags)
-        for item in items
-        if item.article.id not in existing_articles
-    ]
     _ = [
         result
         for result in await asyncio.gather(
@@ -184,8 +191,21 @@ async def main():
             create_articles(new_articles),
         )
     ]
+    new_article_tags = [
+        item for item in items if item.article.id not in existing_articles
+    ]
     await create_article_tags(new_article_tags)
-    logging.info("finished creating %d", len(items))
+    await create_job_event(
+        {
+            "name": "end",
+            "version": "1",
+            "results": {
+                "existing_articles": len(existing_articles),
+                "new_articles": len(new_articles),
+                "new_tags": len(new_tags),
+            },
+        }
+    )
 
 
 class Command(BaseCommand):

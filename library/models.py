@@ -30,3 +30,12 @@ class Article(models.Model):
     user = models.ForeignKey(User, related_name="articles", on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+
+class JobEvent(models.Model):
+    class Meta:
+        ordering = ["created_at"]
+
+    id = models.BigAutoField(primary_key=True)
+    data = models.JSONField()
+    created_at = models.DateTimeField(auto_now_add=True)
