@@ -107,10 +107,11 @@ class TestTagListView(ScrutinyTestListView):
         super().setUp()
         self.url = reverse("library.tag_view")
         self.user = User.objects.create_user("foo", "myemail@test.com", "pass")
+        art = article(user=self.user)
         self.items = [
-            tag(value="foobar", user=self.user),
-            tag(value="foobar 1", user=self.user),
-            tag(value="foobar 2", user=self.user),
+            tag(value="foobar", user=self.user, article=art),
+            tag(value="foobar 1", user=self.user, article=art),
+            tag(value="foobar 2", user=self.user, article=art),
         ]
         UserSocialAuth.objects.create(user=self.user, provider="pocket")
         self.client.login(username="foo", password="pass")

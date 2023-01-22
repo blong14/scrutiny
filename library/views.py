@@ -16,7 +16,7 @@ class TagListView(auth.LoginRequiredMixin, generic.ListView):
     template_name = "library/tags.html"
 
     def get_queryset(self, *args, **kwargs):
-        return self.model.objects.filter(user=self.request.user).order_by(*self.order).distinct()
+        return self.model.objects.filter(user=self.request.user).order_by(*self.order)
 
 
 class ArticleListView(auth.LoginRequiredMixin, generic.ListView):

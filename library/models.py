@@ -8,6 +8,9 @@ class Tag(models.Model):
 
     id = models.BigAutoField(primary_key=True)
     value = models.CharField(max_length=256)
+    article = models.ForeignKey(
+        "Article", related_name="tags", on_delete=models.CASCADE
+    )
     user = models.ForeignKey(User, related_name="tags", on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -26,7 +29,6 @@ class Article(models.Model):
     slug = models.UUIDField(default=uuid.uuid4, editable=False)
     resolved_title = models.CharField(max_length=256)
     listen_duration_estimate = models.IntegerField()
-    tags = models.ManyToManyField(Tag)
     user = models.ForeignKey(User, related_name="articles", on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

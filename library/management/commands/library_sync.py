@@ -84,8 +84,8 @@ async def get_pocket_data(req, usr) -> List[ArticleModel]:
             ),
             tags=[
                 Tag(
-                    pk=tag.get("item_id"),
                     value=tag.get("tag"),
+                    article_id=tag.get("item_id"),
                     user=usr.user,
                 )
                 for tag in item.get("tags", {}).values()
@@ -105,6 +105,20 @@ def create_job_event(data: dict) -> Task:
 def get_articles() -> Task:
     return asyncio.ensure_future(
         sync_to_async(Article.objects.all().values_list)("id", flat=True)
+    )
+
+
+def get_user(email: str) -> Task:
+    return asyncio.ensure_future(
+        sync_to_async(
+            User.objects.filter(
+                username=email,
+                is_superuser=False,
+            )
+            .first()
+            .social_auth.first,
+            thread_sensitive=False,
+        )()
     )
 
 
@@ -129,43 +143,17 @@ def create_tags(data: List[Tag]) -> Task:
     return asyncio.ensure_future(
         sync_to_async(Tag.objects.bulk_create, thread_sensitive=False)(
             data,
-            ignore_conflicts=True,
             update_fields=["value"],
             unique_fields=["id"],
         )
     )
 
 
-async def create_article_tags(data: List[ArticleModel]) -> list:
-    results = [
-        result
-        for result in await asyncio.gather(
-            *[
-                asyncio.ensure_future(
-                    sync_to_async(item.article.tags.set, thread_sensitive=False)(
-                        item.tags
-                    )
-                )
-                for item in data
-                if item.tags
-            ]
-        )
-    ]
-    return results
-
-
 async def main():
-    logging.info("starting requests...")
-    await create_job_event({"name": "start", "version": "1"})
-    usr = await sync_to_async(
-        User.objects.filter(
-            username="14benj@gmail.com",
-            is_superuser=False,
-        )
-        .first()
-        .social_auth.first,
-        thread_sensitive=False,
-    )()
+    usr, event = await asyncio.gather(
+        get_user("14benj@gmail.com"),
+        create_job_event({"name": "start", "version": "1"}),
+    )
     async with aiohttp.ClientSession(
         trust_env=False,
         raise_for_status=True,
@@ -184,17 +172,8 @@ async def main():
         for tag in item.tags
         if item.article.id not in existing_articles
     ]
-    _ = [
-        result
-        for result in await asyncio.gather(
-            create_tags(new_tags),
-            create_articles(new_articles),
-        )
-    ]
-    new_article_tags = [
-        item for item in items if item.article.id not in existing_articles
-    ]
-    await create_article_tags(new_article_tags)
+    await create_articles(new_articles)
+    await create_tags(new_tags)
     await create_job_event(
         {
             "name": "end",
@@ -203,6 +182,7 @@ async def main():
                 "existing_articles": len(existing_articles),
                 "new_articles": len(new_articles),
                 "new_tags": len(new_tags),
+                "raw_items": len(items),
             },
         }
     )
