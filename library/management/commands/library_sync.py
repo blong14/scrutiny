@@ -139,6 +139,13 @@ def create_articles(data: List[Article]) -> Task:
     )
 
 
+def delete_articles(data: List[Article]) -> Task:
+    query = Article.objects.filter(id__in=data)
+    return asyncio.ensure_future(
+        sync_to_async(query.delete, thread_sensitive=False)()
+    )
+
+
 def create_tags(data: List[Tag]) -> Task:
     return asyncio.ensure_future(
         sync_to_async(Tag.objects.bulk_create, thread_sensitive=False)(
@@ -163,16 +170,20 @@ async def main():
             get_pocket_data(HttpRequest(session=session), usr),
             get_articles(),
         )
+        raw_source_ids = [item.article.id for item in items]
     new_articles = [
         item.article for item in items if item.article.id not in existing_articles
     ]
+    to_delete = [
+        article for article in existing_articles if article not in raw_source_ids
+    ]
+    await asyncio.gather(create_articles(new_articles), delete_articles(to_delete))
     new_tags = [
         tag
         for item in items
         for tag in item.tags
         if item.article.id not in existing_articles
     ]
-    await create_articles(new_articles)
     await create_tags(new_tags)
     await create_job_event(
         {
