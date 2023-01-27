@@ -4,7 +4,7 @@ django-cockroachdb==4.1.1
 djangorestframework==3.14.0
 djlint==1.19.11
 feedparser==6.0.10
-ipython==8.8.0
+ipython==8.9.0
 locust==2.14.2
 matplotlib==3.6.3
 networkx==3.0
