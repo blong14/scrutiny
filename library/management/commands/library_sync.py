@@ -1,15 +1,16 @@
 import asyncio
 import logging
 import time
+from asyncio.tasks import Task
 from typing import Any, List
 
 import aiohttp
 from asgiref.sync import sync_to_async
-from asyncio.tasks import Task
 from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand
 from pydantic import BaseModel
 from pydantic.dataclasses import dataclass
+from social_django.models import UserSocialAuth
 
 from library.models import Article, JobEvent, Tag
 from scrutiny.env import get_pocket_consumer_key
@@ -96,19 +97,13 @@ async def get_pocket_data(req, usr) -> List[ArticleModel]:
     ]
 
 
-def create_job_event(data: dict) -> Task:
+def create_job_event(data: dict) -> Task[int]:
     return asyncio.ensure_future(
         sync_to_async(JobEvent(data=data).save, thread_sensitive=False)()
     )
 
 
-def get_articles() -> Task:
-    return asyncio.ensure_future(
-        sync_to_async(Article.objects.all().values_list)("id", flat=True)
-    )
-
-
-def get_user(email: str) -> Task:
+def read_user(email: str) -> Task[UserSocialAuth]:
     return asyncio.ensure_future(
         sync_to_async(
             User.objects.filter(
@@ -122,7 +117,7 @@ def get_user(email: str) -> Task:
     )
 
 
-def create_articles(data: List[Article]) -> Task:
+def create_articles(data: List[Article]) -> Task[List[int]]:
     return asyncio.ensure_future(
         sync_to_async(Article.objects.bulk_create, thread_sensitive=False)(
             data,
@@ -139,14 +134,18 @@ def create_articles(data: List[Article]) -> Task:
     )
 
 
-def delete_articles(data: List[Article]) -> Task:
+def delete_articles(data: List[Article]) -> Task[List[int]]:
     query = Article.objects.filter(id__in=data)
+    return asyncio.ensure_future(sync_to_async(query.delete, thread_sensitive=False)())
+
+
+def read_articles() -> Task[List[Article]]:
     return asyncio.ensure_future(
-        sync_to_async(query.delete, thread_sensitive=False)()
+        sync_to_async(Article.objects.all().values_list)("id", flat=True)
     )
 
 
-def create_tags(data: List[Tag]) -> Task:
+def create_tags(data: List[Tag]) -> Task[List[int]]:
     return asyncio.ensure_future(
         sync_to_async(Tag.objects.bulk_create, thread_sensitive=False)(
             data,
@@ -158,7 +157,7 @@ def create_tags(data: List[Tag]) -> Task:
 
 async def main():
     usr, event = await asyncio.gather(
-        get_user("14benj@gmail.com"),
+        read_user("14benj@gmail.com"),
         create_job_event({"name": "start", "version": "1"}),
     )
     async with aiohttp.ClientSession(
@@ -168,7 +167,7 @@ async def main():
     ) as session:
         items, existing_articles = await asyncio.gather(
             get_pocket_data(HttpRequest(session=session), usr),
-            get_articles(),
+            read_articles(),
         )
         raw_source_ids = [item.article.id for item in items]
     new_articles = [
