@@ -40,10 +40,6 @@ build-python:
 	@#docker run --rm blong14/scrutiny pypy manage.py test --timing --settings=scrutiny.settings.spec
 	@touch Dockerfile
 
-build-go:
-	@docker build -f DockerfileGo -t blong14/scrutiny-go:latest .
-	@touch Dockerfile
-
 .PHONY: check clean cover run seed shell test
 check: .deps
 	@python manage.py check --settings=scrutiny.settings.dev
