@@ -5,7 +5,7 @@ from django.views import generic
 from .models import FeedRegistry, default_parser, parse_feed
 
 
-class NewsListView(auth.LoginRequiredMixin, generic.TemplateView):
+class IndexView(auth.LoginRequiredMixin, generic.TemplateView):
     template_name = "news/list.html"
 
     def get_context_data(self, **kwargs):
@@ -14,7 +14,7 @@ class NewsListView(auth.LoginRequiredMixin, generic.TemplateView):
         return context
 
 
-class NewsFeedView(auth.LoginRequiredMixin, generic.TemplateView):
+class NewsListView(auth.LoginRequiredMixin, generic.TemplateView):
     template_name = "news/feed.html"
     page_limit = 10
 

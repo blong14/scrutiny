@@ -3,7 +3,7 @@ from django.test import Client, TestCase
 from django.urls import reverse
 from social_django.models import UserSocialAuth
 
-from library.models import Article, Tag
+from .models import Article, Tag
 from scrutiny.tests import ScrutinyTestListView
 
 
