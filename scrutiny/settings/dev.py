@@ -202,6 +202,8 @@ AUTHENTICATION_BACKENDS = (
     "django.contrib.auth.backends.ModelBackend",
 )
 
+GRAFT_API_KEY = os.getenv("GRAFT_API_KEY", "")
+
 LOGIN_URL = "/login/"
 LOGOUT_REDIRECT_URL = "/"
 

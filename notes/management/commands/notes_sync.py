@@ -1,7 +1,7 @@
 import asyncio
 import logging
 from itertools import chain
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 import aiohttp
 from asgiref.sync import sync_to_async
@@ -9,10 +9,8 @@ from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand
 from pydantic.dataclasses import dataclass
 
+from scrutiny.env import get_graft_api_key
 from notes.models import Note, Project
-
-
-logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -30,11 +28,13 @@ class HttpRequest:
     base_url: str = "https://api.graftapp.co"
     read_timeout: float = 10.0
     user: str = "14benj@gmail.com"
-    password: str = "Xg00rgO2bRpe"
+    password: str = ""
 
     @property
     def header(self) -> dict:
-        return {"Authorization": f"Bearer {self.token}"}
+        if self.token:
+            return {"Authorization": f"Bearer {self.token}"}
+        return {}
 
 
 @dataclass
@@ -53,11 +53,11 @@ async def _request(req: HttpRequest, method: str, url: str, **kwargs) -> Respons
         async with req.session.request(method, url, ssl=True, **kwargs) as resp:
             data = await resp.json()
     except asyncio.TimeoutError:
-        logger.error(f"asyncio.TimeOutError {req.read_timeout}")
+        logging.error(f"asyncio.TimeOutError {req.read_timeout}")
         return ERROR_RESPONSE
     except aiohttp.ClientResponseError as e:
-        logger.error(e)
-        logger.warning("sleeping...")
+        logging.error(e)
+        logging.warning("sleeping...")
         await asyncio.sleep(3)
         return ERROR_RESPONSE
     else:
@@ -77,7 +77,7 @@ async def get_token(session: aiohttp.ClientSession) -> Response:
         req,
         aiohttp.hdrs.METH_POST,
         f"{req.base_url}/v1/auth/login/",
-        json=dict(email=req.user, password=req.password),
+        json=dict(email=req.user, password=get_graft_api_key()),
     )
     return resp.data.get("access_token")
 
@@ -124,8 +124,16 @@ async def get_notes(req: HttpRequest, project: Project, **kwargs) -> List[Note]:
 async def create_project_with_notes_and_positions(
     req: HttpRequest, **kwargs
 ) -> List[Note]:
-    prj = Project(**kwargs)
-    await sync_to_async(prj.save, thread_sensitive=True)()
+    existing_projects = kwargs.pop("existing_projects", [])
+    slug = kwargs.get("slug", "")
+    prj: Optional[Project] = None
+    for project in existing_projects:
+        if project.slug == slug:
+            prj = project
+            break
+    if not prj:
+        prj = Project(**kwargs)
+        await sync_to_async(prj.save, thread_sensitive=True)()
     notes, positions = await asyncio.gather(
         asyncio.ensure_future(get_notes(req, project=prj, **kwargs)),
         asyncio.ensure_future(get_positions(req, project=prj, **kwargs)),
@@ -137,7 +145,9 @@ async def create_project_with_notes_and_positions(
     return notes
 
 
-async def projects(req: HttpRequest, usr: User) -> List[List[Note]]:
+async def projects(
+    req: HttpRequest, usr: User, existing_projects: List[Project]
+) -> List[List[Note]]:
     resp = await _request(req, aiohttp.hdrs.METH_GET, f"{req.base_url}/v1/projects/")
     if not resp.success:
         return []
@@ -148,18 +158,12 @@ async def projects(req: HttpRequest, usr: User) -> List[List[Note]]:
                 user=usr,
                 slug=data.get("id"),
                 title=data.get("title"),
+                existing_projects=existing_projects,
             ),
         )
         for data in resp.data.get("items", [])
     ]
     return [notes for notes in await asyncio.gather(*future_projects)]
-
-
-async def clean():
-    await sync_to_async(
-        Project.objects.all().delete,
-        thread_sensitive=True,
-    )()
 
 
 async def sync():
@@ -169,10 +173,30 @@ async def sync():
         timeout=aiohttp.ClientTimeout(total=READ_TIMEOUT),
     ) as session:
         usr, token = await asyncio.gather(
-            asyncio.ensure_future(get_user()), asyncio.ensure_future(get_token(session))
+            asyncio.ensure_future(get_user()),
+            asyncio.ensure_future(get_token(session)),
         )
+        existing_projects = await sync_to_async(
+            Project.objects.filter(user=usr).prefetch_related("notes").all,
+            thread_sensitive=False,
+        )()
+        existing_notes = [
+            note.slug for project in existing_projects for note in project.notes.all()
+        ]
         await sync_to_async(Note.objects.bulk_create, thread_sensitive=True)(
-            list(chain(*await projects(HttpRequest(session=session, token=token), usr)))
+            [
+                note
+                for note in list(
+                    chain(
+                        *await projects(
+                            HttpRequest(session=session, token=token),
+                            usr,
+                            existing_projects,
+                        )
+                    )
+                )
+                if note.slug not in existing_notes
+            ]
         )
 
 
@@ -181,6 +205,5 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options) -> None:
         self.stdout.write(self.style.SUCCESS("syncing graft api"))
-        asyncio.run(clean())
         asyncio.run(sync())
         self.stdout.write(self.style.SUCCESS("finished syncing graft api"))
