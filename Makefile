@@ -36,9 +36,9 @@ build-pypy:
 	@touch Dockerfile
 
 build-python:
-	@docker build -f DockerfilePython -t blong14/scrutiny-python:latest .
+	@docker build -f docker/Dockerfile -t blong14/scrutiny-python:latest .
 	@#docker run --rm blong14/scrutiny pypy manage.py test --timing --settings=scrutiny.settings.spec
-	@touch Dockerfile
+	@touch docker/Dockerfile
 
 .PHONY: check clean cover run seed shell test
 check: .deps
