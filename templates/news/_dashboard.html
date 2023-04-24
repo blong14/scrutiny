@@ -15,9 +15,7 @@
                     <td data-max-score>
                         <a title="Read Comments"
                            href="{% url 'news.list_view' %}?slugs={{ max_score_slug }}"
-                           data-turbo-frame="news-detail">
-                            {{ max_score }}
-                        </a>
+                           data-turbo-frame="news-detail">{{ max_score }}</a>
                     </td>
                 </tr>
             </tbody>

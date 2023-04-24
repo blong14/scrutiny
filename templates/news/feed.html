@@ -3,9 +3,7 @@
     <h3>{{ title }}</h3>
     {% for item in items %}
         <details>
-            <summary>
-                {{ item.title }}
-            </summary>
+            <summary>{{ item.title }}</summary>
             <form action="{% url 'library.save_view' %}"
                   style="border: none;
                          box-shadow: none">

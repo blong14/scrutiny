@@ -9,9 +9,7 @@
             </h1>
         </header>
         <details>
-            <summary>
-                Articles
-            </summary>
+            <summary>Articles</summary>
             {% if items.0.articles %}
                 {% for article in items.0.articles.all %}
                     {% include "library/_detail.html" with item=article %}
@@ -22,9 +20,7 @@
             <a src="{% url 'notes.detail_view' %}">Link Article</a>
         </details>
         <details>
-            <summary>
-                Notes
-            </summary>
+            <summary>Notes</summary>
             {% for note in items.0.notes.all %}
                 {% if note.body %}
                     <article data-slug="{{ note.slug }}">
@@ -54,12 +50,8 @@
                 <textarea cols="40" rows="5" id="body"></textarea>
                 <label for="article">Article</label>
                 <select id="article">
-                    <option value="option1">
-                        option1
-                    </option>
-                    <option value="option2">
-                        option2
-                    </option>
+                    <option value="option1">option1</option>
+                    <option value="option2">option2</option>
                 </select>
                 <button type="submit">Save</button>
             </form>

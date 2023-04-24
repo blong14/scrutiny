@@ -3,8 +3,6 @@
         <a style="padding: 0.25rem"
            title="Filter by {{ tag }}"
            href="{% url 'library.list_view' %}?tag={{ tag }}"
-           data-turbo-frame="library-list">
-            {{ tag }}
-        </a>
+           data-turbo-frame="library-list">{{ tag }}</a>
     </samp>
 </small>
