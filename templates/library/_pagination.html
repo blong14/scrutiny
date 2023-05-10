@@ -2,7 +2,7 @@
     <ul>
         <li>
             {% if page_obj.has_previous %}
-                <a href="{%  url source_url %}?page={{ page_obj.previous_page_number }}{% if search %}&search={{ search }}{% endif %}{% if tag %}&tag={{ tag }}{% endif %}"
+                <a href="{% url source_url %}?page={{ page_obj.previous_page_number }}{% if search %}&search={{ search }}{% endif %}{% if tag %}&tag={{ tag }}{% endif %}"
                    title="Previous">Previous</a>
             {% else %}
                 Previous
@@ -11,7 +11,7 @@
         <li>Page {{ page_obj.number|default:0 }} of {{ page_obj.paginator.num_pages|default:0 }}</li>
         <li>
             {% if page_obj.has_next %}
-                <a href="{%  url source_url %}?page={{ page_obj.next_page_number }}{% if search %}&search={{ search }}{% endif %}{% if tag %}&tag={{ tag }}{% endif %}"
+                <a href="{% url source_url %}?page={{ page_obj.next_page_number }}{% if search %}&search={{ search }}{% endif %}{% if tag %}&tag={{ tag }}{% endif %}"
                    title="Next">Next</a>
             {% else %}
                 Next
