@@ -1,5 +1,5 @@
 black==23.3.0
-Django==4.2.1
+Django==4.2.2
 django-cockroachdb==4.2
 djangorestframework==3.14.0
 djlint==1.30.2
