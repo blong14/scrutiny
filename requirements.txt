@@ -9,7 +9,7 @@ locust==2.15.1
 matplotlib==3.7.2
 networkx==3.1
 psycopg2-binary==2.9.6
-pyjwt==2.7.0
+pyjwt==2.8.0
 pytest==7.4.0
 pytest-django==4.5.2
 requests==2.31.0
