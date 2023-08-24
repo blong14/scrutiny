@@ -85,7 +85,7 @@ class RachelByTheBayFeed(Feed):
     url: AnyHttpUrl = "https://rachelbythebay.com/w/atom.xml"
 
 
-@dataclass(init=True)
+@dataclass
 class FeedResponse:
     entries: List[dict]
 
