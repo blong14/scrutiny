@@ -31,6 +31,9 @@ jobs:
       run: |
         python -m pip install --upgrade pip wheel
         pip install -r requirements.txt
+    - name: Run Linting
+      run: |
+        make lint-ci
     - name: Run Tests
       run: |
         make cover-ci
