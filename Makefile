@@ -58,6 +58,10 @@ cover-ci:
 	COVERAGE_PROCESS_START=$(PWD)/.coveragerc COVERAGE_FILE=$(PWD)/.coverage PYTHONPATH=$(PWD) pytest --durations=0
 	@coverage xml
 
+lint-ci:
+	@black .
+	@djlint --quiet templates || true
+
 run:
 	@python manage.py runserver 0.0.0.0:8089 --settings=scrutiny.settings.dev
 
