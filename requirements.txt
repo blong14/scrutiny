@@ -2,7 +2,7 @@ black==23.7.0
 Django==4.2.5
 django-cockroachdb==4.2
 djangorestframework==3.14.0
-djlint==1.32.1
+djlint==1.33.0
 feedparser==6.0.10
 ipython==8.15.0
 locust==2.16.1
