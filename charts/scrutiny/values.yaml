@@ -91,12 +91,12 @@ affinity:
 
 env:
   - name: PG_HOST
-    value: postgres-cluster-rw.default
+    value: ""
   - name: PG_PORT
-    value: 5432
+    value: ""
   - name: PG_DATABASE
-    value: scrutiny
+    value: ""
   - name: PG_USER
-    value: postgres
+    value: ""
   - name: PG_PASSWORD
     value: ""
