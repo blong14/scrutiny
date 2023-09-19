@@ -90,9 +90,12 @@ affinity:
                 - arm64
 
 
-command: python manage.py
+command: python
 
-args: [waitress, --settings=scrutiny.settings.prod]
+args:
+  - manage.py
+  - waitress
+  - --settings=scrutiny.settings.prod
 
 env:
   - name: PG_HOST
