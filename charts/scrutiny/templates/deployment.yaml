@@ -28,12 +28,12 @@ spec:
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
-        - env:
+        - name: {{ .Chart.Name }}
+          env:
         {{- range $key, $value := .Values.env }}
           - name: {{ $key }}
             value: {{ $value | quote }}
         {{- end }}
-        - name: {{ .Chart.Name }}
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
