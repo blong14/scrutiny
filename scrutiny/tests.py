@@ -1,5 +1,7 @@
+from platform import python_version
 from typing import List
 
+import django
 from django.db import models
 from django.http.response import HttpResponse
 from django.test import TestCase
@@ -62,4 +64,6 @@ class TestScrutinyAboutView(TestCase):
     def test_about(self) -> None:
         self.response = self.client.get(self.url)
         self.assertEqual(self.response.status_code, 200)
+        self.assertContains(self.response, django.get_version())
+        self.assertContains(self.response, python_version())
         self.assertTemplateUsed(self.response, "about.html")

@@ -1,3 +1,6 @@
+from platform import python_version
+
+import django
 from django.conf import settings
 from django.views import generic
 from rest_framework.generics import ListCreateAPIView
@@ -34,3 +37,9 @@ class ScrutinyIndexView(generic.TemplateView):
 
 class ScrutinyAboutView(generic.TemplateView):
     template_name = "about.html"
+
+    def get_context_data(self, *args, **kwargs):
+        context = super().get_context_data(*args, **kwargs)
+        context["django_version"] = django.get_version()
+        context["python_version"] = python_version()
+        return context
