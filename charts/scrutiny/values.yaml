@@ -109,5 +109,9 @@ env:
     value: ""
 
 cronjob:
-  concurrencyPolicy: Allow
+  args:
+    - manage.py
+    - library_sync
+    - --settings=scrutiny.settings.prod
   schedule: 0 * * * *
+  concurrencyPolicy: Allow

@@ -24,7 +24,7 @@ spec:
           {{- end }}
           containers:
             - args:
-            {{- range $value := .Values.args }}
+            {{- range $value := .Values.cronjob.args }}
                - {{ $value }}
             {{- end }}
               command: [{{ .Values.command }}]
