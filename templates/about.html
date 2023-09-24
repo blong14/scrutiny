@@ -5,8 +5,10 @@
         <main>
             {% include "_header.html" %}
             <section>
-                <p>{{ django_version }}</p>
-                <p>{{ python_version }}</p>
+                <ul>
+                    <li>Django version {{ django_version }}</li>
+                    <li>Python version {{ python_version }}</li>
+                </ul>
             </section>
         </main>
         {% include "_footer.html" %}
