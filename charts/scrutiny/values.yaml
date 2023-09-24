@@ -107,3 +107,7 @@ env:
     value: ""
   - name: PG_PASSWORD
     value: ""
+
+cronjob:
+  concurrencyPolicy: Allow
+  schedule: 0 * * * *
