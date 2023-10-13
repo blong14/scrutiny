@@ -15,6 +15,6 @@ pytest-django==4.5.2
 requests==2.31.0
 social-auth-app-django==5.3.0
 waitress==2.1.2
-aiohttp==3.8.6
+aiohttp==3.9.0b0
 pydantic==2.4.2
 coverage==7.3.2
