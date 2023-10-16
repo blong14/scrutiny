@@ -3,13 +3,6 @@ from django.urls import include, path
 
 from library.views import IndexView as LibraryView, ArticleListView, TagListView
 from news.views import IndexView as NewsView, NewsListView
-from notes.views import (
-    ProjectDashboardView,
-    ProjectDetailView,
-    ProjectAnimateGraphView,
-    ProjectIndexView,
-    ProjectListView,
-)
 from .views import ScrutinyAboutView, ScrutinyIndexView
 
 urlpatterns = [
@@ -24,21 +17,4 @@ urlpatterns = [
     path("library/list/", ArticleListView.as_view(), name="library.list_view"),
     path("library/save/", ArticleListView.as_view(), name="library.save_view"),
     path("library/tags/", TagListView.as_view(), name="library.tag_view"),
-    path("notes/", ProjectIndexView.as_view(), name="notes.index_view"),
-    path("notes/list/", ProjectListView.as_view(), name="notes.list_view"),
-    path(
-        "notes/detail/<slug:slug>/",
-        ProjectDetailView.as_view(),
-        name="notes.detail_view",
-    ),
-    path(
-        "notes/animate/<slug:slug>/",
-        ProjectAnimateGraphView.as_view(),
-        name="notes.graph_animation_view",
-    ),
-    path(
-        "api/notes/dashboard/",
-        ProjectDashboardView.as_view(),
-        name="notes_api.dashboard",
-    ),
 ]

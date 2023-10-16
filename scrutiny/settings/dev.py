@@ -62,7 +62,6 @@ INSTALLED_APPS = [
     "rest_framework",
     "library",
     "news",
-    "notes",
     "wsgi",
 ]
 
