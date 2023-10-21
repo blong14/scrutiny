@@ -67,7 +67,7 @@ spec:
         {{- end }}
           securityContext:
             {{- toYaml .Values.Varnish.securityContext | nindent 12 }}
-          image: "{{ .Values.Varnish.image.repository }}:{{ .Values.Varnish.image.tag | default .Chart.AppVersion }}"
+          image: "{{ .Values.Varnish.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.Varnish.image.pullPolicy }}
         {{- if .Values.Varnish.command.enabled }}
           command: [{{ .Values.Varnish.command.value }}]

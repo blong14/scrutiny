@@ -24,10 +24,12 @@ spec:
           {{- end }}
           containers:
             - args:
-            {{- range $value := .Values.cronjob.args }}
+            {{- range $value := .Values.cronjob.command.args }}
                - {{ $value }}
             {{- end }}
-              command: [{{ .Values.command }}]
+            {{-if .Values.cronjob.command.enabled }}
+              command: [{{ .Values.cronjob.command.value }}]
+            {{- end }}
               env:
               {{- range $key, $value := .Values.env }}
                 - name: {{ $key }}
