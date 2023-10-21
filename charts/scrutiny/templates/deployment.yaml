@@ -83,11 +83,11 @@ spec:
           livenessProbe:
             httpGet:
               path: /
-              port: http
+              port: {{ .Values.Varnish.service.name }}
           readinessProbe:
             httpGet:
               path: /
-              port: http
+              port: {{ .Values.Varnish.service.name }}
           resources:
             {{- toYaml .Values.Varnish.resources | nindent 12 }}
       {{- with .Values.nodeSelector }}
