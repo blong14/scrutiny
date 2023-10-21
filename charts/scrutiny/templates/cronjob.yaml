@@ -27,7 +27,7 @@ spec:
             {{- range $value := .Values.cronjob.command.args }}
                - {{ $value }}
             {{- end }}
-            {{-if .Values.cronjob.command.enabled }}
+            {{- if .Values.cronjob.command.enabled }}
               command: [{{ .Values.cronjob.command.value }}]
             {{- end }}
               env:
