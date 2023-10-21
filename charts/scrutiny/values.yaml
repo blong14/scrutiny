@@ -164,7 +164,7 @@ Varnish:
     # runAsUser: 1000
 
   service:
-    name: scrutiny-varnish
+    name: varnish
     type: ClusterIP
     port: 80
 
