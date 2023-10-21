@@ -82,6 +82,29 @@ spec:
               port: {{ .Values.Varnish.service.name }}
           resources:
             {{- toYaml .Values.Varnish.resources | nindent 12 }}
+        - name: {{ .Values.Nginx.name }}
+          env:
+        {{- range $key, $value := .Values.Nginx.env }}
+          - name: {{ $key }}
+            value: {{ $value | quote }}
+        {{- end }}
+          securityContext:
+            {{- toYaml .Values.Nginx.securityContext | nindent 12 }}
+          image: "{{ .Values.Nginx.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.Nginx.image.pullPolicy }}
+        {{- if .Values.Nginx.command.enabled }}
+          command: [{{ .Values.Nginx.command.value }}]
+        {{- end }}
+          args:
+        {{- range $value := .Values.Nginx.args }}
+            - {{ $value }}
+        {{- end}}
+          ports:
+            - name: {{ .Values.Nginx.service.name }}
+              containerPort: {{ .Values.Nginx.service.port }}
+              protocol: TCP
+          resources:
+            {{- toYaml .Values.Nginx.resources | nindent 12 }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
