@@ -172,7 +172,7 @@ Varnish:
 
 # nginx
 
-Ngix:
+Nginx:
   name: scrutiny-nginx
 
   command:
