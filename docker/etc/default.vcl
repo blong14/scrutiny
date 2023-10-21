@@ -16,8 +16,8 @@ backend web {
 }
 
 backend static {
-    .host = "scrutiny-nginx";
-    .port = "80";
+    .host = "localhost";
+    .port = "8081";
     .probe = {
         .url = "/index.html";
         .timeout = 60s;

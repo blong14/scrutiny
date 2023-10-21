@@ -214,4 +214,4 @@ Nginx:
   service:
     name: nginx
     type: ClusterIP
-    port: 80
+    port: 8081
