@@ -4,7 +4,7 @@ import directors;
 import std;
 
 backend web {
-    .host = "scrutiny";
+    .host = "localhost";
     .port = "8080";
     .probe = {
         .url = "/";

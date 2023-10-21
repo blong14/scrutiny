@@ -46,7 +46,7 @@ spec:
             - {{ $value }}
         {{- end}}
           ports:
-            - name: http
+            - name: {{ .Values.service.name }}
               containerPort: {{ .Values.service.port }}
               protocol: TCP
           livenessProbe:
@@ -77,7 +77,7 @@ spec:
             - {{ $value }}
         {{- end}}
           ports:
-            - name: http
+            - name: {{ .Values.Varnish.service.name }}
               containerPort: {{ .Values.Varnish.service.port }}
               protocol: TCP
           livenessProbe:

@@ -41,6 +41,7 @@ securityContext: {}
   # runAsUser: 1000
 
 service:
+  name: scrutiny
   type: ClusterIP
   port: 8080
 
@@ -163,6 +164,7 @@ Varnish:
     # runAsUser: 1000
 
   service:
+    name: scrutiny-varnish
     type: ClusterIP
     port: 80
 
