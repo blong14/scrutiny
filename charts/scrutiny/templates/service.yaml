@@ -1,6 +1,22 @@
 apiVersion: v1
 kind: Service
 metadata:
+  name: {{ .Values.Varnish.name }}
+  labels:
+    {{- include "scrutiny.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.Varnish.service.type }}
+  ports:
+    - port: {{ .Values.Varnish.service.port }}
+      targetPort: {{ .Values.Varnish.service.name }}
+      protocol: TCP
+      name: {{ .Values.Varnish.service.name }}
+  selector:
+    {{- include "scrutiny.selectorLabels" . | nindent 4 }}
+---
+apiVersion: v1
+kind: Service
+metadata:
   name: {{ include "scrutiny.fullname" . }}
   labels:
     {{- include "scrutiny.labels" . | nindent 4 }}
@@ -8,8 +24,8 @@ spec:
   type: {{ .Values.service.type }}
   ports:
     - port: {{ .Values.service.port }}
-      targetPort: http
+      targetPort: {{ .Values.service.name }}
       protocol: TCP
-      name: http
+      name: {{ .Values.service.name }}
   selector:
     {{- include "scrutiny.selectorLabels" . | nindent 4 }}
