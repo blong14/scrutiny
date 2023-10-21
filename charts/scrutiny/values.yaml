@@ -57,6 +57,7 @@ ingress:
         - path: /
           pathType: ImplementationSpecific
   port: 80
+  target: scrutiny-varnish
   tls: []
   #  - secretName: chart-example-tls
   #    hosts:
