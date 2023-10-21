@@ -59,7 +59,7 @@ spec:
               port: http
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
-        - name: {{ .Values.Varnish.Name }}
+        - name: {{ .Values.Varnish.name }}
           env:
         {{- range $key, $value := .Values.Varnish.env }}
           - name: {{ $key }}
