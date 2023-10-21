@@ -10,10 +10,10 @@
                 </li>
             {% endif %}
             <li>
-                <a href="{% url 'news.list_view' %}" title="News">News</a>
+                <a href="{% url 'news.list_view' %}" title="News" data-turbo-preload>News</a>
             </li>
             <li>
-                <a href="{% url 'library.index_view' %}" title="Library">Pocket</a>
+                <a href="{% url 'library.index_view' %}" title="Library" data-turbo-preload>Pocket</a>
             </li>
             <li>
                 <a href="{% url "logout" %}" title="Logout">Logout</a>

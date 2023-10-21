@@ -1,4 +1,4 @@
-<turbo-frame id="feed-container" data-feed="{{ id }}">
+<turbo-frame id="feed-container" data-feed="{{ id }}" data-turbo-action="advance">
 <article class="content">
     <h3>{{ title }}</h3>
     {% for item in items %}

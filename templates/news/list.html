@@ -18,7 +18,7 @@
             </nav>
         </section>
         <section>
-            <turbo-frame style="width: 100%;" id="feed-container" src="{% url 'news.feed_view' %}?feed=hackernews">
+            <turbo-frame style="width: 100%;" id="feed-container" src="{% url 'news.feed_view' %}?feed=hackernews" data-turbo-action="advance">
             <section>
                 loading...
             </section>
