@@ -124,6 +124,8 @@ cronjob:
 # Varnish
 
 Varnish:
+  name: scrutiny-varnish
+
   command:
     enabled: false
     value: ""
