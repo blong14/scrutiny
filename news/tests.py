@@ -65,6 +65,6 @@ class TestFeedView(TestCase):
             )  # noqa
             self.resp = self.client.get(url)
             self.assertEqual(self.resp.status_code, 200)
-            self.assertTemplateUsed(self.resp, "news/feed.html")
+            self.assertTemplateUsed(self.resp, "news/list.html")
             self.assertContains(self.resp, feed)
             self.assertContains(self.resp, "hello")

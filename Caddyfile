@@ -1,18 +1,29 @@
 {
+    auto_https off
+    debug
+    admin 0.0.0.0:5099
     log {
         output stdout
         format console
     }
 }
 
-scrutiny.local:8089 {
+http://scrutiny.local:8089 {
     encode zstd gzip
+    log
     route {
         mercure {
             publisher_jwt !ChangeMe!
             subscriber_jwt !ChangeMe!
             anonymous true
             ui true
+        }
+        route /images/* {
+            reverse_proxy static:80 {
+                transport http {
+                    max_conns_per_host 10
+                }
+            }
         }
         reverse_proxy web:8080 {
             transport http {

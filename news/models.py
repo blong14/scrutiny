@@ -78,13 +78,6 @@ class NatureFeed(Feed):
     url: AnyHttpUrl = "http://feeds.nature.com/nature/rss/current"  # noqa
 
 
-@FeedRegistry.register_feed("rachelbythebay")  # noqa
-class RachelByTheBayFeed(Feed):
-    id: str = "rachelbythebay"  # noqa
-    title: str = "Rachel by the Bay"
-    url: AnyHttpUrl = "https://rachelbythebay.com/w/atom.xml"
-
-
 @dataclass
 class FeedResponse:
     entries: List[dict]

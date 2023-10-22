@@ -4,18 +4,34 @@
         <h1>My Library</h1>
     </section>
     <section>
-        {% include "library/_search.html" %}
+        <form style="display: flex"
+              action="{% url 'library.list_view' %}"
+              method="get"
+              data-turbo-frame="library-list">
+            {% csrf_token %}
+            <input type="search" name="search">
+            <input type="submit" value="search">
+            {% if error_message %}
+                <p>
+                    <strong>{{ error_message }}</strong>
+                </p>
+            {% endif %}
+        </form>
     </section>
-    <turbo-frame id="tag-list" src="{% url 'library.tag_view' %}" loading="lazy">
-    <details>
-        <summary>Filter by Tag</summary>
-    </details>
-    </turbo-frame>
-    <turbo-frame id="library-list" src="{% url 'library.list_view' %}?page=1">
     <section>
-        {% include "library/_pagination.html" with items=items %}
+        <turbo-frame id="tag-list" src="{% url 'library.tag_view' %}" loading="lazy">
+        <details>
+            <summary>Filter by Tag</summary>
+        </details>
+        </turbo-frame>
     </section>
-    </turbo-frame>
+    <section>
+        <turbo-frame id="library-list" src="{% url 'library.list_view' %}?page=1">
+        <section>
+            {% include "library/articles/pagination.html" with items=items %}
+        </section>
+        </turbo-frame>
+    </section>
     <style>
         footer {
             top: 100vh;

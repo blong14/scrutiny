@@ -13,7 +13,7 @@ class TagListView(auth.LoginRequiredMixin, generic.ListView):
     context_object_name = "items"
     model = Tag
     order = ["value"]
-    template_name = "library/tags.html"
+    template_name = "library/tags/list.html"
 
     def get_queryset(self, *args, **kwargs):
         return self.model.objects.filter(user=self.request.user).order_by(*self.order)
@@ -25,7 +25,7 @@ class ArticleListView(auth.LoginRequiredMixin, generic.ListView):
     order = ["-created_at"]
     page_kwarg = "page"
     paginate_by = 10
-    template_name = "library/list.html"
+    template_name = "library/articles/list.html"
 
     def get_context_data(self, *args, object_list=None, **kwargs):
         context = super().get_context_data(*args, object_list=object_list, **kwargs)

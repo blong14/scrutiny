@@ -8,9 +8,9 @@
 
 .deps/migrate: .deps/requirements $(wildcard ./**/migrations/*.py) $(wildcard ./**/models.py)
 	@echo "Generating migrations..."
-	@python manage.py makemigrations --settings=scrutiny.settings.dev
+	@python manage.py makemigrations --settings=scrutiny.settings.local
 	@echo "Migrating database..."
-	@python manage.py migrate --settings=scrutiny.settings.dev
+	@python manage.py migrate --settings=scrutiny.settings.local
 	@touch $@
 
 .deps/lint: .deps/requirements $(wildcard ./**/*.py) $(wildcard templates/**/*.html)
@@ -42,7 +42,7 @@ build-python:
 
 .PHONY: check clean cover run seed shell test
 check: .deps
-	@python manage.py check --settings=scrutiny.settings.dev
+	@python manage.py check --settings=scrutiny.settings.local
 
 clean:
 	@echo "Cleaning dependencies..."
@@ -63,13 +63,14 @@ lint-ci:
 	@djlint --quiet templates || true
 
 run:
-	@python manage.py runserver 0.0.0.0:8089 --settings=scrutiny.settings.dev
+	@docker-compose up -d postgres
+	@python manage.py runserver 0.0.0.0:8089 --settings=scrutiny.settings.local
 
 seed: .deps
-	@python manage.py seed --settings=scrutiny.settings.dev
+	@python manage.py seed --settings=scrutiny.settings.local
 
 shell: .deps
-	@python manage.py shell --settings=scrutiny.settings.dev
+	@python manage.py shell --settings=scrutiny.settings.local
 
 test:
 	@pytest --durations=0 --verbosity=1

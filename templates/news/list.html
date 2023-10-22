@@ -1,28 +1,33 @@
-{% extends "base.html" %}
-{% block page_content %}
-    <main>
-        <section>
-            <h1>Current Feeds</h1>
-        </section>
-        <section>
-            <nav id="most-recent">
-                <ul>
-                    {% for id, title in items.items %}
-                        <li data-feed="{{ id }}">
-                            <a title="Read News"
-                               href="{% url 'news.feed_view' %}?feed={{ id }}"
-                               data-turbo-frame="feed-container">{{ title }}</a>
+<turbo-frame id="feed-container" data-feed="{{ id }}">
+<article class="content">
+    <h3>{{ title }}</h3>
+    {% for item in items %}
+        <details>
+            <summary>{{ item.title }}</summary>
+            <form action="{% url 'library.save_view' %}"
+                  style="border: none;
+                         box-shadow: none">
+                <samp>
+                    <small style="color: var(--color-text-primary);">{{ item.summary|safe }}</small>
+                </samp>
+                <nav>
+                    <ul>
+                        <li>
+                            <a href="{{ item.link }}" target="_blank">Read</a>
                         </li>
-                    {% endfor %}
-                </ul>
-            </nav>
-        </section>
-        <section>
-            <turbo-frame style="width: 100%;" id="feed-container" src="{% url 'news.feed_view' %}?feed=hackernews" data-turbo-action="advance">
-            <section>
-                loading...
-            </section>
-            </turbo-frame>
-        </section>
-    </main>
-{% endblock %}
+                        <li>
+                            {% csrf_token %}
+                            <input type="submit" value="save">
+                            {% if error_message %}
+                                <p>
+                                    <strong>{{ error_message }}</strong>
+                                </p>
+                            {% endif %}
+                        </li>
+                    </ul>
+                </nav>
+            </form>
+        </details>
+    {% endfor %}
+</article>
+</turbo-frame>

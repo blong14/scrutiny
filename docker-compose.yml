@@ -9,6 +9,9 @@ services:
             - "5099:5099"
         volumes:
             - ./Caddyfile:/etc/caddy/Caddyfile
+        depends_on:
+            - static
+            - web
     static:
         image: nginx:latest
         ports:
@@ -16,7 +19,9 @@ services:
         volumes:
             - ./scrutiny/static:/usr/share/nginx/html
     web:
-        image: blong14/scrutiny
+        build:
+            context: .
+            dockerfile: docker/Dockerfile
         restart: unless-stopped
         environment:
             - CR_HOST=cockroach-0
@@ -29,7 +34,7 @@ services:
         volumes:
             - .:/app
         depends_on:
-            - cockroach-0
+            - postgres
     cockroach-0:
         image: cockroachdb/cockroach:latest
         command: start --insecure --join=cockroach-0

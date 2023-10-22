@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block page_content %}
+    <main>
+        <section>
+            <h1>Current Feeds</h1>
+        </section>
+        <section>
+            <nav>
+                <ul>
+                    {% for id, title in items.items %}
+                        <li data-feed="{{ id }}">
+                            <a title="Read News"
+                               href="{% url 'news.feed_view' %}?feed={{ id }}"
+                               data-turbo-frame="feed-container">{{ title }}</a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </nav>
+        </section>
+        <section>
+            {% include "news/list.html" with id=feed.id title=feed.title items=feed.items %}
+        </section>
+    </main>
+{% endblock %}

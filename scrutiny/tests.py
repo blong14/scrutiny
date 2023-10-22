@@ -66,4 +66,4 @@ class TestScrutinyAboutView(TestCase):
         self.assertEqual(self.response.status_code, 200)
         self.assertContains(self.response, django.get_version())
         self.assertContains(self.response, python_version())
-        self.assertTemplateUsed(self.response, "about.html")
+        self.assertTemplateUsed(self.response, "about/index.html")
