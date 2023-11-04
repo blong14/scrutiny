@@ -2,7 +2,7 @@ import asyncio
 import logging
 import time
 from asyncio.tasks import Task
-from typing import Any, List
+from typing import Any, List, Optional
 
 import aiohttp
 from asgiref.sync import sync_to_async
@@ -103,6 +103,19 @@ def create_job_event(data: dict) -> Task[int]:
     )
 
 
+def read_job_event(
+    search: Optional[dict] = None,
+    order_by: Optional[str] = None,
+    limit: Optional[int] = None,
+) -> Task[JobEvent]:
+    query = JobEvent.objects
+    if search is not None:
+        query = query.filter(**search)
+    if order_by is not None:
+        query = query.order_by(order_by)
+    return asyncio.ensure_future(sync_to_async(query.all, thread_sensitive=False)())
+
+
 def read_user(email: str) -> Task[UserSocialAuth]:
     return asyncio.ensure_future(
         sync_to_async(
@@ -117,21 +130,24 @@ def read_user(email: str) -> Task[UserSocialAuth]:
     )
 
 
-def create_articles(data: List[Article]) -> Task[List[int]]:
-    return asyncio.ensure_future(
-        sync_to_async(Article.objects.bulk_create, thread_sensitive=False)(
-            data,
-            ignore_conflicts=True,
-            update_fields=[
-                "authors",
-                "excerpt",
-                "slug",
-                "resolved_title",
-                "listen_duration_estimate",
-            ],
-            unique_fields=["id"],
+def create_articles(data: List[Article], batch_size: int = 10) -> List[Task]:
+    return [
+        asyncio.ensure_future(
+            sync_to_async(Article.objects.bulk_create, thread_sensitive=False)(
+                data[i : i + batch_size],
+                ignore_conflicts=True,
+                update_fields=[
+                    "authors",
+                    "excerpt",
+                    "slug",
+                    "resolved_title",
+                    "listen_duration_estimate",
+                ],
+                unique_fields=["id"],
+            )
         )
-    )
+        for i in range(0, len(data), batch_size)
+    ]
 
 
 def delete_articles(data: List[Article]) -> Task[List[int]]:
@@ -145,20 +161,28 @@ def read_articles() -> Task[List[Article]]:
     )
 
 
-def create_tags(data: List[Tag]) -> Task[List[int]]:
-    return asyncio.ensure_future(
-        sync_to_async(Tag.objects.bulk_create, thread_sensitive=False)(
-            data,
-            update_fields=["value"],
-            unique_fields=["id"],
+def create_tags(data: List[Tag], batch_size: int = 10) -> List[Task]:
+    return [
+        asyncio.ensure_future(
+            sync_to_async(Tag.objects.bulk_create, thread_sensitive=False)(
+                data[i : i + batch_size],
+                update_fields=["value"],
+                unique_fields=["id"],
+            )
         )
-    )
+        for i in range(0, len(data), batch_size)
+    ]
 
 
 async def main():
-    usr, event = await asyncio.gather(
+    await create_job_event({"name": "start", "version": "1"})
+    usr, last_event = await asyncio.gather(
         read_user("14benj@gmail.com"),
-        create_job_event({"name": "start", "version": "1"}),
+        read_job_event(
+            search={"data": {"name": "end"}},
+            order_by="created_at",
+            limit=1,
+        ),
     )
     async with aiohttp.ClientSession(
         trust_env=False,
@@ -170,21 +194,21 @@ async def main():
             read_articles(),
         )
         raw_source_ids = [item.article.id for item in items]
-    new_articles = [
-        item.article for item in items if item.article.id not in existing_articles
-    ]
     to_delete = [
         article for article in existing_articles if article not in raw_source_ids
     ]
-    await asyncio.gather(create_articles(new_articles), delete_articles(to_delete))
+    new_articles = [
+        item.article for item in items if item.article.id not in existing_articles
+    ]
+    await asyncio.gather(*create_articles(new_articles), delete_articles(to_delete))
     new_tags = [
         tag
         for item in items
         for tag in item.tags
         if item.article.id not in existing_articles
     ]
-    await create_tags(new_tags)
-    await create_job_event(
+    await asyncio.gather(*create_tags(new_tags))
+    create_job_event(
         {
             "name": "end",
             "version": "1",
