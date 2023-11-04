@@ -2,11 +2,13 @@ from platform import python_version
 from typing import List
 
 import django
-from django.db import models
+from django.db import connection, models
 from django.http.response import HttpResponse
 from django.test import TestCase
 from django.test.client import Client
 from django.urls import reverse
+
+from .views import ScrutinyAboutView
 
 
 class NoopClient(Client):
@@ -66,4 +68,5 @@ class TestScrutinyAboutView(TestCase):
         self.assertEqual(self.response.status_code, 200)
         self.assertContains(self.response, django.get_version())
         self.assertContains(self.response, python_version())
+        self.assertContains(self.response, ScrutinyAboutView.database_version())
         self.assertTemplateUsed(self.response, "about/index.html")
