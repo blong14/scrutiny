@@ -2,9 +2,11 @@
 <article>
     <h3>{{ title }}</h3>
     {% for item in items %}
-        <details>
-            <summary>{{ item.title }}</summary>
-            <form action="{% url 'library.save_view' %}">
+        <details {% if item.title == selected %}open=""{% endif %}>
+            <summary {% if item.title == selected %}class="selected"{% endif %}>{{ item.title }}</summary>
+            <form action="{% url 'news.save_view' %}"
+                  method="post"
+                  data-turbo-frame="feed-container">
                 <samp>
                     <small>{{ item.summary|safe }}</small>
                 </samp>
@@ -15,7 +17,10 @@
                         </li>
                         <li>
                             {% csrf_token %}
-                            <input type="submit" value="save">
+                            <input type="hidden" name="feed_id" value="{{ id }}">
+                            <input type="hidden" name="title" value="{{ item.title }}">
+                            <input type="hidden" name="url" value="{{ item.link }}">
+                            <input type="submit" value="Save">
                             {% if error_message %}
                                 <p>
                                     <strong>{{ error_message }}</strong>

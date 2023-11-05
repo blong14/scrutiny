@@ -35,12 +35,21 @@ class NewsListView(auth.LoginRequiredMixin, generic.TemplateView):
         )
 
 
-class NewsItemFormView(FormView):
-    template_name = "news/detail.html"
+class NewsItemFormView(auth.LoginRequiredMixin, FormView):
     form_class = NewsItemForm
+    template_name = "news/list.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        form = context["form"]
+        context["selected"] = form.selected_title()
+        feed = FeedRegistry.get(form.feed())
+        if not feed:
+            raise Http404("feed does not exist")
+        return parse_feed(
+            context, feed, parser=default_parser.parse
+        )
 
     def form_valid(self, form):
-        # This method is called when valid form data has been POSTed.
-        # It should return an HttpResponse.
-        form.save_item()
-        return super().form_valid(form)
+        form.save_item(self.request.user)
+        return self.render_to_response(self.get_context_data(form=form))
