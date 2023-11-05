@@ -2,7 +2,7 @@
 	@mkdir .deps
 	@touch $@
 
-.deps/requirements: .deps/setup requirements.txt
+.deps/requirements: .deps/setup requirements.txt requirements-dev.txt
 	@echo "Installing dependencies..."
 	@pip install -r requirements.txt > $@
 
@@ -24,21 +24,12 @@
 	@touch $@
 
 build:
-	@docker build -f docker/DockerfileScrutiny -t blong14/scrutiny:latest .
-	@touch docker/DockerfileScrutiny
+	@docker build -f docker/Dockerfile -t blong14/scrutiny:latest .
+	@touch docker/Dockerfile
 
 image: build
 	@docker push blong14/scrutiny:latest
 	@docker images --format="{{json .}}" --no-trunc blong14/scrutiny:latest > $@
-
-build-pypy:
-	@docker build -f DockerfilePyPy -t blong14/scrutiny-pypy:latest .
-	@touch Dockerfile
-
-build-python:
-	@docker build -f docker/Dockerfile -t blong14/scrutiny-python:latest .
-	@#docker run --rm blong14/scrutiny pypy manage.py test --timing --settings=scrutiny.settings.spec
-	@touch docker/Dockerfile
 
 .PHONY: check clean cover run seed shell test
 check: .deps
@@ -65,9 +56,6 @@ lint-ci:
 run:
 	@docker-compose up -d postgres
 	@python manage.py runserver 0.0.0.0:8089 --settings=scrutiny.settings.local
-
-seed: .deps
-	@python manage.py seed --settings=scrutiny.settings.local
 
 shell: .deps
 	@python manage.py shell --settings=scrutiny.settings.local
