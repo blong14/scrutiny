@@ -1,14 +1,12 @@
 <turbo-frame id="feed-container" data-feed="{{ id }}">
-<article class="content">
+<article>
     <h3>{{ title }}</h3>
     {% for item in items %}
         <details>
             <summary>{{ item.title }}</summary>
-            <form action="{% url 'library.save_view' %}"
-                  style="border: none;
-                         box-shadow: none">
+            <form action="{% url 'library.save_view' %}">
                 <samp>
-                    <small style="color: var(--color-text-primary);">{{ item.summary|safe }}</small>
+                    <small>{{ item.summary|safe }}</small>
                 </samp>
                 <nav>
                     <ul>

@@ -1,7 +1,6 @@
-<small style="margin: 0.25rem;">
+<small>
     <samp>
-        <a style="padding: 0.25rem"
-           title="Filter by {{ tag }}"
+        <a title="Filter by {{ tag }}"
            href="{% url 'library.list_view' %}?tag={{ tag }}"
            data-turbo-frame="library-list">{{ tag }}</a>
     </samp>

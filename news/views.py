@@ -1,7 +1,9 @@
 from django.contrib.auth import mixins as auth
 from django.http import Http404
 from django.views import generic
+from django.views.generic.edit import FormView
 
+from .forms import NewsItemForm
 from .models import FeedRegistry, default_parser, parse_feed
 
 
@@ -31,3 +33,14 @@ class NewsListView(auth.LoginRequiredMixin, generic.TemplateView):
         return parse_feed(
             context, feed, parser=default_parser.parse, limit=self.page_limit
         )
+
+
+class NewsItemFormView(FormView):
+    template_name = "news/detail.html"
+    form_class = NewsItemForm
+
+    def form_valid(self, form):
+        # This method is called when valid form data has been POSTed.
+        # It should return an HttpResponse.
+        form.save_item()
+        return super().form_valid(form)

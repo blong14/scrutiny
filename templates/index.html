@@ -1,76 +1,91 @@
-<!DOCTYPE html>
-<html lang="en">
-    {% include "_head.html" %}
-    <body id="index">
-        <main>
-            {% include "_header.html" %}
-            <section>
-                <h1 class="marketing-heading">
-                    <span class="success">Scrutiny.</span>
-                    Faster and smarter analysis of the web.
-                </h1>
-            </section>
-            <br>
-            <br>
-            <br>
-            <section>
-                <article>
-                    <main>
-                        <header>
-                            <section>
-                                <img width="50%" src="/images/08.png">
-                                <article>
-                                    <main>
-                                        <h2><span class="success">Expand</span> your online expertise.</h2>
-                                        <h3>
-                                            With Scrutiny, you can accelerate the process of enhancing your understanding of the digital realm. Gain in-depth insights and rapidly increase your online knowledge, empowering you to stay at the forefront of your field or interests.
-                                        </h3>
-                                    </main>
-                                </article>
-                            </section>
-                        </header>
-                    </main>
-                </article>
-            </section>
-            <section>
-                <article>
-                    <main>
-                        <header>
-                            <section>
-                                <article>
-                                    <main>
-                                        <h2><span class="success">Streamline</span> your online investigations.</h2>
-                                        <h3>
-                                            Scrutiny provides a cutting-edge platform for users to delve into the web's depths, ensuring quicker and more insightful analysis of web content for research, data mining, and competitive intelligence.
-                                        </h3>
-                                    </main>
-                                </article>
-                                <img width="50%" src="/images/05.png">
-                            </section>
-                        </header>
-                    </main>
-                </article>
-            </section>
-            <section>
-                <article>
-                    <main>
-                        <header>
-                            <section>
-                                <img width="50%" src="/images/07.png">
-                                <article>
-                                    <main>
-                                        <h2><span class="success">Elevate</span> your online research.</h2>
-                                        <h3>
-                                            Scrutiny offers lightning-fast and more intelligent web analysis tools, enabling you to uncover valuable insights, trends, and information on the internet with unmatched efficiency.
-                                        </h3>
-                                    </main>
-                                </article>
-                            </section>
-                        </header>
-                    </main>
-                </article>
-            </section>
-        </main>
-        {% include "_footer.html" %}
-    </body>
-</html>
+{% extends "base.html" %}
+{% block page_styles %}
+    <style>
+        #index section {
+            flex-wrap: nowrap;
+        }
+        #index callout {
+            color: var(--color-success);
+        }
+        #index h1 {
+            font-size: 5rem;
+            text-align: center;
+        }
+    </style>
+{% endblock %}
+{% block page_content %}
+    <article>
+        <section>
+            <h1>
+                <callout>Scrutiny.</callout>
+                Faster and smarter analysis of the web.
+            </h1>
+        </section>
+        <br>
+        <br>
+        <br>
+        <section>
+            <article>
+                <main>
+                    <header>
+                        <section>
+                            <img width="35%" src="/images/08.png" alt="">
+                            <article>
+                                <main>
+                                    <h2>
+                                        Expand your <callout>online expertise.</callout>
+                                    </h2>
+                                    <h3>
+                                        With Scrutiny, you can accelerate the process of enhancing your understanding of the digital realm. Gain in-depth insights and rapidly increase your online knowledge, empowering you to stay at the forefront of your field or interests.
+                                    </h3>
+                                </main>
+                            </article>
+                        </section>
+                    </header>
+                </main>
+            </article>
+        </section>
+        <section>
+            <article>
+                <main>
+                    <header>
+                        <section>
+                            <article>
+                                <main>
+                                    <h2>
+                                        Streamline your <callout>online investigations.</callout>
+                                    </h2>
+                                    <h3>
+                                        Scrutiny provides a cutting-edge platform for users to delve into the web's depths, ensuring quicker and more insightful analysis of web content for research, data mining, and competitive intelligence.
+                                    </h3>
+                                </main>
+                            </article>
+                            <img width="35%" src="/images/05.png">
+                        </section>
+                    </header>
+                </main>
+            </article>
+        </section>
+        <section>
+            <article>
+                <main>
+                    <header>
+                        <section>
+                            <img width="35%" src="/images/07.png">
+                            <article>
+                                <main>
+                                    <h2>
+                                        Elevate your <callout>online research.</callout>
+                                    </h2>
+                                    <h3>
+                                        Scrutiny offers lightning-fast and more intelligent web analysis tools, enabling you to uncover valuable insights, trends, and information on the internet with unmatched efficiency.
+                                    </h3>
+                                </main>
+                            </article>
+                        </section>
+                    </header>
+                </main>
+            </article>
+        </section>
+    </article>
+{% endblock %}

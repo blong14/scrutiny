@@ -8,6 +8,10 @@ from .models import Article, Tag
 class IndexView(auth.LoginRequiredMixin, generic.TemplateView):
     template_name = "library/index.html"
 
+    def get_context_data(self, *args, **kwargs):
+        context = super().get_context_data(*args, **kwargs)
+        return context
+
 
 class TagListView(auth.LoginRequiredMixin, generic.ListView):
     context_object_name = "items"

@@ -1,18 +1,23 @@
-<!DOCTYPE html>
-<html lang="en">
-    {% include "_head.html" %}
-    <body>
-        <main>
-            {% include "_header.html" %}
-            <section>
+{% extends "base.html" %}
+{% block page_styles %}
+    <style>
+    #about highlight {
+        color: var(--color-success);
+    }
+    </style>
+{% endblock %}
+{% block page_content %}
+    <section>
+        <article>
+            <main>
                 <p>
-                    Introducing the tech-savvy wonders behind our digital realm, where <span class="success">Python {{ python_version }}</span> leads the charge with the grace of a swan on a tranquil lake. This programming language, like a fine wine, only gets better with age – and it's our secret sauce.
+                    Introducing the tech-savvy wonders behind our digital realm, where <highlight>Python {{ python_version }}</highlight> leads the charge with the grace of a swan on a tranquil lake. This programming language, like a fine wine, only gets better with age – and it's our secret sauce.
                 </p>
                 <p>
-                    <span class="success">Django {{ django_version }}</span>, our web framework, is the master architect of our virtual universe. It's so smooth, even James Bond would envy its precision. It's like the GPS of the internet, navigating you through the digital jungle.
+                    <highlight>Django {{ django_version }}</highlight>, our web framework, is the master architect of our virtual universe. It's so smooth, even James Bond would envy its precision. It's like the GPS of the internet, navigating you through the digital jungle.
                 </p>
                 <p>
-                    <span class="success">{{ database_version }}</span> is our data wizard, storing your precious information like a wise old sage. It's like the butler who never forgets your favorite drink, only it remembers your data preferences.
+                    <highlight>{{ database_version }}</highlight> is our data wizard, storing your precious information like a wise old sage. It's like the butler who never forgets your favorite drink, only it remembers your data preferences.
                 </p>
                 <p>
                     Hotwire, our real-time magic wand, makes your web experience as snappy as a squirrel on caffeine. It's like having a personal genie who grants your web wishes in the blink of an eye.
@@ -24,10 +29,9 @@
                     So, there you have it, folks – our digital dream team! They work together like the Avengers, but with fewer capes and more code. We promise to keep your online experience as exciting as a rollercoaster, and as smooth as a salsa dancer's moves.
                 </p>
                 <p>
-                    This clever concoction of content was whipped up by ChatGPT, your go-to AI wordsmith. We take your prompts and spin them into digital gold, and this time, you asked us to showcase our tech stack. So, from Python 3.11 to Hotwire, we've given you the lowdown on our digital arsenal in a style that even Dave Barry from the Miami Herald would appreciate. Stay tuned for more AI-powered magic, where your ideas become entertaining reality!
+                    This clever concoction of content was whipped up by <highlight>ChatGPT</highlight>, your go-to AI wordsmith. We take your prompts and spin them into digital gold, and this time, you asked us to showcase our tech stack. So, from Python 3.11 to Hotwire, we've given you the lowdown on our digital arsenal in a style that even Dave Barry from the Miami Herald would appreciate. Stay tuned for more AI-powered magic, where your ideas become entertaining reality!
                 </p>
-            </section>
-        </main>
-        {% include "_footer.html" %}
-    </body>
-</html>
+            </main>
+        </article>
+    </section>
+{% endblock %}

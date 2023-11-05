@@ -36,6 +36,10 @@ class ScrutinyDetailView(generic.DetailView):
 class ScrutinyIndexView(generic.TemplateView):
     template_name = "index.html"
 
+    def get_context_data(self, *args, **kwargs):
+        context = super().get_context_data(*args, **kwargs)
+        return context
+
 
 class ScrutinyAboutView(generic.TemplateView):
     template_name = "about/index.html"

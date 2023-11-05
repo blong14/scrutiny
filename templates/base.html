@@ -1,10 +1,77 @@
 <!DOCTYPE html>
 <html lang="en">
-    {% include "_head.html" %}
-    <body>
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Scrutiny</title>
+        <link rel="stylesheet" href="//unpkg.com/mvp.css" />
+        <script src="//unpkg.com/@hotwired/turbo@7.1.0/dist/turbo.es2017-umd.js"
+                defer
+                data-turbo-track="reload"></script>
+        <style>
+            body {
+                background-color: var(--color-white);
+                font-size: 1.25rem;
+            }
+            body main {
+                padding-left: 5rem;
+                padding-right: 5rem;
+            }
+            footer {
+                background-color: #023430;
+                color: var(--color-white);
+                margin: 0;
+                max-width: 100%;
+            }
+            footer a {
+                color: var(--color-white);
+            }
+            nav {
+                margin-bottom: 0;
+            }
+            table {
+                border: none;
+                border-radius: 0;
+                white-space: normal;
+            }
+            table thead {
+                color: var(--color-text);
+                background-color: var(--color-white);
+            }
+            table td, table tr {
+                text-align: left;
+            }
+            section aside ol, aside ol {
+                padding: 0;
+            }
+            section aside ol li, aside ol li {
+                font-size: 1rem;
+            }
+            section aside, aside {
+                border-radius: 0;
+                border: 0;
+                box-shadow: none !important;
+                padding: 0;
+                margin: 1rem;
+            }
+            turbo-frame {
+                width: 100%;
+            }
+            :root {
+                --color-bg: #c9f0dd;
+                --color-success: #44b78b;
+                --color-warn: #fc9918;
+                --color-text: #1a1a1a;
+                --color-white: #ffffff;
+            }
+        </style>
+        {% block page_styles %}{% endblock %}
+    </head>
+    <body id="{{ page_id }}">
+        {% include "_header.html" %}
         <main>
-            {% include "_header.html" %}
             {% block page_content %}{% endblock %}
         </main>
+        {% include "_footer.html" %}
     </body>
 </html>

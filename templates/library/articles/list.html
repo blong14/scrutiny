@@ -12,13 +12,6 @@
         {% include "library/articles/pagination.html" with items=items %}
     </section>
 {% else %}
-    <style>
-        footer {
-            bottom: 0;
-            position: fixed;
-            width: 100%;
-        }
-    </style>
     <article>
         <section>
             {% include "library/articles/pagination.html" with items=items %}

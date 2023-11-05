@@ -1,3 +1,32 @@
 <section>
-    {% include "_nav.html" %}
+    <nav>
+        <ul>
+            {% if user.is_authenticated %}
+                <li>
+                    <a href="{% url 'index' %}" title="Home">Home</a>
+                </li>
+                {% if user.is_superuser %}
+                    <li>
+                        <a href="{% url 'admin:index' %}" title="Admin">Admin</a>
+                    </li>
+                {% endif %}
+                <li>
+                    <a href="{% url 'news' %}" title="News" data-turbo-preload>News</a>
+                </li>
+                <li>
+                    <a href="{% url 'library' %}" title="Library" data-turbo-preload>Pocket</a>
+                </li>
+                <li>
+                    <a href="{% url "logout" %}" title="Logout">Logout</a>
+                </li>
+            {% else %}
+                <li>
+                    <a href="{% url 'about' %}" title="About">About</a>
+                </li>
+                <li>
+                    <a href="{% url "social:begin" "pocket" %}" title="Login">Login</a>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
 </section>

@@ -1,11 +1,29 @@
 {% extends "base.html" %}
+{% block page_styles %}
+    <style>
+        #library form {
+            display: flex;
+        }
+        #library_list small {
+            margin: 0.25rem;
+        }
+        #library_list small a {
+            padding: 0.25rem;
+        }
+        .warn {
+            color: var(--color-warn);
+        }
+        .success {
+            color: var(--color-success);
+        }
+    </style>
+{% endblock %}
 {% block page_content %}
     <section>
         <h1>My Library</h1>
     </section>
     <section>
-        <form style="display: flex"
-              action="{% url 'library.list_view' %}"
+        <form action="{% url 'library.list_view' %}"
               method="get"
               data-turbo-frame="library-list">
             {% csrf_token %}
@@ -32,11 +50,4 @@
         </section>
         </turbo-frame>
     </section>
-    <style>
-        footer {
-            top: 100vh;
-            position: fixed;
-            width: 100%;
-        }
-    </style>
 {% endblock %}

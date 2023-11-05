@@ -12,7 +12,7 @@ class TestListView(TestCase):
 
     def setUp(self) -> None:
         super().setUp()
-        self.url = reverse("news.list_view")
+        self.url = reverse("news")
         self.user = User.objects.create_superuser("foo", "myemail@test.com", "pass")
         self.client.login(username="foo", password="pass")
 

@@ -29,7 +29,7 @@ class TestAnonymousUserListView(TestCase):
     client_class = Client
 
     def test_get_index(self) -> None:
-        self.url = reverse("library.index_view")
+        self.url = reverse("library")
         self.resp = self.client.get(self.url, follow=True)
         self.assertEqual(self.resp.status_code, 200)
         self.assertTemplateUsed(self.resp, "registration/login.html")
@@ -51,7 +51,7 @@ class TestIndexView(TestCase):
     client_class = Client
 
     def test_get(self) -> None:
-        self.url = reverse("library.index_view")
+        self.url = reverse("library")
         self.user = User.objects.create_user("foo", "myemail@test.com", "pass")
         UserSocialAuth.objects.create(user=self.user, provider="pocket")
         self.client.login(username="foo", password="pass")

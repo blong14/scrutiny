@@ -48,7 +48,7 @@ class TestScrutinyIndexView(TestCase):
 
     def setUp(self) -> None:
         super().setUp()
-        self.url = reverse("scrutiny.index")
+        self.url = reverse("index")
 
     def test_index(self) -> None:
         self.response = self.client.get(self.url)
@@ -61,7 +61,7 @@ class TestScrutinyAboutView(TestCase):
 
     def setUp(self) -> None:
         super().setUp()
-        self.url = reverse("scrutiny.about")
+        self.url = reverse("about")
 
     def test_about(self) -> None:
         self.response = self.client.get(self.url)
