@@ -64,14 +64,26 @@
                 --color-text: #1a1a1a;
                 --color-white: #ffffff;
             }
+            .container {
+                margin: 0;
+                display: flex;
+                flex-direction: column;
+                min-height: 100%;
+            }
+            .spacer {
+                flex: 1;
+            }
         </style>
         {% block page_styles %}{% endblock %}
     </head>
     <body id="{{ page_id }}">
-        {% include "_header.html" %}
-        <main>
-            {% block page_content %}{% endblock %}
-        </main>
-        {% include "_footer.html" %}
+        <div class="container">
+            {% include "_header.html" %}
+            <main>
+                {% block page_content %}{% endblock %}
+            </main>
+            <div class="spacer"></div>
+            {% include "_footer.html" %}
+        </div>
     </body>
 </html>
