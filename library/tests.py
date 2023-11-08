@@ -1,10 +1,11 @@
+from typing import List
+
 from django.contrib.auth.models import User
 from django.test import Client, TestCase
 from django.urls import reverse
 from social_django.models import UserSocialAuth
 
 from .models import Article, Tag
-from scrutiny.tests import ScrutinyTestListView
 
 
 def article(**kwargs) -> Article:
@@ -60,7 +61,7 @@ class TestIndexView(TestCase):
         self.assertTemplateUsed(self.resp, "library/index.html")
 
 
-class TestListView(ScrutinyTestListView):
+class TestListView(TestCase):
     client_class = Client
     model = Article
 
@@ -83,7 +84,9 @@ class TestListView(ScrutinyTestListView):
 
     def test_no_items(self) -> None:
         self.tearDown()
-        super().test_no_items()
+        self.response = self.client.get(self.url)
+        self.assertEqual(self.response.status_code, 200)
+        self.assertContains(self.response, "No items.")
 
     def test_items(self) -> None:
         self.response = self.client.get(self.url)
@@ -98,8 +101,12 @@ class TestListView(ScrutinyTestListView):
         self.assertEqual(len(self.response.context["items"]), 1)
         self.assertListResponseContains(["world"])
 
+    def assertListResponseContains(self, expected: List[str]) -> None:
+        for item in expected:
+            self.assertContains(self.response, item)
 
-class TestTagListView(ScrutinyTestListView):
+
+class TestTagListView(TestCase):
     client_class = Client
     model = Tag
 
@@ -122,10 +129,16 @@ class TestTagListView(ScrutinyTestListView):
 
     def test_no_items(self) -> None:
         self.tearDown()
-        super().test_no_items()
+        self.response = self.client.get(self.url)
+        self.assertEqual(self.response.status_code, 200)
+        self.assertContains(self.response, "No items.")
 
     def test_items(self) -> None:
         self.response = self.client.get(self.url)
         self.assertEqual(self.response.status_code, 200)
         self.assertEqual(len(self.response.context["items"]), len(self.items))
         self.assertListResponseContains([item.value for item in self.items])
+
+    def assertListResponseContains(self, expected: List[str]) -> None:
+        for item in expected:
+            self.assertContains(self.response, item)

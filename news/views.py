@@ -46,9 +46,7 @@ class NewsItemFormView(auth.LoginRequiredMixin, FormView):
         feed = FeedRegistry.get(form.feed())
         if not feed:
             raise Http404("feed does not exist")
-        return parse_feed(
-            context, feed, parser=default_parser.parse
-        )
+        return parse_feed(context, feed, parser=default_parser.parse)
 
     def form_valid(self, form):
         form.save_item(self.request.user)

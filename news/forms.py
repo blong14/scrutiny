@@ -19,7 +19,9 @@ class NewsItemForm(forms.Form):
             "https://getpocket.com/v3/add",
             json={
                 "consumer_key": get_pocket_consumer_key(),
-                "access_token": usr.social_auth.first().extra_data.get("access_token", ""),
+                "access_token": usr.social_auth.first().extra_data.get(
+                    "access_token", ""
+                ),
                 "title": self.selected_title(),
                 "url": url,
             },

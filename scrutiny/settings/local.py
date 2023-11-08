@@ -59,7 +59,6 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "social_django",
-    "rest_framework",
     "library",
     "news",
     "wsgi",
@@ -183,14 +182,13 @@ LOGGING = {
             "level": "DEBUG",
             "handlers": ["console"],
         },
+        "django.request": {
+            "level": "DEBUG",
+            "handlers": ["console"],
+        }
     },
 }
 
-REST_FRAMEWORK = {
-    "DATETIME_FORMAT": "%Y-%m-%dT%H:%M:%SZ",
-    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
-    "PAGE_SIZE": 500,
-}
 
 MERCURE_URL = "https://scrutiny.local:8089/.well-known/mercure"
 SSE = True
