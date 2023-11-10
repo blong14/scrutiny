@@ -68,3 +68,41 @@ class TestFeedView(TestCase):
             self.assertTemplateUsed(self.resp, "news/list.html")
             self.assertContains(self.resp, feed)
             self.assertContains(self.resp, "hello")
+
+
+class TestNewsItemFormView(TestCase):
+    client_class = Client
+
+    def setUp(self) -> None:
+        super().setUp()
+        self.url = reverse("news.save_view")
+        self.user = User.objects.create_superuser("foo", "myemail@test.com", "pass")
+        self.client.login(username="foo", password="pass")
+
+    def test_save_anonymous_user(self) -> None:
+        self.client.logout()
+        self.resp = self.client.post(self.url, follow=True)
+        self.assertEqual(self.resp.status_code, 200)
+        self.assertTemplateUsed(self.resp, "registration/login.html")
+
+    @mock.patch("news.views.requests.post")
+    def test_save(self, mock_post) -> None:
+        mock_post.return_value.status_code = 201
+        mock_post.return_value.json.return_value = {
+            "item": {
+                "item_id": "111",
+                "title": "Example News Item",
+            },
+        }
+        self.resp = self.client.post(
+            self.url,
+            data={
+                "feed_id": "hackernews",
+                "title": "Example News Item",
+                "url": "https://article.com",
+            },
+        )
+        self.assertEqual(self.resp.status_code, 200)
+        self.assertTemplateUsed(self.resp, "news/list.html")
+        self.assertEqual(self.resp.context["selected"], "Example News Item")
+        mock_post.assert_called()
