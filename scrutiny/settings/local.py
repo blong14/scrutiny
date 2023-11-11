@@ -61,6 +61,7 @@ INSTALLED_APPS = [
     "social_django",
     "library",
     "news",
+    "jobs",
     "wsgi",
 ]
 

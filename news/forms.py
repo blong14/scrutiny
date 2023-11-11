@@ -1,10 +1,12 @@
-from django import forms
+from django.forms import ModelForm
+
+from .models import NewsItem
 
 
-class NewsItemForm(forms.Form):
-    feed_id = forms.CharField()
-    title = forms.CharField()
-    url = forms.URLField()
+class NewsItemForm(ModelForm):
+    class Meta:
+        model = NewsItem
+        fields = ["feed_id", "title", "url"]
 
     def get_url(self) -> str:
         return self.cleaned_data["url"]

@@ -85,7 +85,7 @@ class TestNewsItemFormView(TestCase):
         self.assertEqual(self.resp.status_code, 200)
         self.assertTemplateUsed(self.resp, "registration/login.html")
 
-    @mock.patch("news.views.requests.post")
+    @mock.patch("jobs.signals.requests.post")
     def test_save(self, mock_post) -> None:
         mock_post.return_value.status_code = 201
         mock_post.return_value.json.return_value = {

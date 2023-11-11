@@ -1,6 +1,8 @@
 from typing import Any, Callable, Dict, List, Optional
 
 import feedparser as default_parser
+from django.contrib.auth.models import User
+from django.db import models
 from pydantic import AnyHttpUrl
 from pydantic.dataclasses import dataclass
 
@@ -93,3 +95,15 @@ def parse_feed(
         "items": resp.entries[0:limit],
     }
     return context
+
+
+class NewsItem(models.Model):
+    class Meta:
+        ordering = ["created_at"]
+
+    id = models.BigAutoField(primary_key=True)
+    feed_id = models.CharField(max_length=256)
+    title = models.CharField(max_length=256)
+    url = models.URLField()
+    user = models.ForeignKey(User, related_name="news_items", on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
