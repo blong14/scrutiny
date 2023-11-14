@@ -101,9 +101,16 @@ class NewsItem(models.Model):
     class Meta:
         ordering = ["created_at"]
 
+    STATUS_CHOICES = [
+        ("pending", "Pending"),
+        ("success", "Success"),
+        ("error", "Error"),
+    ]
+
     id = models.BigAutoField(primary_key=True)
     feed_id = models.CharField(max_length=256)
     title = models.CharField(max_length=256)
     url = models.URLField()
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
     user = models.ForeignKey(User, related_name="news_items", on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
