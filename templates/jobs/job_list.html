@@ -1,13 +1,17 @@
 {% extends "base.html" %}
 {% block page_content %}
-<article>
-    <h2>Job List</h2>
-    <ul>
-        {% for job in object_list %}
-            <li>
-                <a href="{% url 'job_detail' pk=job.pk %}">{{ job.name }}</a>
-            </li>
-        {% endfor %}
-    </ul>
-</article>
+    <article>
+        <h2>Job List</h2>
+        {% if object_list %}
+            <ul>
+                {% for job in object_list %}
+                    <li>
+                        <a href="{% url 'job_detail' pk=job.pk %}">{{ job.name }}</a>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>No items.</p>
+        {% endif %}
+    </article>
 {% endblock %}
