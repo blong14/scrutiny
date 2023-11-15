@@ -42,7 +42,7 @@ services:
             - "26257:26257"
             - "8080:8080"
     postgres:
-        image: postgres:15
+        image: postgres:16
         ports:
             - "54321:5432"
         environment:
