@@ -166,7 +166,6 @@ async def main():
             data={"version": "1"},
         ),
     )
-    import pdb; pdb.set_trace()
     async with aiohttp.ClientSession(
         trust_env=False,
         raise_for_status=True,
