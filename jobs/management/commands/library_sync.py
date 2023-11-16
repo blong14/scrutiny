@@ -12,8 +12,10 @@ from pydantic import BaseModel
 from pydantic.dataclasses import dataclass
 from social_django.models import UserSocialAuth
 
-from library.models import Article, JobEvent, Tag
+from library.models import Article, Tag
 from scrutiny.env import get_pocket_consumer_key
+
+from jobs.models import Job
 
 
 @dataclass
@@ -97,10 +99,11 @@ async def get_pocket_data(req, usr) -> List[ArticleModel]:
     ]
 
 
-def create_job_event(data: dict) -> Task[int]:
-    return asyncio.ensure_future(
-        sync_to_async(JobEvent(data=data).save, thread_sensitive=False)()
-    )
+async def create_job_event(name: str, data: dict) -> Job:
+    job = Job(name=name, data=data)
+    await job.asave()
+    await job.arefresh_from_db()
+    return job
 
 
 def read_user(email: str) -> Task[UserSocialAuth]:
@@ -158,8 +161,12 @@ def create_tags(data: List[Tag]) -> Task[List[int]]:
 async def main():
     usr, event = await asyncio.gather(
         read_user("14benj@gmail.com"),
-        create_job_event({"name": "start", "version": "1"}),
+        create_job_event(
+            name="library_sync",
+            data={"version": "1"},
+        ),
     )
+    import pdb; pdb.set_trace()
     async with aiohttp.ClientSession(
         trust_env=False,
         raise_for_status=True,
@@ -184,18 +191,17 @@ async def main():
         if item.article.id not in existing_articles
     ]
     await create_tags(new_tags)
-    await create_job_event(
-        {
-            "name": "end",
-            "version": "1",
-            "results": {
-                "existing_articles": len(existing_articles),
-                "new_articles": len(new_articles),
-                "new_tags": len(new_tags),
-                "raw_items": len(items),
-            },
-        }
-    )
+    event.status = "success"
+    event.data = {
+        "version": "1",
+        "results": {
+            "existing_articles": len(existing_articles),
+            "new_articles": len(new_articles),
+            "new_tags": len(new_tags),
+            "raw_items": len(items),
+        },
+    }
+    await event.asave()
 
 
 class Command(BaseCommand):
