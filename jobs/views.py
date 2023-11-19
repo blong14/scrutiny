@@ -8,6 +8,7 @@ from .models import Job
 
 class JobListView(auth.LoginRequiredMixin, ListView):
     model = Job
+    paginate_by = 10
     template_name = "jobs/job_list.html"
 
 
