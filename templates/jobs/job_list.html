@@ -1,9 +1,6 @@
 {% extends "base.html" %}
 {% block page_styles %}
     <style>
-        table {
-            overflow: visible;
-        }
         .success {
             color: var(--color-success);
         }
@@ -17,39 +14,68 @@
         <header>
             <h2>Dashboard</h2>
         </header>
-        <article>
-            <header>
-                <h3>Jobs</h3>
-            </header>
-            {% if object_list %}
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Data</th>
-                            <th>Create At</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for job in object_list %}
+        <section>
+            <aside>
+                <turbo-frame id="news-container">
+                <article>
+                    <header>
+                        <h3>News Summary</h3>
+                    </header>
+                    <section>
+                        <p>Loading...</p>
+                    </section>
+                </article>
+                </turbo-frame>
+            </aside>
+            <aside>
+                <turbo-frame id="pocket-container">
+                <article>
+                    <header>
+                        <h3>Pocket</h3>
+                    </header>
+                    <section>
+                        <p>Loading...</p>
+                    </section>
+                </article>
+                </turbo-frame>
+            </aside>
+        </section>
+        <section>
+            <article>
+                <header>
+                    <h3>Jobs</h3>
+                </header>
+                {% if object_list %}
+                    <table>
+                        <thead>
                             <tr>
-                                <td>{{ job.name }}</td>
-                                <td>{{ job.data }}</td>
-                                 <td data-last-sync>
-                                    <time datetime="{{ job.created_at | date:"c" }}">
-                                        {{ job.created_at | date:"h:i A" }}
-                                    </time>
-                                </td>
-                                <td data-status>
-                                    <span class="{% if job.status == "pending" %}warn{% else %}success{% endif %}">{{ job.status }}</span>
-                                </td>
+                                <th></th>
+                                <th>Name</th>
+                                <th>Data</th>
+                                <th>Status</th>
                             </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            {% else %}
-                <p>No items.</p>
-            {% endif %}
-        </article>
+                        </thead>
+                        <tbody>
+                            {% for job in object_list %}
+                                <tr>
+                                    <td data-last-sync>
+                                        <time datetime="{{ job.created_at | date:"c" }}">
+                                            {{ job.created_at | date:"h:i A" }}
+                                        </time>
+                                    </td>
+                                    <td>{{ job.name }}</td>
+                                    <td>{{ job.data }}</td>
+                                    <td data-status>
+                                        <span class="{% if job.status == "pending" %}warn{% else %}success{% endif %}">{{ job.status }}</span>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                    <p>No items.</p>
+                {% endif %}
+            </article>
+        </section>
     </section>
 {% endblock %}
