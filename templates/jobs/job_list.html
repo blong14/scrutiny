@@ -11,71 +11,69 @@
 {% endblock %}
 {% block page_content %}
     <section>
-        <header>
-            <h2>Dashboard</h2>
-        </header>
-        <section>
-            <aside>
-                <turbo-frame id="news-container">
-                <article>
-                    <header>
-                        <h3>News Summary</h3>
-                    </header>
-                    <section>
-                        <p>Loading...</p>
-                    </section>
-                </article>
-                </turbo-frame>
-            </aside>
-            <aside>
-                <turbo-frame id="pocket-container">
-                <article>
-                    <header>
-                        <h3>Pocket</h3>
-                    </header>
-                    <section>
-                        <p>Loading...</p>
-                    </section>
-                </article>
-                </turbo-frame>
-            </aside>
-        </section>
-        <section>
+        <h1>Dashboard</h1>
+    </section>
+    <section>
+        <aside>
+            <turbo-frame id="news-container">
             <article>
                 <header>
-                    <h3>Jobs</h3>
+                    <h3>News Summary</h3>
                 </header>
-                {% if object_list %}
-                    <table>
-                        <thead>
-                            <tr>
-                                <th></th>
-                                <th>Name</th>
-                                <th>Data</th>
-                                <th>Status</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for job in object_list %}
-                                <tr>
-                                    <td data-last-sync>
-                                        <time datetime="{{ job.created_at | date:"c" }}">
-                                            {{ job.created_at | date:"h:i A" }}
-                                        </time>
-                                    </td>
-                                    <td>{{ job.name }}</td>
-                                    <td>{{ job.data }}</td>
-                                    <td data-status>
-                                        <span class="{% if job.status == "pending" %}warn{% else %}success{% endif %}">{{ job.status }}</span>
-                                    </td>
-                                </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                {% else %}
-                    <p>No items.</p>
-                {% endif %}
+                <section>
+                    <p>Loading...</p>
+                </section>
             </article>
-        </section>
+            </turbo-frame>
+        </aside>
+        <aside>
+            <turbo-frame id="pocket-container">
+            <article>
+                <header>
+                    <h3>Pocket</h3>
+                </header>
+                <section>
+                    <p>Loading...</p>
+                </section>
+            </article>
+            </turbo-frame>
+        </aside>
+    </section>
+    <section>
+        <article>
+            <header>
+                <h3>Jobs</h3>
+            </header>
+            {% if object_list %}
+                <table>
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th>Name</th>
+                            <th>Data</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for job in object_list %}
+                            <tr>
+                                <td data-last-sync>
+                                    <time datetime="{{ job.created_at | date:"c" }}">
+                                        {{ job.created_at | date:"h:i A" }}
+                                    </time>
+                                </td>
+                                <td>{{ job.name }}</td>
+                                <td>{{ job.data }}</td>
+                                <td data-status>
+                                    <span class="{% if job.status == "pending" %}warn{% else %}success{% endif %}">{{ job.status }}</span>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <p>No items.</p>
+            {% endif %}
+        </article>
     </section>
 {% endblock %}
