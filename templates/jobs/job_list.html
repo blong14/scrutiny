@@ -1,17 +1,55 @@
 {% extends "base.html" %}
+{% block page_styles %}
+    <style>
+        table {
+            overflow: visible;
+        }
+        .success {
+            color: var(--color-success);
+        }
+        .warn {
+            color: var(--color-warn);
+        }
+    </style>
+{% endblock %}
 {% block page_content %}
-    <article>
-        <h2>Job List</h2>
-        {% if object_list %}
-            <ul>
-                {% for job in object_list %}
-                    <li>
-                        <a href="{% url 'job_detail' pk=job.pk %}">{{ job.name }}</a>
-                    </li>
-                {% endfor %}
-            </ul>
-        {% else %}
-            <p>No items.</p>
-        {% endif %}
-    </article>
+    <section>
+        <header>
+            <h2>Dashboard</h2>
+        </header>
+        <article>
+            <header>
+                <h3>Jobs</h3>
+            </header>
+            {% if object_list %}
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Data</th>
+                            <th>Create At</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for job in object_list %}
+                            <tr>
+                                <td>{{ job.name }}</td>
+                                <td>{{ job.data }}</td>
+                                 <td data-last-sync>
+                                    <time datetime="{{ job.created_at | date:"c" }}">
+                                        {{ job.created_at | date:"h:i A" }}
+                                    </time>
+                                </td>
+                                <td data-status>
+                                    <span class="{% if job.status == "pending" %}warn{% else %}success{% endif %}">{{ job.status }}</span>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <p>No items.</p>
+            {% endif %}
+        </article>
+    </section>
 {% endblock %}
