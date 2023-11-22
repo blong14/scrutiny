@@ -49,5 +49,5 @@ DATABASES = {
 
 
 # turns server side events on
-MERCURE_URL = "http://scrutiny-caddy.default.svc.cluster.local:8443/.well-known/mercure"
+MERCURE_URL = "http://mercure.default.svc.cluster.local/.well-known/mercure"
 SSE = True

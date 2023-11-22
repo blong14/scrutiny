@@ -112,6 +112,8 @@ env:
     value: ""
   - name: PG_PASSWORD
     value: ""
+  - name: JWT_KEY
+    value: ""
 
 cronjob:
   command:

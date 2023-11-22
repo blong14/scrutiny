@@ -170,6 +170,10 @@ JWT_PUBLISH_TOKEN = jwt.encode(
     payload={"mercure": {"publish": ["*"]}}, key=os.getenv("JWT_KEY", "!ChangeMe!")
 )
 
+JWT_SUBSCRIBE_TOKEN = jwt.encode(
+    payload={"mercure": {"subscribe": ["*"]}}, key=os.getenv("JWT_KEY", "!ChangeMe!")
+)
+
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": True,

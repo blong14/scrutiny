@@ -1,4 +1,4 @@
 document.addEventListener("DOMContentLoaded", function (e) {
-    const es = new EventSource("//scrutiny.local:8089/.well-known/mercure?topic=news");
+    const es = new EventSource("{{ topic }}");
     Turbo.connectStreamSource(es);
 });
