@@ -12,6 +12,7 @@ from pydantic import BaseModel
 from scrutiny.env import (
     get_mercure_url,
     get_mercure_pub_token,
+    get_ollama_url,
 )
 
 from jobs.models import Job  # noqa
@@ -91,7 +92,7 @@ async def get_ollama(req):
     resp = await _request(
         req,
         aiohttp.hdrs.METH_POST,
-        "http://ollama.cluster/api/generate",
+        get_ollama_url(),
         json={
             "model": "orca-mini",
             "prompt": prompt,

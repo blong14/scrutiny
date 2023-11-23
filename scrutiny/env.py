@@ -23,6 +23,12 @@ def get_mercure_url() -> str:
     )
 
 
+def get_ollama_url() -> str:
+    return getattr(
+        settings, "OLLAMA_SVC_URL", "http://ollama.cluster"
+    )
+
+
 def should_trace() -> bool:
     return getattr(settings, "TRACE_ENABLED", False)
 
