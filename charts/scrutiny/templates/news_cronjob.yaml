@@ -5,7 +5,7 @@ metadata:
   labels:
     {{- include "scrutiny.labels" . | nindent 4 }}
 spec:
-  concurrencyPolicy: {{ .Values.News.cronjob.concurrencyPolicy }}
+  concurrencyPolicy: Allow
   failedJobsHistoryLimit: 1
   jobTemplate:
     metadata:
@@ -46,6 +46,6 @@ spec:
           schedulerName: default-scheduler
           securityContext: {}
           terminationGracePeriodSeconds: 30
-  schedule: {{ .Values.News.cronjob.schedule }}
+  schedule: {{ .Values.News.cronjob.schedule | quote }}
   successfulJobsHistoryLimit: 1
   suspend: false

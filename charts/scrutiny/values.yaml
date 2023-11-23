@@ -141,8 +141,8 @@ News:
         - manage.py
         - news_summary
         - --settings=scrutiny.settings.prod
-    schedule: "*/2 * * * *"
     concurrencyPolicy: Allow
+    schedule: "*/2 * * * *"
 
 # Varnish
 
