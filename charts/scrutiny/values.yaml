@@ -56,8 +56,13 @@ ingress:
       paths:
         - path: /
           pathType: ImplementationSpecific
-  port: 80
-  target: scrutiny-varnish
+          port: 80
+          target: scrutiny-varnish
+        - path: /.well-known/mercure
+          pathType: ImplementationSpecific
+          port: 80
+          target: mercure
+  target: scrutiny-ingress
   tls: []
   #  - secretName: chart-example-tls
   #    hosts:
