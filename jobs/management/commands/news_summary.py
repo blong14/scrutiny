@@ -42,6 +42,21 @@ READ_TIMEOUT = 300.0
 ERROR_RESPONSE = Response(data=[], success=False)
 
 
+async def _mercure_request(req: HttpRequest, method: str, url: str, **kwargs) -> Response:
+    try:
+        async with req.session.request(method, url, ssl=False, **kwargs) as resp:
+            await resp.text()
+    except asyncio.TimeoutError:
+        logging.error(f"asyncio.TimeOutError {req.read_timeout}")
+        return ERROR_RESPONSE
+    except aiohttp.ClientResponseError as e:
+        logging.error(e)
+        await asyncio.sleep(3)
+        return ERROR_RESPONSE
+    else:
+        return Response(success=True, data=[])
+
+
 async def _request(req: HttpRequest, method: str, url: str, **kwargs) -> Response:
     data = []
     try:
@@ -84,24 +99,18 @@ async def get_ollama(req):
     )
     if not resp.success:
         return []
+    return resp.data
 
-    token = get_mercure_pub_token()
-    if not token:
-        raise EnvironmentError("missing jwt publish token")
 
-    req.header = {
-        "Authorization": f"Bearer {token}",
-        "Content-Type": "application/x-www-form-urlencoded",
-    }
-
+async def mercure(req, data):
     summary = ""
-    for token in resp.data:
+    for token in data:
         summary = f"{summary} {token}"
         msg = render_to_string("jobs/news_summary.html", {"summary": summary})
-        await _request(
+        await _mercure_request(
             req,
             aiohttp.hdrs.METH_POST,
-            "http://mercure.cluster/.well-known/mercure",
+            get_mercure_url(),
             data=parse.urlencode(
                 {"target": "news-summary", "topic": ["jobs"], "data": msg},
                 True,
@@ -121,12 +130,31 @@ async def main():
         name="news_summary",
         data={"version": "1"},
     )
+
     async with aiohttp.ClientSession(
         trust_env=False,
         raise_for_status=True,
         timeout=aiohttp.ClientTimeout(total=READ_TIMEOUT),
     ) as session:
-        await get_ollama(HttpRequest(session=session)),
+        data = await get_ollama(HttpRequest(session=session))
+
+    pub_token = get_mercure_pub_token()
+    if not pub_token:
+        raise EnvironmentError("missing jwt publish token")
+
+    async with aiohttp.ClientSession(
+        trust_env=False,
+        raise_for_status=True,
+        timeout=aiohttp.ClientTimeout(total=READ_TIMEOUT),
+        headers={
+            "Authorization": f"Bearer {pub_token}",
+            "Content-Type": "application/x-www-form-urlencoded",
+        }
+    ) as session:
+        await mercure(HttpRequest(session=session), data),
+
+    event.status = "success"
+    await event.asave()
 
 
 class Command(BaseCommand):
