@@ -131,7 +131,8 @@ cronjob:
   schedule: 0 * * * *
   concurrencyPolicy: Allow
 
-news:
+News:
+
   cronjob:
     command:
       enabled: true

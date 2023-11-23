@@ -57,7 +57,7 @@ metadata:
   labels:
     {{- include "scrutiny.labels" . | nindent 4 }}
 spec:
-  concurrencyPolicy: {{ .Values.news.cronjob.concurrencyPolicy }}
+  concurrencyPolicy: {{ .Values.News.cronjob.concurrencyPolicy }}
   failedJobsHistoryLimit: 1
   jobTemplate:
     metadata:
@@ -76,11 +76,11 @@ spec:
           {{- end }}
           containers:
             - args:
-            {{- range $value := .Values.news.cronjob.command.args }}
+            {{- range $value := .Values.News.cronjob.command.args }}
                - {{ $value }}
             {{- end }}
-            {{- if .Values.news.cronjob.command.enabled }}
-              command: [{{ .Values.news.cronjob.command.value }}]
+            {{- if .Values.News.cronjob.command.enabled }}
+              command: [{{ .Values.News.cronjob.command.value }}]
             {{- end }}
               env:
               {{- range $key, $value := .Values.env }}
@@ -98,6 +98,6 @@ spec:
           schedulerName: default-scheduler
           securityContext: {}
           terminationGracePeriodSeconds: 30
-  schedule: {{ .Values.news.cronjob.schedule }}
+  schedule: {{ .Values.News.cronjob.schedule }}
   successfulJobsHistoryLimit: 1
   suspend: false
