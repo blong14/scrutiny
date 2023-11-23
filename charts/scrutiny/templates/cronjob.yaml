@@ -49,3 +49,55 @@ spec:
   schedule: {{ .Values.cronjob.schedule }}
   successfulJobsHistoryLimit: 1
   suspend: false
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ include "scrutiny.fullname" . }}-news-cron
+  labels:
+    {{- include "scrutiny.labels" . | nindent 4 }}
+spec:
+  concurrencyPolicy: {{ .Values.news.cronjob.concurrencyPolicy }}
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "scrutiny.selectorLabels" . | nindent 8 }}
+    spec:
+      template:
+        spec:
+          {{- with .Values.affinity }}
+          affinity:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          containers:
+            - args:
+            {{- range $value := .Values.news.cronjob.command.args }}
+               - {{ $value }}
+            {{- end }}
+            {{- if .Values.news.cronjob.command.enabled }}
+              command: [{{ .Values.news.cronjob.command.value }}]
+            {{- end }}
+              env:
+              {{- range $key, $value := .Values.env }}
+                - name: {{ $key }}
+                  value: {{ $value | quote }}
+              {{- end }}
+              image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+              imagePullPolicy: {{ .Values.image.pullPolicy }}
+              name: {{ .Chart.Name }}-news-cron
+              resources: {}
+              terminationMessagePath: /dev/termination-log
+              terminationMessagePolicy: File
+          dnsPolicy: ClusterFirst
+          restartPolicy: Never
+          schedulerName: default-scheduler
+          securityContext: {}
+          terminationGracePeriodSeconds: 30
+  schedule: {{ .Values.news.cronjob.schedule }}
+  successfulJobsHistoryLimit: 1
+  suspend: false

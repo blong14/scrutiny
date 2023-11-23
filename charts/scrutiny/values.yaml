@@ -131,6 +131,18 @@ cronjob:
   schedule: 0 * * * *
   concurrencyPolicy: Allow
 
+news:
+  cronjob:
+    command:
+      enabled: true
+      value: python
+      args:
+        - manage.py
+        - news_summary
+        - --settings=scrutiny.settings.prod
+    schedule: "*/2 * * * *"
+    concurrencyPolicy: Allow
+
 # Varnish
 
 Varnish:
