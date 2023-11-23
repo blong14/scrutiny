@@ -2,7 +2,7 @@ from django.contrib.auth import mixins as auth
 from django.views.generic import ListView, DetailView, CreateView, UpdateView
 from django.urls import reverse_lazy
 
-from scrutiny.env import get_mercure_url  # noqa
+from scrutiny.env import get_mercure_sub_token, get_mercure_url  # noqa
 from .forms import JobForm
 from .models import Job
 
@@ -14,8 +14,9 @@ class JobListView(auth.LoginRequiredMixin, ListView):
 
     def get_context_data(self, **kwargs):
         mercure_url = get_mercure_url()
+        mercure_token = get_mercure_sub_token()
         context = super().get_context_data(**kwargs)
-        context.update({"topic": f"{mercure_url}?topic=jobs"})
+        context.update({"topic": f"{mercure_url}?topic=jobs&authorization={mercure_token}"})
         return context
 
 
