@@ -53,4 +53,4 @@ MERCURE_URL = "http://scrutiny.cluster/.well-known/mercure"
 MECURE_SVC_URL = "http://mercure.default.svc.cluster.local/.well-known/mercure"
 SSE = True
 
-OLLAMA_SVC_URL = "http://ollama.default.svc.cluster.local"
+OLLAMA_SVC_URL = "http://ollama.default.svc.cluster.local:11434"
