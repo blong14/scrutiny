@@ -92,7 +92,7 @@ async def get_ollama(req):
     resp = await _request(
         req,
         aiohttp.hdrs.METH_POST,
-        get_ollama_url(),
+        f"{get_ollama_url()}/api/generate",
         json={
             "model": "orca-mini",
             "prompt": prompt,
