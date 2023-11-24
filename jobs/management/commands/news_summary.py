@@ -64,10 +64,7 @@ async def read_tokens(req: HttpRequest) -> AsyncIterable[str, None]:
 
 async def _send(req: HttpRequest, **kwargs) -> None:
     await req.session.request(
-        aiohttp.hdrs.METH_POST,
-        get_mercure_url(),
-        ssl=False,
-        **kwargs
+        aiohttp.hdrs.METH_POST, get_mercure_url(), ssl=False, **kwargs
     )
 
 
@@ -75,10 +72,13 @@ async def send(req: HttpRequest, summary: str) -> None:
     msg = await sync_to_async(render_to_string)(
         "jobs/news_summary.html", {"summary": summary}
     )
-    await _send(req, data=parse.urlencode(
-        {"target": "news-summary", "topic": ["jobs"], "data": msg},
-        True,
-    ))
+    await _send(
+        req,
+        data=parse.urlencode(
+            {"target": "news-summary", "topic": ["jobs"], "data": msg},
+            True,
+        ),
+    )
 
 
 async def create_job_event(name: str, data: dict) -> Job:
@@ -110,7 +110,7 @@ async def main() -> None:
             headers={
                 "Authorization": f"Bearer {pub_token}",
                 "Content-Type": "application/x-www-form-urlencoded",
-            }
+            },
         )
         await send(HttpRequest(session=mercure_session), "Chat client started...")
         summary = ""

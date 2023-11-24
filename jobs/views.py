@@ -16,7 +16,9 @@ class JobListView(auth.LoginRequiredMixin, ListView):
         mercure_url = get_mercure_url()
         mercure_token = get_mercure_sub_token()
         context = super().get_context_data(**kwargs)
-        context.update({"topic": f"{mercure_url}?topic=jobs&authorization={mercure_token}"})
+        context.update(
+            {"topic": f"{mercure_url}?topic=jobs&authorization={mercure_token}"}
+        )
         return context
 
 
