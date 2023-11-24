@@ -1,36 +1,25 @@
 import asyncio
-import logging
-from typing import Any, List
+from asgiref.sync import sync_to_async
+from collections.abc import AsyncIterable
 from urllib import parse
 
 import aiohttp
 from django.template.loader import render_to_string
 from django.core.management.base import BaseCommand
-from pydantic.dataclasses import dataclass
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
-from scrutiny.env import (
+from jobs.models import Job  # noqa
+from news.models import FeedRegistry, parse_feed  # noqa
+from scrutiny.env import (  # noqa
     get_mercure_url,
     get_mercure_pub_token,
     get_ollama_url,
 )
 
-from jobs.models import Job  # noqa
-from news.models import FeedRegistry, parse_feed  # noqa
 
-
-@dataclass
-class HttpRequest:
-    session: Any
-    base_url: str = "https://getpocket.com"
-    read_timeout: float = 10.0
-    header = {"Content-Type": "application/json"}
-
-
-@dataclass
-class Response:
-    data: List
-    success: bool = False
+class HttpRequest(BaseModel):
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+    session: aiohttp.ClientSession
 
 
 class Token(BaseModel):
@@ -40,83 +29,56 @@ class Token(BaseModel):
 
 
 READ_TIMEOUT = 300.0
-ERROR_RESPONSE = Response(data=[], success=False)
+SEND_TIMEOUT = 10.0
 
 
-async def _mercure_request(req: HttpRequest, method: str, url: str, **kwargs) -> Response:
-    try:
-        async with req.session.request(method, url, ssl=False, **kwargs) as resp:
-            await resp.text()
-    except asyncio.TimeoutError:
-        logging.error(f"asyncio.TimeOutError {req.read_timeout}")
-        return ERROR_RESPONSE
-    except aiohttp.ClientResponseError as e:
-        logging.error(e)
-        await asyncio.sleep(3)
-        return ERROR_RESPONSE
-    else:
-        return Response(success=True, data=[])
+async def _read_tokens(req: HttpRequest, **kwargs) -> AsyncIterable[Token, None]:
+    async with req.session.request(
+        aiohttp.hdrs.METH_POST,
+        f"{get_ollama_url()}/api/generate",
+        ssl=False,
+        **kwargs,
+    ) as resp:
+        async for chunk, valid in resp.content.iter_chunks():
+            if not valid:
+                return
+            yield Token.model_validate_json(chunk)
 
 
-async def _request(req: HttpRequest, method: str, url: str, **kwargs) -> Response:
-    data = []
-    try:
-        kwargs |= dict(headers=req.header)
-        async with req.session.request(method, url, ssl=False, **kwargs) as resp:
-            async for chunk in resp.content.iter_chunks():
-                token = Token.model_validate_json(chunk[0])
-                if token.done:
-                    break
-                data.append(token.response)
-    except asyncio.TimeoutError:
-        logging.error(f"asyncio.TimeOutError {req.read_timeout}")
-        return ERROR_RESPONSE
-    except aiohttp.ClientResponseError as e:
-        logging.error(e)
-        await asyncio.sleep(3)
-        return ERROR_RESPONSE
-    else:
-        return Response(success=True, data=data)
-
-
-async def get_ollama(req):
-    context = {}
+async def read_tokens(req: HttpRequest) -> AsyncIterable[str, None]:
     feed = FeedRegistry.get("hackernews")
-    context = parse_feed(context, feed)
+    context = {}
+    context = await sync_to_async(parse_feed)(context, feed)
     titles = "; ".join([itm.get("title") for itm in context.get("items", [])])
     prompt = f"""Given these titles, {titles}, create a summary paragraph.
     Make the summary sound like a technical writer wrote the summary and do not
     include the titles in the response. Do not include lists or bullet points and
     only use full sentences. Your response should start with `Today's News: `
     """
-    resp = await _request(
-        req,
+    data = {"model": "orca-mini", "prompt": prompt}
+    async for token in _read_tokens(req, json=data):
+        yield token.response
+        if token.done:
+            return
+
+
+async def _send(req: HttpRequest, **kwargs) -> None:
+    await req.session.request(
         aiohttp.hdrs.METH_POST,
-        f"{get_ollama_url()}/api/generate",
-        json={
-            "model": "orca-mini",
-            "prompt": prompt,
-        },
+        get_mercure_url(),
+        ssl=False,
+        **kwargs
     )
-    if not resp.success:
-        return []
-    return resp.data
 
 
-async def mercure(req, data):
-    summary = ""
-    for token in data:
-        summary = f"{summary} {token}"
-        msg = render_to_string("jobs/news_summary.html", {"summary": summary})
-        await _mercure_request(
-            req,
-            aiohttp.hdrs.METH_POST,
-            get_mercure_url(),
-            data=parse.urlencode(
-                {"target": "news-summary", "topic": ["jobs"], "data": msg},
-                True,
-            ),
-        )
+async def send(req: HttpRequest, summary: str) -> None:
+    msg = await sync_to_async(render_to_string)(
+        "jobs/news_summary.html", {"summary": summary}
+    )
+    await _send(req, data=parse.urlencode(
+        {"target": "news-summary", "topic": ["jobs"], "data": msg},
+        True,
+    ))
 
 
 async def create_job_event(name: str, data: dict) -> Job:
@@ -126,7 +88,11 @@ async def create_job_event(name: str, data: dict) -> Job:
     return job
 
 
-async def main():
+async def main() -> None:
+    pub_token = get_mercure_pub_token()
+    if not pub_token:
+        raise EnvironmentError("missing jwt publish token")
+
     event = await create_job_event(
         name="news_summary",
         data={"version": "1"},
@@ -137,22 +103,21 @@ async def main():
         raise_for_status=True,
         timeout=aiohttp.ClientTimeout(total=READ_TIMEOUT),
     ) as session:
-        data = await get_ollama(HttpRequest(session=session))
-
-    pub_token = get_mercure_pub_token()
-    if not pub_token:
-        raise EnvironmentError("missing jwt publish token")
-
-    async with aiohttp.ClientSession(
-        trust_env=False,
-        raise_for_status=True,
-        timeout=aiohttp.ClientTimeout(total=READ_TIMEOUT),
-        headers={
-            "Authorization": f"Bearer {pub_token}",
-            "Content-Type": "application/x-www-form-urlencoded",
-        }
-    ) as session:
-        await mercure(HttpRequest(session=session), data),
+        mercure_session = aiohttp.ClientSession(
+            trust_env=False,
+            raise_for_status=True,
+            timeout=aiohttp.ClientTimeout(total=SEND_TIMEOUT),
+            headers={
+                "Authorization": f"Bearer {pub_token}",
+                "Content-Type": "application/x-www-form-urlencoded",
+            }
+        )
+        await send(HttpRequest(session=mercure_session), "Chat client started...")
+        summary = ""
+        async for token in read_tokens(HttpRequest(session=session)):
+            summary = f"{summary}{token}"
+            await send(HttpRequest(session=mercure_session), summary)
+        await mercure_session.close()
 
     event.status = "success"
     await event.asave()

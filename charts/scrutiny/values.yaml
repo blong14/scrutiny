@@ -142,7 +142,7 @@ News:
         - news_summary
         - --settings=scrutiny.settings.prod
     concurrencyPolicy: Allow
-    schedule: "*/5 * * * *"
+    schedule: "0 * * * *"
 
 # Varnish
 
