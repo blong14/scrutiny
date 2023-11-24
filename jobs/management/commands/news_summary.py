@@ -11,9 +11,9 @@ from pydantic import BaseModel, ConfigDict
 from jobs.models import Job  # noqa
 from news.models import FeedRegistry, parse_feed  # noqa
 from scrutiny.env import (  # noqa
-    get_mercure_url,
+    get_mercure_svc_url,
     get_mercure_pub_token,
-    get_ollama_url,
+    get_ollama_svc_url,
 )
 
 
@@ -35,7 +35,7 @@ SEND_TIMEOUT = 10.0
 async def _read_tokens(req: HttpRequest, **kwargs) -> AsyncIterable[Token, None]:
     async with req.session.request(
         aiohttp.hdrs.METH_POST,
-        f"{get_ollama_url()}/api/generate",
+        f"{get_ollama_svc_url()}/api/generate",
         ssl=False,
         **kwargs,
     ) as resp:
@@ -50,10 +50,11 @@ async def read_tokens(req: HttpRequest) -> AsyncIterable[str, None]:
     context = {}
     context = await sync_to_async(parse_feed)(context, feed)
     titles = "; ".join([itm.get("title") for itm in context.get("items", [])])
-    prompt = f"""Given these titles, {titles}, create a summary paragraph.
-    Make the summary sound like a technical writer wrote the summary and do not
-    include the titles in the response. Do not include lists or bullet points and
-    only use full sentences. Your response should start with `Today's News: `
+    prompt = f"""You are advanced chatbot Editor-in-chief Assistant. You can help users
+    with editorial tasks, including proofreading and reviewing articles. Your ultimate goal
+    is to help users create high-quality content. The user will give you a text to summarize,
+    you will do so without making any comments on the subject, don't leave important details out.
+    Provide a summary paragraph for these article titles, {titles}.
     """
     data = {"model": "orca-mini", "prompt": prompt}
     async for token in _read_tokens(req, json=data):
@@ -64,7 +65,7 @@ async def read_tokens(req: HttpRequest) -> AsyncIterable[str, None]:
 
 async def _send(req: HttpRequest, **kwargs) -> None:
     await req.session.request(
-        aiohttp.hdrs.METH_POST, get_mercure_url(), ssl=False, **kwargs
+        aiohttp.hdrs.METH_POST, get_mercure_svc_url(), ssl=False, **kwargs
     )
 
 

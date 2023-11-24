@@ -167,11 +167,11 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 os.environ["DJANGO_ALLOW_ASYNC_UNSAFE"] = "True"
 
 JWT_PUBLISH_TOKEN = jwt.encode(
-    payload={"mercure": {"publish": ["*"]}}, key=os.getenv("JWT_KEY", "!ChangeMe!")
+    payload={"mercure": {"publish": ["*"]}}, key=os.getenv("JWT_KEY", "super_secret_key")
 )
 
 JWT_SUBSCRIBE_TOKEN = jwt.encode(
-    payload={"mercure": {"subscribe": ["*"]}}, key=os.getenv("JWT_KEY", "!ChangeMe!")
+    payload={"mercure": {"subscribe": ["*"]}}, key=os.getenv("JWT_KEY", "super_secret_key")
 )
 
 LOGGING = {
@@ -194,8 +194,6 @@ LOGGING = {
     },
 }
 
-
-MERCURE_URL = "https://scrutiny.local:8089/.well-known/mercure"
 SSE = True
 
 

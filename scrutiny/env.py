@@ -19,11 +19,21 @@ def get_mercure_sub_token() -> str:
 
 def get_mercure_url() -> str:
     return getattr(
-        settings, "MERCURE_URL", "https://scrutiny.local:8089/.well-known/mercure"
+        settings, "MERCURE_URL", "http://mercure.cluster/.well-known/mercure"
+    )
+
+
+def get_mercure_svc_url() -> str:
+    return getattr(
+        settings, "MERCURE_SVC_URL", "http://mercure.cluster/.well-known/mercure"
     )
 
 
 def get_ollama_url() -> str:
+    return getattr(settings, "OLLAMA_URL", "http://ollama.cluster")
+
+
+def get_ollama_svc_url() -> str:
     return getattr(settings, "OLLAMA_SVC_URL", "http://ollama.cluster")
 
 
