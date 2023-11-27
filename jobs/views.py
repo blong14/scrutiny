@@ -1,26 +1,33 @@
-import logging
-import functools
+import json
 
 import pika
+from pika.exchange_type import ExchangeType
 from django.contrib.auth import mixins as auth
 from django.views.generic import ListView, DetailView, CreateView, UpdateView
 from django.urls import reverse_lazy
 
-from scrutiny.env import get_mercure_sub_token, get_mercure_url  # noqa
+from scrutiny.env import (
+    get_mercure_sub_token,
+    get_mercure_url,
+    get_rmq_dsn,
+)
 from .forms import JobForm
 from .models import Job
 
 
 class Publisher:
-    def __init__(self):
-        self.connection = pika.BlockingConnection()
+    def __init__(self, topic: str):
+        params = pika.URLParameters(get_rmq_dsn())
+        self.connection = pika.BlockingConnection(params)
         self.channel = self.connection.channel()
+        self.channel.exchange_declare("news", exchange_type=ExchangeType.direct)
+        self.channel.queue_declare(queue=topic)
 
     def publish(self, topic: str):
         self.channel.basic_publish(
-            exchange='test',
+            exchange="news",
             routing_key=topic,
-            body=b'start',
+            body=json.dumps({"topic": topic, "action": "start"}).encode(),
         )
         self.connection.close()
 
@@ -39,7 +46,7 @@ class JobListView(auth.LoginRequiredMixin, ListView):
         context.update(
             {"topic": f"{mercure_url}?topic={self.topic}&authorization={mercure_token}"}
         )
-        self.publisher().publish(topic=self.topic)
+        self.publisher(topic=self.topic).publish(topic=self.topic)
         return context
 
 

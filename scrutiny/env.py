@@ -37,6 +37,10 @@ def get_ollama_svc_url() -> str:
     return getattr(settings, "OLLAMA_SVC_URL", "http://ollama.cluster")
 
 
+def get_rmq_dsn() -> str:
+    return getattr(settings, "RMQ_DSN", "amqp://rabbit@rabbitmq.default.svc.cluster.local:5672")
+
+
 def should_trace() -> bool:
     return getattr(settings, "TRACE_ENABLED", False)
 

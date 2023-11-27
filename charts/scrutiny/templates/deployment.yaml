@@ -105,6 +105,25 @@ spec:
               protocol: TCP
           resources:
             {{- toYaml .Values.Nginx.resources | nindent 12 }}
+        - name: {{ .Values.News.name }}
+          env:
+        {{- range $key, $value := .Values.News.env }}
+          - name: {{ $key }}
+            value: {{ $value | quote }}
+        {{- end }}
+          securityContext:
+            {{- toYaml .Values.News.securityContext | nindent 12 }}
+          image: "{{ .Values.News.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.News.image.pullPolicy }}
+        {{- if .Values.News.command.enabled }}
+          command: [{{ .Values.News.command.value }}]
+        {{- end }}
+          args:
+        {{- range $value := .Values.News.command.args }}
+            - {{ $value }}
+        {{- end }}
+          resources:
+            {{- toYaml .Values.News.resources | nindent 12 }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

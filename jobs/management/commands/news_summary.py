@@ -91,7 +91,7 @@ async def create_job_event(name: str, data: dict) -> Job:
     return job
 
 
-async def main() -> None:
+async def get_summary() -> None:
     pub_token = get_mercure_pub_token()
     if not pub_token:
         raise EnvironmentError("missing jwt publish token")
@@ -147,4 +147,4 @@ class Command(BaseCommand):
     help = "Start News Summary"
 
     def handle(self, *args, **options) -> None:
-        asyncio.run(main())
+        asyncio.run(get_summary())
