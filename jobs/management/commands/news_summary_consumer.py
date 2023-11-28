@@ -6,7 +6,7 @@ import aio_pika
 import aio_pika.abc
 from django.core.management.base import BaseCommand
 
-from settings.env import get_rmq_dsn  # noqa
+from scrutiny.env import get_rmq_dsn  # noqa
 from .news_summary import get_summary
 
 
