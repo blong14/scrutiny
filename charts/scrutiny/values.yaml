@@ -119,6 +119,10 @@ env:
     value: ""
   - name: JWT_KEY
     value: ""
+  - name: RMQ_USER
+    value: ""
+  - name: RMQ_PASSWORD
+    value: ""
 
 cronjob:
   command:

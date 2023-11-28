@@ -1,3 +1,5 @@
+import os
+
 from django.conf import settings
 
 
@@ -38,7 +40,9 @@ def get_ollama_svc_url() -> str:
 
 
 def get_rmq_dsn() -> str:
-    return getattr(settings, "RMQ_DSN", "amqp://rabbit:@rabbitmq.default.svc.cluster.local:5672")
+    user = os.getenv("RMQ_USER")
+    password = os.getenv("RMQ_PASSWORD")
+    return getattr(settings, "RMQ_DSN", f"amqp://{user}:{password}@rabbitmq.default.svc.cluster.local:5672")
 
 
 def should_trace() -> bool:
