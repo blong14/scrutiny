@@ -107,7 +107,7 @@ spec:
             {{- toYaml .Values.Nginx.resources | nindent 12 }}
         - name: {{ .Values.News.name }}
           env:
-        {{- range $key, $value := .Values.News.env }}
+        {{- range $key, $value := .Values.env }}
           - name: {{ $key }}
             value: {{ $value | quote }}
         {{- end }}
