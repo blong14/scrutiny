@@ -1,4 +1,6 @@
 import asyncio
+import logging
+
 from asgiref.sync import sync_to_async
 from collections.abc import AsyncIterable
 from urllib import parse
@@ -89,7 +91,7 @@ async def create_job_event(name: str, data: dict) -> Job:
     return job
 
 
-async def main() -> None:
+async def get_summary() -> None:
     pub_token = get_mercure_pub_token()
     if not pub_token:
         raise EnvironmentError("missing jwt publish token")
@@ -99,28 +101,45 @@ async def main() -> None:
         data={"version": "1"},
     )
 
+    mercure_session = aiohttp.ClientSession(
+        trust_env=False,
+        raise_for_status=True,
+        timeout=aiohttp.ClientTimeout(total=SEND_TIMEOUT),
+        headers={
+            "Authorization": f"Bearer {pub_token}",
+            "Content-Type": "application/x-www-form-urlencoded",
+        },
+    )
+
+    try:
+        await send(HttpRequest(session=mercure_session), "Chat client started...")
+    except (aiohttp.ClientConnectionError, aiohttp.ServerTimeoutError) as e:
+        logging.exception(str(e))
+        event.status = "error"
+        await event.asave()
+        return
+
+    status = event.status
+
     async with aiohttp.ClientSession(
         trust_env=False,
         raise_for_status=True,
         timeout=aiohttp.ClientTimeout(total=READ_TIMEOUT),
     ) as session:
-        mercure_session = aiohttp.ClientSession(
-            trust_env=False,
-            raise_for_status=True,
-            timeout=aiohttp.ClientTimeout(total=SEND_TIMEOUT),
-            headers={
-                "Authorization": f"Bearer {pub_token}",
-                "Content-Type": "application/x-www-form-urlencoded",
-            },
-        )
-        await send(HttpRequest(session=mercure_session), "Chat client started...")
         summary = ""
-        async for token in read_tokens(HttpRequest(session=session)):
-            summary = f"{summary}{token}"
-            await send(HttpRequest(session=mercure_session), summary)
-        await mercure_session.close()
+        try:
+            async for token in read_tokens(HttpRequest(session=session)):
+                summary = f"{summary}{token}"
+                await send(HttpRequest(session=mercure_session), summary)
+        except (aiohttp.ClientConnectionError, aiohttp.ServerTimeoutError) as e:
+            logging.exception(str(e))
+            status = "error"
+        else:
+            status = "success"
+        finally:
+            await mercure_session.close()
 
-    event.status = "success"
+    event.status = status
     await event.asave()
 
 
@@ -128,4 +147,4 @@ class Command(BaseCommand):
     help = "Start News Summary"
 
     def handle(self, *args, **options) -> None:
-        asyncio.run(main())
+        asyncio.run(get_summary())
