@@ -23,6 +23,7 @@ async def main(loop: asyncio.AbstractEventLoop, dsn: str) -> None:
             async for message in queue_iter:
                 msg = json.loads(message.body.decode())
                 logging.info("consuming message %s", msg)
+                await message.ack()
                 if msg.get("action") == "start":
                     try:
                         await get_summary()

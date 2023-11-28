@@ -20,12 +20,11 @@ class Publisher:
         params = pika.URLParameters(get_rmq_dsn())
         self.connection = pika.BlockingConnection(params)
         self.channel = self.connection.channel()
-        self.channel.exchange_declare("news", exchange_type=ExchangeType.direct)
         self.channel.queue_declare(queue=topic, auto_delete=True)
 
     def publish(self, topic: str):
         self.channel.basic_publish(
-            exchange="news",
+            exchange="",
             routing_key=topic,
             body=json.dumps({"topic": topic, "action": "start"}).encode(),
         )
