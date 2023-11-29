@@ -1,0 +1,16 @@
+<turbo-stream action="update" target="job-{{ job.id }}">
+<template>
+    <tr>
+        <td data-last-sync>
+            <time datetime="{{ job.created_at | date:"c" }}">
+                {{ job.created_at | date:"h:i A" }}
+            </time>
+        </td>
+        <td>{{ job.name }}</td>
+        <td>{{ job.data }}</td>
+        <td data-status>
+            <span class="{% if job.status == "pending" %}warn{% else %}success{% endif %}">{{ job.status }}</span>
+        </td>
+    </tr>
+</template>
+</turbo-stream>

@@ -70,20 +70,31 @@ async def read_tokens(req: HttpRequest, titles: str) -> AsyncIterable[str, None]
             return
 
 
-async def _send(req: HttpRequest, **kwargs) -> None:
-    await req.session.request(
-        aiohttp.hdrs.METH_POST, get_mercure_svc_url(), ssl=False, **kwargs
-    )
-
-
 async def send(req: HttpRequest, summary: str) -> None:
     msg = await sync_to_async(render_to_string)(
         "jobs/news_summary.html", {"summary": summary}
     )
-    await _send(
-        req,
+    await req.session.request(
+        aiohttp.hdrs.METH_POST,
+        get_mercure_svc_url(),
+        ssl=False,
         data=parse.urlencode(
             {"target": "news-summary", "topic": ["news-summary"], "data": msg},
+            True,
+        ),
+    )
+
+
+async def send_job_update(req: HttpRequest, job: Job) -> None:
+    msg = await sync_to_async(render_to_string)(
+        "jobs/job_list_detail.html", {"job": job}
+    )
+    await req.session.request(
+        aiohttp.hdrs.METH_POST,
+        get_mercure_svc_url(),
+        ssl=False,
+        data=parse.urlencode(
+            {"target": f"job-{job.id}", "topic": ["news-summary"], "data": msg},
             True,
         ),
     )
@@ -182,13 +193,18 @@ async def get_summary() -> None:
             status = "error"
         else:
             status = "success"
-        finally:
-            await mercure_session.close()
 
     logger.debug("saving event with status %s", status)
     event.status = status
     event.data["news-summary"] = summary
     await event.asave()
+
+    try:
+        await send_job_update(HttpRequest(session=mercure_session), event)
+    except (aiohttp.ClientConnectionError, aiohttp.ServerTimeoutError):
+        logger.exception("failed send to client")
+    finally:
+        await mercure_session.close()
 
 
 class Command(BaseCommand):

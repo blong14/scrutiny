@@ -14,30 +14,18 @@
         <h1>Dashboard</h1>
     </section>
     <section>
-        <aside>
+        <main>
             <turbo-frame id="news-container">
             <article>
                 <header>
                     <h3>News Summary</h3>
                 </header>
-                <section id="news-summary">
+                <main id="news-summary">
                     <p>Loading...</p>
-                </section>
+                </main>
             </article>
             </turbo-frame>
-        </aside>
-        <aside>
-            <turbo-frame id="pocket-container">
-            <article>
-                <header>
-                    <h3>Pocket</h3>
-                </header>
-                <section>
-                    <p>Loading...</p>
-                </section>
-            </article>
-            </turbo-frame>
-        </aside>
+        </main>
     </section>
     <section>
         <article>
@@ -56,6 +44,7 @@
                     </thead>
                     <tbody>
                         {% for job in object_list %}
+                            <turbo-frame id="job-{{ job.id }}">
                             <tr>
                                 <td data-last-sync>
                                     <time datetime="{{ job.created_at | date:"c" }}">
@@ -68,6 +57,7 @@
                                     <span class="{% if job.status == "pending" %}warn{% else %}success{% endif %}">{{ job.status }}</span>
                                 </td>
                             </tr>
+                            </turbo-frame>
                         {% endfor %}
                     </tbody>
                 </table>
