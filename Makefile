@@ -54,7 +54,7 @@ lint-ci:
 	@djlint --quiet templates || true
 
 run:
-	@docker-compose up -d postgres
+	@docker-compose up -d postgres rmq
 	@python manage.py runserver 0.0.0.0:8089 --settings=scrutiny.settings.local
 
 shell: .deps
