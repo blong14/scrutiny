@@ -55,3 +55,7 @@ MERCURE_URL = "http://scrutiny.cluster/.well-known/mercure"
 MERCURE_SVC_URL = "http://mercure.default.svc.cluster.local/.well-known/mercure"
 OLLAMA_URL = "http://ollama.cluster"
 OLLAMA_SVC_URL = "http://ollama.default.svc.cluster.local:11434"
+
+user = os.getenv("RMQ_USER")
+password = os.getenv("RMQ_PASSWORD")
+RMQ_DSN = f"amqp://{user}:{password}@rabbitmq.default.svc.cluster.local:5672"

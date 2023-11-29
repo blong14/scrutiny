@@ -167,27 +167,29 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 os.environ["DJANGO_ALLOW_ASYNC_UNSAFE"] = "True"
 
 JWT_PUBLISH_TOKEN = jwt.encode(
-    payload={"mercure": {"publish": ["*"]}}, key=os.getenv("JWT_KEY", "super_secret_key")
+    payload={"mercure": {"publish": ["*"]}},
+    key=os.getenv("JWT_KEY", "super_secret_key"),
 )
 
 JWT_SUBSCRIBE_TOKEN = jwt.encode(
-    payload={"mercure": {"subscribe": ["*"]}}, key=os.getenv("JWT_KEY", "super_secret_key")
+    payload={"mercure": {"subscribe": ["*"]}},
+    key=os.getenv("JWT_KEY", "super_secret_key"),
 )
 
 LOGGING = {
     "version": 1,
-    "disable_existing_loggers": True,
+    "disable_existing_loggers": False,
     "handlers": {
         "console": {
             "class": "logging.StreamHandler",
         },
     },
     "loggers": {
-        "django.db.backends": {
+        "django.request": {
             "level": "DEBUG",
             "handlers": ["console"],
         },
-        "django.request": {
+        "": {
             "level": "DEBUG",
             "handlers": ["console"],
         },

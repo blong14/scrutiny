@@ -1,5 +1,7 @@
 import asyncio
+import hashlib
 import logging
+from typing import TypedDict
 
 from asgiref.sync import sync_to_async
 from collections.abc import AsyncIterable
@@ -18,6 +20,8 @@ from scrutiny.env import (  # noqa
     get_ollama_svc_url,
 )
 
+logger = logging.getLogger(__name__)
+
 
 class HttpRequest(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -28,6 +32,11 @@ class Token(BaseModel):
     done: bool
     model: str
     response: str
+
+
+class JobArgs(TypedDict):
+    version: str
+    key: str
 
 
 READ_TIMEOUT = 300.0
@@ -47,11 +56,7 @@ async def _read_tokens(req: HttpRequest, **kwargs) -> AsyncIterable[Token, None]
             yield Token.model_validate_json(chunk)
 
 
-async def read_tokens(req: HttpRequest) -> AsyncIterable[str, None]:
-    feed = FeedRegistry.get("hackernews")
-    context = {}
-    context = await sync_to_async(parse_feed)(context, feed)
-    titles = "; ".join([itm.get("title") for itm in context.get("items", [])])
+async def read_tokens(req: HttpRequest, titles: str) -> AsyncIterable[str, None]:
     prompt = f"""You are advanced chatbot Editor-in-chief Assistant. You can help users
     with editorial tasks, including proofreading and reviewing articles. Your ultimate goal
     is to help users create high-quality content. The user will give you a text to summarize,
@@ -78,13 +83,22 @@ async def send(req: HttpRequest, summary: str) -> None:
     await _send(
         req,
         data=parse.urlencode(
-            {"target": "news-summary", "topic": ["jobs"], "data": msg},
+            {"target": "news-summary", "topic": ["news-summary"], "data": msg},
             True,
         ),
     )
 
 
-async def create_job_event(name: str, data: dict) -> Job:
+async def get_job_event(name: str, data: JobArgs) -> Job:
+    job = await Job.objects.filter(
+        name=name,
+        data__key=data.get("key"),
+        data__version=data.get("version"),
+    ).afirst()
+    return job
+
+
+async def create_job_event(name: str, data: JobArgs) -> Job:
     job = Job(name=name, data=data)
     await job.asave()
     await job.arefresh_from_db()
@@ -96,11 +110,6 @@ async def get_summary() -> None:
     if not pub_token:
         raise EnvironmentError("missing jwt publish token")
 
-    event = await create_job_event(
-        name="news_summary",
-        data={"version": "1"},
-    )
-
     mercure_session = aiohttp.ClientSession(
         trust_env=False,
         raise_for_status=True,
@@ -111,12 +120,48 @@ async def get_summary() -> None:
         },
     )
 
+    feed = FeedRegistry.get("hackernews")
+    context = {}
+    context = await sync_to_async(parse_feed)(context, feed)
+
+    titles = "; ".join([itm.get("title") for itm in context.get("items", [])])
+    h = hashlib.new("sha256")
+    h.update(titles.encode())
+    key = h.hexdigest()
+
+    event = await get_job_event(
+        name="news_summary",
+        data={"key": key, "version": "1"},
+    )
+
+    if event is not None and event.status == "pending":
+        logger.debug("skipping news summary")
+        await mercure_session.close()
+        return
+    elif event is not None and event.status == "success":
+        try:
+            await send(HttpRequest(session=mercure_session), event.data["news-summary"])
+        except (aiohttp.ClientConnectionError, aiohttp.ServerTimeoutError) as e:
+            logger.exception("failed send to client")
+        finally:
+            await mercure_session.close()
+            return
+
+    logger.debug("starting news summary...")
+
+    event = await create_job_event(
+        name="news_summary",
+        data={"key": key, "version": "1"},
+    )
+
     try:
+        logger.debug("chat client started...")
         await send(HttpRequest(session=mercure_session), "Chat client started...")
-    except (aiohttp.ClientConnectionError, aiohttp.ServerTimeoutError) as e:
-        logging.exception(str(e))
+    except (aiohttp.ClientConnectionError, aiohttp.ServerTimeoutError):
+        logger.exception("failed send to client")
         event.status = "error"
         await event.asave()
+        await mercure_session.close()
         return
 
     status = event.status
@@ -128,18 +173,21 @@ async def get_summary() -> None:
     ) as session:
         summary = ""
         try:
-            async for token in read_tokens(HttpRequest(session=session)):
+            logger.debug("reading tokens...")
+            async for token in read_tokens(HttpRequest(session=session), titles):
                 summary = f"{summary}{token}"
                 await send(HttpRequest(session=mercure_session), summary)
         except (aiohttp.ClientConnectionError, aiohttp.ServerTimeoutError) as e:
-            logging.exception(str(e))
+            logger.exception("failed to send summary to client")
             status = "error"
         else:
             status = "success"
         finally:
             await mercure_session.close()
 
+    logger.debug("saving event with status %s", status)
     event.status = status
+    event.data["news-summary"] = summary
     await event.asave()
 
 

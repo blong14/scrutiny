@@ -40,9 +40,7 @@ def get_ollama_svc_url() -> str:
 
 
 def get_rmq_dsn() -> str:
-    user = os.getenv("RMQ_USER")
-    password = os.getenv("RMQ_PASSWORD")
-    return getattr(settings, "RMQ_DSN", f"amqp://{user}:{password}@rabbitmq.default.svc.cluster.local:5672")
+    return getattr(settings, "RMQ_DSN", "amqp://guest:guest@0.0.0.0:5672")
 
 
 def should_trace() -> bool:

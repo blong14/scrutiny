@@ -1,7 +1,7 @@
 import json
+from typing import Any, Dict
 
 import pika
-from pika.exchange_type import ExchangeType
 from django.contrib.auth import mixins as auth
 from django.views.generic import ListView, DetailView, CreateView, UpdateView
 from django.urls import reverse_lazy
@@ -21,14 +21,18 @@ class Publisher:
         self.connection = pika.BlockingConnection(params)
         self.channel = self.connection.channel()
         self.channel.queue_declare(queue=topic, auto_delete=True)
+        self.topic = topic
 
-    def publish(self, topic: str):
+    def on_close(self):
+        self.connection.close()
+
+    def publish(self, msg: Dict[str, Any]):
         self.channel.basic_publish(
             exchange="",
-            routing_key=topic,
-            body=json.dumps({"topic": topic, "action": "start"}).encode(),
+            routing_key=self.topic,
+            body=json.dumps(msg).encode(),
         )
-        self.connection.close()
+        self.on_close()
 
 
 class JobListView(auth.LoginRequiredMixin, ListView):
@@ -45,7 +49,9 @@ class JobListView(auth.LoginRequiredMixin, ListView):
         context.update(
             {"topic": f"{mercure_url}?topic={self.topic}&authorization={mercure_token}"}
         )
-        self.publisher(topic=self.topic).publish(topic=self.topic)
+        self.publisher(topic=self.topic).publish(
+            {"topic": self.topic, "action": "start"}
+        )
         return context
 
 
