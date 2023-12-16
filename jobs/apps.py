@@ -1,4 +1,5 @@
 import json
+import logging
 from typing import Any, Dict, List
 from http import HTTPStatus
 
@@ -28,7 +29,6 @@ class Publisher:
     def on_close(self):
         if self.connected:
             self.connection.close()
-            self.connected = False
 
     def queue_declare(self, topic: str):
         if topic not in self.topics and self.connected:
@@ -65,7 +65,10 @@ def broadcast(topic: str, msg: Dict[str, Any]):
         def wrapper(*args, **kwargs):
             result = func(*args, **kwargs)
             if publisher and result.status_code < HTTPStatus.BAD_REQUEST:
-                publisher.publish(topic, msg)
+                try:
+                    publisher.publish(topic, msg)
+                except Exception:
+                    logging.exception("not able to publish message")
             return result
 
         return wrapper
