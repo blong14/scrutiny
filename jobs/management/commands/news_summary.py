@@ -131,9 +131,25 @@ async def get_summary() -> None:
         },
     )
 
+    try:
+        logger.debug("chat client started...")
+        await send(HttpRequest(session=mercure_session), "Chat client started...")
+    except (aiohttp.ClientConnectionError, aiohttp.ServerTimeoutError):
+        logger.exception("failed send to client")
+        await mercure_session.close()
+        return
+
     feed = FeedRegistry.get("hackernews")
     context = {}
     context = await sync_to_async(parse_feed)(context, feed)
+
+    try:
+        logger.debug("obtaining latest news...")
+        await send(HttpRequest(session=mercure_session), "Obtaining latest news...")
+    except (aiohttp.ClientConnectionError, aiohttp.ServerTimeoutError):
+        logger.exception("failed send to client")
+        await mercure_session.close()
+        return
 
     titles = "; ".join([itm.get("title") for itm in context.get("items", [])])
     h = hashlib.new("sha256")
@@ -147,7 +163,13 @@ async def get_summary() -> None:
 
     if event is not None and event.status == "pending":
         logger.debug("skipping news summary")
-        await mercure_session.close()
+        try:
+            logger.debug("news summary pending...")
+            await send(HttpRequest(session=mercure_session), "News summary pending...")
+        except (aiohttp.ClientConnectionError, aiohttp.ServerTimeoutError):
+            logger.exception("failed send to client")
+        finally:
+            await mercure_session.close()
         return
     elif event is not None and event.status == "success":
         try:
@@ -156,7 +178,7 @@ async def get_summary() -> None:
             logger.exception("failed send to client")
         finally:
             await mercure_session.close()
-            return
+        return
 
     logger.debug("starting news summary...")
 
@@ -166,12 +188,9 @@ async def get_summary() -> None:
     )
 
     try:
-        logger.debug("chat client started...")
-        await send(HttpRequest(session=mercure_session), "Chat client started...")
+        await send_job_update(HttpRequest(session=mercure_session), event)
     except (aiohttp.ClientConnectionError, aiohttp.ServerTimeoutError):
         logger.exception("failed send to client")
-        event.status = "error"
-        await event.asave()
         await mercure_session.close()
         return
 

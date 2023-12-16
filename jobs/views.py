@@ -1,58 +1,20 @@
-import json
-from typing import Any, Dict
-
-import pika
 from django.contrib.auth import mixins as auth
 from django.views.generic import ListView, DetailView, CreateView, UpdateView
 from django.urls import reverse_lazy
 
-from scrutiny.env import (
-    get_mercure_sub_token,
-    get_mercure_url,
-    get_rmq_dsn,
-)
+from .apps import broadcast
 from .forms import JobForm
 from .models import Job
-
-
-class Publisher:
-    def __init__(self, topic: str):
-        params = pika.URLParameters(get_rmq_dsn())
-        self.connection = pika.BlockingConnection(params)
-        self.channel = self.connection.channel()
-        self.channel.queue_declare(queue=topic, auto_delete=True)
-        self.topic = topic
-
-    def on_close(self):
-        self.connection.close()
-
-    def publish(self, msg: Dict[str, Any]):
-        self.channel.basic_publish(
-            exchange="",
-            routing_key=self.topic,
-            body=json.dumps(msg).encode(),
-        )
-        self.on_close()
 
 
 class JobListView(auth.LoginRequiredMixin, ListView):
     model = Job
     paginate_by = 10
-    publisher = Publisher
     template_name = "jobs/job_list.html"
-    topic = "news-summary"
 
-    def get_context_data(self, **kwargs):
-        mercure_url = get_mercure_url()
-        mercure_token = get_mercure_sub_token()
-        context = super().get_context_data(**kwargs)
-        context.update(
-            {"topic": f"{mercure_url}?topic={self.topic}&authorization={mercure_token}"}
-        )
-        self.publisher(topic=self.topic).publish(
-            {"topic": self.topic, "action": "start"}
-        )
-        return context
+    @broadcast(topic="news-summary", msg={"topic": "news-summary", "action": "start"})
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
 
 
 class JobDetailView(auth.LoginRequiredMixin, DetailView):

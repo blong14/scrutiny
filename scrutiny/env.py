@@ -1,6 +1,8 @@
-import os
-
 from django.conf import settings
+
+
+def deploy_env() -> str:
+    return getattr(settings, "DEPLOY_ENV", "")
 
 
 def get_graft_api_key() -> str:

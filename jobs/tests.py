@@ -14,7 +14,13 @@ class TestListView(TestCase):
         super().setUp()
         self.url = reverse("jobs")
         self.user = User.objects.create_user("foo", "myemail@test.com", "pass")
-        self.items = []
+        item = self.model(
+            data={},
+            name="__test__",
+            status="pending",
+        )
+        item.save()
+        self.items = [item]
         UserSocialAuth.objects.create(user=self.user, provider="pocket")
         self.client.login(username="foo", password="pass")
 
@@ -29,11 +35,17 @@ class TestListView(TestCase):
         self.assertTemplateUsed(self.resp, "registration/login.html")
 
     def test_no_items(self) -> None:
-        self.skipTest("rmq not ready")
         self.tearDown()
         self.response = self.client.get(self.url)
         self.assertEqual(self.response.status_code, 200)
         self.assertContains(self.response, "No items.")
+
+    def test_list(self) -> None:
+        self.response = self.client.get(self.url)
+        self.assertEqual(self.response.status_code, 200)
+        self.assertTemplateUsed(self.response, "jobs/job_list.html")
+        for item in self.items:
+            self.assertContains(self.response, item.name)
 
 
 class TestCreateView(TestCase):

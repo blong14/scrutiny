@@ -44,8 +44,8 @@
                     </thead>
                     <tbody>
                         {% for job in object_list %}
-                            <turbo-frame id="job-{{ job.id }}">
                             <tr>
+                                <turbo-frame id="job-{{ job.id }}">
                                 <td data-last-sync>
                                     <time datetime="{{ job.created_at | date:"c" }}">
                                         {{ job.created_at | date:"h:i A" }}
@@ -56,8 +56,8 @@
                                 <td data-status>
                                     <span class="{% if job.status == "pending" %}warn{% else %}success{% endif %}">{{ job.status }}</span>
                                 </td>
+                                </turbo-frame>
                             </tr>
-                            </turbo-frame>
                         {% endfor %}
                     </tbody>
                 </table>
