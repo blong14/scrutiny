@@ -143,14 +143,6 @@ async def get_summary() -> None:
     context = {}
     context = await sync_to_async(parse_feed)(context, feed)
 
-    try:
-        logger.debug("obtaining latest news...")
-        await send(HttpRequest(session=mercure_session), "Obtaining latest news...")
-    except (aiohttp.ClientConnectionError, aiohttp.ServerTimeoutError):
-        logger.exception("failed send to client")
-        await mercure_session.close()
-        return
-
     titles = "; ".join([itm.get("title") for itm in context.get("items", [])])
     h = hashlib.new("sha256")
     h.update(titles.encode())
@@ -161,17 +153,7 @@ async def get_summary() -> None:
         data={"key": key, "version": "1"},
     )
 
-    if event is not None and event.status == "pending":
-        logger.debug("skipping news summary")
-        try:
-            logger.debug("news summary pending...")
-            await send(HttpRequest(session=mercure_session), "News summary pending...")
-        except (aiohttp.ClientConnectionError, aiohttp.ServerTimeoutError):
-            logger.exception("failed send to client")
-        finally:
-            await mercure_session.close()
-        return
-    elif event is not None and event.status == "success":
+    if event is not None and event.status == "success":
         try:
             await send(HttpRequest(session=mercure_session), event.data["news-summary"])
         except (aiohttp.ClientConnectionError, aiohttp.ServerTimeoutError) as e:
@@ -182,10 +164,19 @@ async def get_summary() -> None:
 
     logger.debug("starting news summary...")
 
-    event = await create_job_event(
-        name="news_summary",
-        data={"key": key, "version": "1"},
-    )
+    if not event:
+        event = await create_job_event(
+            name="news_summary",
+            data={"key": key, "version": "1"},
+        )
+
+    try:
+        logger.debug("")
+        await send(HttpRequest(session=mercure_session), "Obtaining latest news...")
+    except (aiohttp.ClientConnectionError, aiohttp.ServerTimeoutError):
+        logger.exception("failed send to client")
+        await mercure_session.close()
+        return
 
     try:
         await send_job_update(HttpRequest(session=mercure_session), event)
