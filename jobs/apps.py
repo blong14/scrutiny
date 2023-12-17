@@ -39,7 +39,9 @@ class Publisher(threading.Thread):
 
     def publish(self, message):
         if self.connection is not None:
-            self.connection.add_callback_threadsafe(functools.partial(self._publish, message))
+            self.connection.add_callback_threadsafe(
+                functools.partial(self._publish, message)
+            )
 
     def stop(self):
         self.is_running = False

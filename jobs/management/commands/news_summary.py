@@ -85,9 +85,24 @@ async def send(req: HttpRequest, summary: str) -> None:
     )
 
 
+async def send_job_created(req: HttpRequest, job: Job) -> None:
+    msg = await sync_to_async(render_to_string)(
+        "jobs/on_job_created.html", {"job": job}
+    )
+    await req.session.request(
+        aiohttp.hdrs.METH_POST,
+        get_mercure_svc_url(),
+        ssl=False,
+        data=parse.urlencode(
+            {"target": "jobs-table", "topic": ["news-summary"], "data": msg},
+            True,
+        ),
+    )
+
+
 async def send_job_update(req: HttpRequest, job: Job) -> None:
     msg = await sync_to_async(render_to_string)(
-        "jobs/job_list_detail.html", {"job": job}
+        "jobs/on_job_update.html", {"job": job}
     )
     await req.session.request(
         aiohttp.hdrs.METH_POST,
@@ -169,17 +184,16 @@ async def get_summary() -> None:
             name="news_summary",
             data={"key": key, "version": "1"},
         )
+        try:
+            await send_job_created(HttpRequest(session=mercure_session), event)
+        except (aiohttp.ClientConnectionError, aiohttp.ServerTimeoutError):
+            logger.exception("failed send to client")
+            await mercure_session.close()
+            return
 
     try:
         logger.debug("")
         await send(HttpRequest(session=mercure_session), "Obtaining latest news...")
-    except (aiohttp.ClientConnectionError, aiohttp.ServerTimeoutError):
-        logger.exception("failed send to client")
-        await mercure_session.close()
-        return
-
-    try:
-        await send_job_update(HttpRequest(session=mercure_session), event)
     except (aiohttp.ClientConnectionError, aiohttp.ServerTimeoutError):
         logger.exception("failed send to client")
         await mercure_session.close()
