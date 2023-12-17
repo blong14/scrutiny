@@ -43,7 +43,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                    <turbo-frame id="jobs-container">
+                        <turbo-frame id="jobs-container">
                         {% for job in object_list %}
                             <tr id="job-{{ job.id }}">
                                 <td data-last-sync>
@@ -58,7 +58,7 @@
                                 </td>
                             </tr>
                         {% endfor %}
-                    </turbo-frame>
+                        </turbo-frame>
                     </tbody>
                 </table>
             {% else %}

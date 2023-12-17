@@ -1,57 +1,57 @@
-import json
+import functools
 import logging
-from typing import Any, Dict, List
-from http import HTTPStatus
+import threading
+from typing import Optional
 
 import pika
+from pika.adapters.blocking_connection import BlockingChannel, BlockingConnection
 from django.apps import AppConfig
 
 from scrutiny.env import deploy_env, get_rmq_dsn  # noqa
 
 
-class Publisher:
-    def __init__(self):
-        self.connected = False
-        self.connection = None
-        self.channel = None
-        self.env = deploy_env()
+class Publisher(threading.Thread):
+    def __init__(self, queue: str, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.channel: Optional[BlockingChannel] = None
+        self.connection: Optional[BlockingConnection] = None
         self.params = pika.URLParameters(get_rmq_dsn())
-        self.topics: List[str] = []
+        self.daemon = True
+        self.is_running = False
+        self.name = "Publisher"
+        self.queue = queue
 
-    def connect(self):
-        if self.connected or self.env == "test":
-            return
-
+    def run(self):
         self.connection = pika.BlockingConnection(self.params)
-        self.do_connect()
-
-    def do_connect(self):
         self.channel = self.connection.channel()
-        self.connected = True
+        self.channel.queue_declare(queue=self.queue, auto_delete=True)
+        self.is_running = True
 
-    def on_close(self):
-        if not self.connection.is_closed and self.connected:
+        while self.is_running:
+            self.connection.process_data_events(time_limit=1)
+
+    def _publish(self, message):
+        if self.channel is not None:
+            try:
+                self.channel.basic_publish("", self.queue, body=message.encode())
+            except Exception:
+                logging.exception("not able to publish message")
+
+    def publish(self, message):
+        if self.connection is not None:
+            self.connection.add_callback_threadsafe(functools.partial(self._publish, message))
+
+    def stop(self):
+        self.is_running = False
+        if self.connection is None:
+            return
+        # Wait until all the data events have been processed
+        self.connection.process_data_events(time_limit=1)
+        if self.connection.is_open:
             self.connection.close()
 
-    def queue_declare(self, topic: str):
-        if self.connection.is_closed:
-            self.do_connect()
-        if topic not in self.topics and self.connected:
-            self.channel.queue_declare(queue=topic, auto_delete=True)
-            self.topics.append(topic)
 
-    def publish(self, topic: str, msg: Dict[str, Any]):
-        if self.connection.is_closed:
-            self.do_connect()
-        if self.connected:
-            self.channel.basic_publish(
-                exchange="",
-                routing_key=topic,
-                body=json.dumps(msg).encode(),
-            )
-
-
-publisher = Publisher()
+publisher: Optional[Publisher] = None
 
 
 class JobsConfig(AppConfig):
@@ -61,23 +61,7 @@ class JobsConfig(AppConfig):
     def ready(self):
         from .signals import on_news_item_save  # noqa
 
-        publisher.connect()
-
-
-def broadcast(topic: str, msg: Dict[str, Any]):
-    if publisher:
-        publisher.queue_declare(topic)
-
-    def decorator(func):
-        def wrapper(*args, **kwargs):
-            result = func(*args, **kwargs)
-            if publisher and result.status_code < HTTPStatus.BAD_REQUEST:
-                try:
-                    publisher.publish(topic, msg)
-                except Exception:
-                    logging.exception("not able to publish message")
-            return result
-
-        return wrapper
-
-    return decorator
+        if deploy_env() != "test":
+            global publisher
+            publisher = Publisher(queue="news-summary")  # noqa
+            publisher.start()

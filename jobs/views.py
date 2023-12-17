@@ -1,8 +1,11 @@
+import json
+from http import HTTPStatus
+
 from django.contrib.auth import mixins as auth
 from django.views.generic import ListView, DetailView, CreateView, UpdateView
 from django.urls import reverse_lazy
 
-from .apps import broadcast
+from .apps import publisher
 from .forms import JobForm
 from .models import Job
 
@@ -12,9 +15,11 @@ class JobListView(auth.LoginRequiredMixin, ListView):
     paginate_by = 10
     template_name = "jobs/job_list.html"
 
-    @broadcast(topic="news-summary", msg={"topic": "news-summary", "action": "start"})
     def get(self, request, *args, **kwargs):
-        return super().get(request, *args, **kwargs)
+        resp = super().get(request, *args, **kwargs)
+        if publisher and resp.status_code < HTTPStatus.BAD_REQUEST:
+            publisher.publish(json.dumps({"topic": "news-summary", "action": "start"}))
+        return resp
 
 
 class JobDetailView(auth.LoginRequiredMixin, DetailView):
