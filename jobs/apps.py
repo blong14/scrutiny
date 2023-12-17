@@ -23,19 +23,26 @@ class Publisher:
             return
 
         self.connection = pika.BlockingConnection(self.params)
+        self.do_connect()
+
+    def do_connect(self):
         self.channel = self.connection.channel()
         self.connected = True
 
     def on_close(self):
-        if self.connected:
+        if not self.connection.is_closed and self.connected:
             self.connection.close()
 
     def queue_declare(self, topic: str):
+        if self.connection.is_closed:
+            self.do_connect()
         if topic not in self.topics and self.connected:
             self.channel.queue_declare(queue=topic, auto_delete=True)
             self.topics.append(topic)
 
     def publish(self, topic: str, msg: Dict[str, Any]):
+        if self.connection.is_closed:
+            self.do_connect()
         if self.connected:
             self.channel.basic_publish(
                 exchange="",
