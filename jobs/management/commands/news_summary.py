@@ -101,9 +101,7 @@ async def send_job_created(req: HttpRequest, job: Job) -> None:
 
 
 async def send_job_update(req: HttpRequest, job: Job) -> None:
-    msg = await sync_to_async(render_to_string)(
-        "jobs/on_job_update.html", {"job": job}
-    )
+    msg = await sync_to_async(render_to_string)("jobs/on_job_update.html", {"job": job})
     await req.session.request(
         aiohttp.hdrs.METH_POST,
         get_mercure_svc_url(),
