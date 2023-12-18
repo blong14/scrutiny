@@ -5,7 +5,6 @@ from asyncio.tasks import Task
 from typing import Any, List
 
 import aiohttp
-from asgiref.sync import sync_to_async
 from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand
 from pydantic import BaseModel
@@ -106,56 +105,56 @@ async def create_job_event(name: str, data: dict) -> Job:
     return job
 
 
-def read_user(email: str) -> Task[UserSocialAuth]:
-    return asyncio.ensure_future(
-        sync_to_async(
-            User.objects.filter(
-                username=email,
-                is_superuser=False,
+async def read_user(email: str) -> UserSocialAuth:
+    user = await User.objects.filter(
+        username=email,
+        is_superuser=False,
+    ).afirst()
+    return await user.social_auth.afirst()
+
+
+def create_articles(data: List[Article], batch_size: int = 10) -> List[Task]:
+    return [
+        asyncio.ensure_future(
+            Article.objects.abulk_create(
+                data[i:i + batch_size],
+                ignore_conflicts=True,
+                update_fields=[
+                    "authors",
+                    "excerpt",
+                    "slug",
+                    "resolved_title",
+                    "listen_duration_estimate",
+                ],
+                unique_fields=["id"],
             )
-            .first()
-            .social_auth.first,
-            thread_sensitive=False,
-        )()
-    )
-
-
-def create_articles(data: List[Article]) -> Task[List[int]]:
-    return asyncio.ensure_future(
-        sync_to_async(Article.objects.bulk_create, thread_sensitive=False)(
-            data,
-            ignore_conflicts=True,
-            update_fields=[
-                "authors",
-                "excerpt",
-                "slug",
-                "resolved_title",
-                "listen_duration_estimate",
-            ],
-            unique_fields=["id"],
         )
-    )
+        for i in range(0, len(data), batch_size)
+    ]
 
 
-def delete_articles(data: List[Article]) -> Task[List[int]]:
-    query = Article.objects.filter(id__in=data)
-    return asyncio.ensure_future(sync_to_async(query.delete, thread_sensitive=False)())
+async def delete_articles(data: List[Article]) -> List[int]:
+    return await Article.objects.filter(id__in=data).adelete()
 
 
-def read_articles() -> Task[List[Article]]:
-    return asyncio.ensure_future(
-        sync_to_async(Article.objects.all().values_list)("id", flat=True)
-    )
+async def read_articles() -> List[int]:
+    return [
+        article_id
+        async for article_id in Article.objects.values_list("id", flat=True).all()
+    ]
 
 
-def create_tags(data: List[Tag]) -> Task[List[int]]:
-    return asyncio.ensure_future(
-        sync_to_async(Tag.objects.bulk_create, thread_sensitive=False)(
-            data,
-            update_fields=["value"],
-            unique_fields=["id"],
+def create_tags(data: List[Tag], batch_size: int = 10) -> List[Task]:
+    return [
+        asyncio.ensure_future(
+            Tag.objects.abulk_create(
+                data[i:i + batch_size],
+                update_fields=["value"],
+                unique_fields=["id"],
+            )
         )
-    )
+        for i in range(0, len(data), batch_size)
+    ]
 
 
 async def main():
@@ -182,14 +181,14 @@ async def main():
     to_delete = [
         article for article in existing_articles if article not in raw_source_ids
     ]
-    await asyncio.gather(create_articles(new_articles), delete_articles(to_delete))
+    await asyncio.gather(*create_articles(new_articles), delete_articles(to_delete))
     new_tags = [
         tag
         for item in items
         for tag in item.tags
         if item.article.id not in existing_articles
     ]
-    await create_tags(new_tags)
+    await asyncio.gather(*create_tags(new_tags))
     event.status = "success"
     event.data = {
         "version": "1",

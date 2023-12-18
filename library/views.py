@@ -1,16 +1,22 @@
+import json
+from http import HTTPStatus
+
 from django.contrib.auth import mixins as auth
 from django.db.models import Q
 from django.views import generic
 
+from .apps import publisher
 from .models import Article, Tag
 
 
 class IndexView(auth.LoginRequiredMixin, generic.TemplateView):
     template_name = "library/index.html"
 
-    def get_context_data(self, *args, **kwargs):
-        context = super().get_context_data(*args, **kwargs)
-        return context
+    def get(self, request, *arg, **args):
+        resp = super().get(request, *arg, **args)
+        if publisher and resp.status_code < HTTPStatus.BAD_REQUEST:
+            publisher.publish(json.dumps({"action": "library-sync"}))
+        return resp
 
 
 class TagListView(auth.LoginRequiredMixin, generic.ListView):
