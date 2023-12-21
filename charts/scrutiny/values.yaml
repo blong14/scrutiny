@@ -124,17 +124,6 @@ env:
   - name: RMQ_PASSWORD
     value: ""
 
-cronjob:
-  command:
-    enabled: true
-    value: python
-    args:
-      - manage.py
-      - library_sync
-      - --settings=scrutiny.settings.prod
-  schedule: 0 * * * *
-  concurrencyPolicy: Allow
-
 # Consumers
 
 News:
@@ -146,6 +135,49 @@ News:
     args:
       - manage.py
       - news_summary_consumer
+      - --settings=scrutiny.settings.prod
+
+  image:
+    repository: blong14/scrutiny
+    pullPolicy: IfNotPresent
+    # Overrides the image tag whose default is the chart appVersion.
+    tag: "arm-latest"
+
+  imagePullSecrets: []
+  nameOverride: ""
+  fullnameOverride: ""
+
+  serviceAccount:
+    # Specifies whether a service account should be created
+    create: false
+    # Annotations to add to the service account
+    annotations: {}
+    # The name of the service account to use.
+    # If not set and create is true, a name is generated using the fullname template
+    name: ""
+
+  podAnnotations: {}
+
+  podSecurityContext: {}
+    # fsGroup: 2000
+
+  securityContext: {}
+    # capabilities:
+    #   drop:
+    #   - ALL
+    # readOnlyRootFilesystem: true
+    # runAsNonRoot: true
+    # runAsUser: 1000
+
+LibrarySync:
+  name: library-sync-consumer
+
+  command:
+    enabled: true
+    value: python
+    args:
+      - manage.py
+      - library_sync_consumer
       - --settings=scrutiny.settings.prod
 
   image:
