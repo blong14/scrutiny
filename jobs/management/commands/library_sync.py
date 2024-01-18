@@ -117,7 +117,7 @@ def create_articles(data: List[Article], batch_size: int = 10) -> List[Task]:
     return [
         asyncio.ensure_future(
             Article.objects.abulk_create(
-                data[i:i + batch_size],
+                data[i : i + batch_size],
                 ignore_conflicts=True,
                 update_fields=[
                     "authors",
@@ -148,7 +148,7 @@ def create_tags(data: List[Tag], batch_size: int = 10) -> List[Task]:
     return [
         asyncio.ensure_future(
             Tag.objects.abulk_create(
-                data[i:i + batch_size],
+                data[i : i + batch_size],
                 update_fields=["value"],
                 unique_fields=["id"],
             )

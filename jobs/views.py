@@ -24,7 +24,11 @@ class JobListView(auth.LoginRequiredMixin, ListView):
 
 class JobDetailView(auth.LoginRequiredMixin, DetailView):
     model = Job
+    slug_field = "name"
     template_name = "jobs/job_detail.html"
+
+    def get_object(self, queryset=None):
+        return super().get_object(queryset=queryset)
 
 
 class JobCreateView(auth.LoginRequiredMixin, CreateView):

@@ -1,3 +1,4 @@
+import datetime
 import json
 from http import HTTPStatus
 
@@ -17,6 +18,16 @@ class IndexView(auth.LoginRequiredMixin, generic.TemplateView):
         if publisher and resp.status_code < HTTPStatus.BAD_REQUEST:
             publisher.publish(json.dumps({"action": "library-sync"}))
         return resp
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.update(
+            {
+                "last_sync": datetime.datetime.utcnow(),
+                "status": "success",
+            }
+        )
+        return context
 
 
 class TagListView(auth.LoginRequiredMixin, generic.ListView):
