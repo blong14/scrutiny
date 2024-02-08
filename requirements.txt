@@ -10,4 +10,4 @@ pyjwt==2.8.0
 pydantic==2.5.3
 requests==2.31.0
 social-auth-app-django==5.4.0
-waitress==2.1.2
+waitress==3.0.0
