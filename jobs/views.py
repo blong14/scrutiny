@@ -1,6 +1,8 @@
 import json
+import logging
 from http import HTTPStatus
 
+import pika
 from django.contrib.auth import mixins as auth
 from django.views.generic import ListView, DetailView, CreateView, UpdateView
 from django.urls import reverse_lazy
@@ -18,7 +20,12 @@ class JobListView(auth.LoginRequiredMixin, ListView):
     def get(self, request, *args, **kwargs):
         resp = super().get(request, *args, **kwargs)
         if publisher and resp.status_code < HTTPStatus.BAD_REQUEST:
-            publisher.publish(json.dumps({"topic": "news-summary", "action": "start"}))
+            try:
+                publisher.publish(
+                    json.dumps({"topic": "news-summary", "action": "start"})
+                )
+            except pika.exceptions.ConnectionWrongStateError:
+                logging.exception("news summary published failed - skipping")
         return resp
 
 

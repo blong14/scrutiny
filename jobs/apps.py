@@ -22,7 +22,11 @@ class Publisher(threading.Thread):
         self.queue = queue
 
     def run(self):
-        self.connection = pika.BlockingConnection(self.params)
+        try:
+            self.connection = pika.BlockingConnection(self.params)
+        except RuntimeError:
+            logging.exception("unable to create blocking connection")
+            return
         self.channel = self.connection.channel()
         self.channel.queue_declare(queue=self.queue, auto_delete=True)
         self.is_running = True

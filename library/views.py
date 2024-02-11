@@ -1,6 +1,8 @@
 import json
+import logging
 from http import HTTPStatus
 
+import pika.exceptions
 from django.contrib.auth import mixins as auth
 from django.db.models import Q
 from django.views import generic
@@ -15,7 +17,10 @@ class IndexView(auth.LoginRequiredMixin, generic.TemplateView):
     def get(self, request, *arg, **args):
         resp = super().get(request, *arg, **args)
         if publisher and resp.status_code < HTTPStatus.BAD_REQUEST:
-            publisher.publish(json.dumps({"action": "library-sync"}))
+            try:
+                publisher.publish(json.dumps({"action": "library-sync"}))
+            except pika.exceptions.ConnectionWrongStateError:
+                logging.exception("library sync published failed - skipping")
         return resp
 
 
