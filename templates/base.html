@@ -78,6 +78,22 @@
         {% block page_styles %}{% endblock %}
     </head>
     <body id="{{ page_id }}">
+        {% if messages %}
+            <dialog open>
+                <article>
+                    <main id="flash">
+                        <ul class="messages">
+                            {% for message in messages %}
+                                <li {% if message.tags %}class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+                            {% endfor %}
+                        </ul>
+                    </main>
+                </article>
+                <form method="dialog">
+                    <button>close</button>
+                </form>
+            </dialog>
+        {% endif %}
         <div class="container">
             {% include "_header.html" %}
             <main>
