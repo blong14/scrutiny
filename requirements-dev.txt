@@ -2,7 +2,7 @@ black==24.2.0
 coverage==7.4.1
 djlint==1.34.1
 ipython==8.21.0
-locust==2.23.1
+locust==2.24.0
 pika-stubs==0.1.3
 pytest==8.0.1
 pytest-django==4.8.0
