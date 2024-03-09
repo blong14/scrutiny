@@ -9,7 +9,7 @@ class Job(models.Model):
     ]
 
     data = models.JSONField()
-    name = models.CharField(max_length=255)
+    name = models.SlugField(max_length=255)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
     created_at = models.DateTimeField(auto_now_add=True)
 
