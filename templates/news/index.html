@@ -44,4 +44,22 @@
     <section>
         {% include "news/list.html" with id=feed.id title=feed.title items=feed.items %}
     </section>
+    <section>
+        <turbo-frame id="news-container">
+        <dialog>
+            <article>
+                <header>
+                    <h3>News Summary</h3>
+                </header>
+                <section id="news-summary">
+                    <p>Loading...</p>
+                </section>
+            </article>
+            <form method="dialog">
+                <button>close</button>
+            </form>
+        </dialog>
+        </turbo-frame>
+    </section>
+    <script>{% include "news/list.js" with topic=topic %}</script>
 {% endblock %}

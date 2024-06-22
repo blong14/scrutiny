@@ -1,6 +1,20 @@
 <turbo-frame id="feed-container" data-feed="{{ id }}">
 <article>
     <h3>{{ title }}</h3>
+    <turbo-frame id="news-summary">
+    <form action="{% url 'news.summary_view' %}"
+          method="get"
+          data-turbo-frame="news-summary">
+        {% csrf_token %}
+        <input type="hidden" name="feed_id" value="{{ id }}">
+        <input type="submit" value="Summarize">
+        {% if error_message %}
+            <p>
+                <strong>{{ error_message }}</strong>
+            </p>
+        {% endif %}
+    </form>
+    </turbo-frame>
     {% for item in items %}
         <details {% if item.title == selected %}open=""{% endif %}>
             <summary {% if item.title == selected %}class="selected"{% endif %}>{{ item.title }}</summary>

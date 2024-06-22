@@ -11,23 +11,6 @@
 {% endblock %}
 {% block page_content %}
     <section>
-        <h1>Dashboard</h1>
-    </section>
-    <section>
-        <main>
-            <turbo-frame id="news-container">
-            <article>
-                <header>
-                    <h3>News Summary</h3>
-                </header>
-                <main id="news-summary">
-                    <p>Loading...</p>
-                </main>
-            </article>
-            </turbo-frame>
-        </main>
-    </section>
-    <section>
         <article>
             <header>
                 <h3>Jobs</h3>
@@ -66,5 +49,4 @@
             {% endif %}
         </article>
     </section>
-    <script>{% include "jobs/list.js" with topic=topic %}</script>
 {% endblock %}

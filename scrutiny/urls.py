@@ -6,6 +6,7 @@ from news.views import (
     IndexView as NewsView,
     NewsListView,
     NewsItemFormView,
+    NewsSummaryFormView,
 )
 from jobs.views import JobListView, JobDetailView, JobCreateView, JobUpdateView
 
@@ -20,6 +21,7 @@ urlpatterns = [
     path("news/", NewsView.as_view(), name="news"),
     path("news/feeds/", NewsListView.as_view(), name="news.feed_view"),
     path("news/save/", NewsItemFormView.as_view(), name="news.save_view"),
+    path("news/summary/", NewsSummaryFormView.as_view(), name="news.summary_view"),
     path("library/", LibraryView.as_view(), name="library"),
     path("library/list/", ArticleListView.as_view(), name="library.list_view"),
     path("library/tags/", TagListView.as_view(), name="library.tag_view"),

@@ -4,6 +4,7 @@ from http import HTTPStatus
 
 import pika
 from django.contrib import messages
+
 from django.contrib.auth import mixins as auth
 from django.views.generic import ListView, DetailView, CreateView, UpdateView
 from django.urls import reverse_lazy
@@ -17,18 +18,6 @@ class JobListView(auth.LoginRequiredMixin, ListView):
     model = Job
     paginate_by = 10
     template_name = "jobs/job_list.html"
-
-    def get(self, request, *args, **kwargs):
-        resp = super().get(request, *args, **kwargs)
-        if publisher and resp.status_code < HTTPStatus.BAD_REQUEST:
-            try:
-                publisher.publish(
-                    json.dumps({"topic": "news-summary", "action": "start"})
-                )
-            except pika.exceptions.ConnectionWrongStateError:
-                logging.exception("news summary published failed - skipping")
-                messages.error(request, "Ooops, not able to publish news summary.")
-        return resp
 
 
 class JobDetailView(auth.LoginRequiredMixin, DetailView):

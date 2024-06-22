@@ -1,8 +1,15 @@
+import json
+import logging
+from http import HTTPStatus
+
+import pika
+from django.contrib import messages
 from django.contrib.auth import mixins as auth
 from django.http import Http404
 from django.views import generic
 from django.views.generic.edit import CreateView
 
+from .apps import publisher
 from .forms import NewsItemForm
 from .models import FeedRegistry, default_parser, parse_feed
 
@@ -53,3 +60,20 @@ class NewsItemFormView(auth.LoginRequiredMixin, CreateView):
         item.user = self.request.user
         item.save()
         return self.render_to_response(self.get_context_data(form=form))
+
+
+class NewsSummaryFormView(auth.LoginRequiredMixin, CreateView):
+    form_class = NewsItemForm
+    template_name = "news/news_summary.html"
+
+    def get(self, request, *args, **kwargs):
+        resp = super().get(request, *args, **kwargs)
+        if publisher and resp.status_code < HTTPStatus.BAD_REQUEST:
+            try:
+                publisher.publish(
+                    json.dumps({"topic": "news-summary", "action": "start"})
+                )
+            except pika.exceptions.ConnectionWrongStateError:
+                logging.exception("news summary published failed - skipping")
+                messages.error(request, "Ooops, not able to publish news summary.")
+        return resp

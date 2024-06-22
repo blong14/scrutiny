@@ -72,7 +72,7 @@ async def read_tokens(req: HttpRequest, titles: str) -> AsyncIterable[str, None]
 
 async def send(req: HttpRequest, summary: str) -> None:
     msg = await sync_to_async(render_to_string)(
-        "jobs/news_summary.html", {"summary": summary}
+        "news/news_summary.html", {"summary": summary}
     )
     await req.session.request(
         aiohttp.hdrs.METH_POST,
