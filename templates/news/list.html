@@ -1,50 +1,65 @@
 <turbo-frame id="feed-container" data-feed="{{ id }}">
-<article>
-    <h3>{{ title }}</h3>
-    <turbo-frame id="news-summary">
-    <form action="{% url 'news.summary_view' %}"
-          method="get"
-          data-turbo-frame="news-summary">
-        {% csrf_token %}
-        <input type="hidden" name="feed_id" value="{{ id }}">
-        <input type="submit" value="Summarize">
-        {% if error_message %}
-            <p>
-                <strong>{{ error_message }}</strong>
-            </p>
-        {% endif %}
-    </form>
-    </turbo-frame>
-    {% for item in items %}
-        <details {% if item.title == selected %}open=""{% endif %}>
-            <summary {% if item.title == selected %}class="selected"{% endif %}>{{ item.title }}</summary>
-            <form action="{% url 'news.save_view' %}"
-                  method="post"
-                  data-turbo-frame="feed-container">
-                <samp>
-                    <small>{{ item.summary|safe }}</small>
-                </samp>
-                <nav>
-                    <ul>
-                        <li>
-                            <a href="{{ item.link }}" target="_blank">Read</a>
-                        </li>
-                        <li>
-                            {% csrf_token %}
-                            <input type="hidden" name="feed_id" value="{{ id }}">
-                            <input type="hidden" name="title" value="{{ item.title }}">
-                            <input type="hidden" name="url" value="{{ item.link }}">
-                            <input type="submit" value="Save">
-                            {% if error_message %}
-                                <p>
-                                    <strong>{{ error_message }}</strong>
-                                </p>
-                            {% endif %}
-                        </li>
-                    </ul>
-                </nav>
-            </form>
-        </details>
-    {% endfor %}
-</article>
+<section>
+    <nav>
+        <ul>
+            {% for id, title in feeds.items %}
+                <li data-feed="{{ id }}">
+                    <a {% if id == selected_feed %}class="selected"{% endif %}
+                       title="Read News"
+                       href="{% url 'news.feed_view' %}?feed={{ id }}"
+                       data-turbo-frame="feed-container">{{ title }}</a>
+                </li>
+            {% endfor %}
+        </ul>
+    </nav>
+</section>
+<section>
+    <article>
+        <turbo-frame id="news-summary">
+        <form action="{% url 'news.summary_view' %}"
+              method="get"
+              data-turbo-frame="news-summary">
+            {% csrf_token %}
+            <input type="hidden" name="feed_id" value="{{ id }}">
+            <input type="submit" value="Summarize">
+            {% if error_message %}
+                <p>
+                    <strong>{{ error_message }}</strong>
+                </p>
+            {% endif %}
+        </form>
+        </turbo-frame>
+        {% for item in items %}
+            <details {% if item.title == selected %}open=""{% endif %}>
+                <summary {% if item.title == selected %}class="selected"{% endif %}>{{ item.title }}</summary>
+                <form action="{% url 'news.save_view' %}"
+                      method="post"
+                      data-turbo-frame="feed-container">
+                    <samp>
+                        <small>{{ item.summary|safe }}</small>
+                    </samp>
+                    <nav>
+                        <ul>
+                            <li>
+                                <a href="{{ item.link }}" target="_blank">Read</a>
+                            </li>
+                            <li>
+                                {% csrf_token %}
+                                <input type="hidden" name="feed_id" value="{{ id }}">
+                                <input type="hidden" name="title" value="{{ item.title }}">
+                                <input type="hidden" name="url" value="{{ item.link }}">
+                                <input type="submit" value="Save">
+                                {% if error_message %}
+                                    <p>
+                                        <strong>{{ error_message }}</strong>
+                                    </p>
+                                {% endif %}
+                            </li>
+                        </ul>
+                    </nav>
+                </form>
+            </details>
+        {% endfor %}
+    </article>
+</section>
 </turbo-frame>

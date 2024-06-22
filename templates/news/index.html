@@ -29,37 +29,7 @@
         <h1>Current Feeds</h1>
     </section>
     <section>
-        <nav>
-            <ul>
-                {% for id, title in items.items %}
-                    <li data-feed="{{ id }}">
-                        <a title="Read News"
-                           href="{% url 'news.feed_view' %}?feed={{ id }}"
-                           data-turbo-frame="feed-container">{{ title }}</a>
-                    </li>
-                {% endfor %}
-            </ul>
-        </nav>
-    </section>
-    <section>
-        {% include "news/list.html" with id=feed.id title=feed.title items=feed.items %}
-    </section>
-    <section>
-        <turbo-frame id="news-container">
-        <dialog>
-            <article>
-                <header>
-                    <h3>News Summary</h3>
-                </header>
-                <section id="news-summary">
-                    <p>Loading...</p>
-                </section>
-            </article>
-            <form method="dialog">
-                <button>close</button>
-            </form>
-        </dialog>
-        </turbo-frame>
+        {% include "news/list.html" with id=feed.id title=feed.title items=feed.items feeds=feeds %}
     </section>
     <script>{% include "news/list.js" with topic=topic %}</script>
 {% endblock %}

@@ -20,11 +20,15 @@ class IndexView(auth.LoginRequiredMixin, generic.TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["items"] = {f.id: f.title for f in FeedRegistry.feeds()}
-        feed = FeedRegistry.get(self.request.GET.get("feed", "hackernews"))
+        feed_id = self.request.GET.get("feed", "hackernews")
+        feed = FeedRegistry.get(feed_id)
+        if not feed:
+            raise http404("feed does not exist")
+        context["feeds"] = {f.id: f.title for f in FeedRegistry.feeds()}
         context["feed"] = parse_feed(
-            {}, feed, parser=default_parser.parse, limit=self.page_limit
+            context, feed, parser=default_parser.parse, limit=self.page_limit
         )
+        context["selected_feed"] = feed_id
         return context
 
 
@@ -34,9 +38,12 @@ class NewsListView(auth.LoginRequiredMixin, generic.TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        feed = FeedRegistry.get(self.request.GET.get("feed", "hackernews"))
+        feed_id = self.request.GET.get("feed", "hackernews")
+        feed = FeedRegistry.get(feed_id)
         if not feed:
             raise Http404("feed does not exist")
+        context["feeds"] = {f.id: f.title for f in FeedRegistry.feeds()}
+        context["selected_feed"] = feed_id
         return parse_feed(
             context, feed, parser=default_parser.parse, limit=self.page_limit
         )
