@@ -52,7 +52,7 @@ DATABASES = {
 SSE = True
 
 MERCURE_URL = "http://scrutiny.cluster/.well-known/mercure"
-MERCURE_SVC_URL = "http://mercure.default.svc.cluster.local/.well-known/mercure"
+MERCURE_SVC_URL = "http://mercure.scrutiny.svc.cluster.local/.well-known/mercure"
 OLLAMA_URL = "http://ollama.cluster"
 OLLAMA_SVC_URL = "http://ollama.default.svc.cluster.local:11434"
 
