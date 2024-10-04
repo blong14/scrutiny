@@ -53,12 +53,6 @@ services:
         image: rabbitmq
         ports:
             - "5672:5672"
-        environment:
-            POSTGRES_USER: pi
-            POSTGRES_PASSWORD: test
-            POSTGRES_DB: scrutiny
-
-
     jaeger:
         image: jaegertracing/all-in-one
         ports:
