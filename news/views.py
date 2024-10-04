@@ -23,12 +23,12 @@ class IndexView(auth.LoginRequiredMixin, generic.TemplateView):
         feed_id = self.request.GET.get("feed", "hackernews")
         feed = FeedRegistry.get(feed_id)
         if not feed:
-            raise http404("feed does not exist")
+            raise Http404("feed does not exist")
         context["feeds"] = {f.id: f.title for f in FeedRegistry.feeds()}
+        context["selected_feed"] = feed_id
         context["feed"] = parse_feed(
             context, feed, parser=default_parser.parse, limit=self.page_limit
         )
-        context["selected_feed"] = feed_id
         return context
 
 
@@ -56,10 +56,12 @@ class NewsItemFormView(auth.LoginRequiredMixin, CreateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         form = context["form"]
-        context["selected"] = form.selected_title()
         feed = FeedRegistry.get(form.feed())
         if not feed:
             raise Http404("feed does not exist")
+        context["feeds"] = {f.id: f.title for f in FeedRegistry.feeds()}
+        context["selected_feed"] = feed.id
+        context["selected"] = form.selected_title()
         return parse_feed(context, feed)
 
     def form_valid(self, form: NewsItemForm):
@@ -70,8 +72,13 @@ class NewsItemFormView(auth.LoginRequiredMixin, CreateView):
 
 
 class NewsSummaryFormView(auth.LoginRequiredMixin, CreateView):
-    form_class = NewsItemForm
+    form_class = NewsItemForm  # TODO: update this form
     template_name = "news/news_summary.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["summary"] = "Loading..."
+        return context
 
     def get(self, request, *args, **kwargs):
         resp = super().get(request, *args, **kwargs)
