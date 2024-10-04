@@ -188,13 +188,14 @@ LOGGING = {
     },
     "loggers": {
         "django.request": {
-            "level": "DEBUG",
+            "level": "INFO",
             "handlers": ["console"],
         },
-        "": {
-            "level": "DEBUG",
-            "handlers": ["console"],
-        },
+        # Uncomment for RMQ logs
+        #"": {
+        #    "level": "DEBUG",
+        #    "handlers": ["console"],
+        #},
     },
 }
 
