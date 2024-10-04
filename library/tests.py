@@ -1,4 +1,5 @@
 from typing import List
+from unittest import mock
 
 from django.contrib.auth.models import User
 from django.test import Client, TestCase
@@ -51,7 +52,9 @@ class TestAnonymousUserListView(TestCase):
 class TestIndexView(TestCase):
     client_class = Client
 
-    def test_get(self) -> None:
+    @mock.patch("library.views.publisher")
+    def test_get(self, mock_publisher) -> None:
+        mock_publisher.publish.return_value = True
         self.url = reverse("library")
         self.user = User.objects.create_user("foo", "myemail@test.com", "pass")
         UserSocialAuth.objects.create(user=self.user, provider="pocket")
@@ -81,6 +84,7 @@ class TestListView(TestCase):
     def tearDown(self) -> None:
         super().tearDown()
         self.model.objects.all().delete()
+        Tag.objects.all().delete()
 
     def test_no_items(self) -> None:
         self.tearDown()
@@ -100,6 +104,15 @@ class TestListView(TestCase):
         self.assertEqual(self.response.status_code, 200)
         self.assertEqual(len(self.response.context["items"]), 1)
         self.assertListResponseContains(["world"])
+    
+    def test_items_tag(self) -> None:
+        article = self.items[3]
+        self.tag = tag(article=article, value="python", user=self.user)
+        url = reverse("library.list_view")
+        self.response = self.client.get(f"{url}?tag=python")
+        self.assertEqual(self.response.status_code, 200)
+        self.assertEqual(len(self.response.context["items"]), 1)
+        self.assertListResponseContains([article.resolved_title])
 
     def assertListResponseContains(self, expected: List[str]) -> None:
         for item in expected:
