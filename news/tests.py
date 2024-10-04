@@ -106,3 +106,29 @@ class TestNewsItemFormView(TestCase):
         self.assertTemplateUsed(self.resp, "news/list.html")
         self.assertEqual(self.resp.context["selected"], "Example News Item")
         mock_post.assert_called()
+
+
+class TestNewsSummaryView(TestCase):
+    client_class = Client
+
+    def setUp(self) -> None:
+        super().setUp()
+        self.url = reverse("news.summary_view")
+        self.user = User.objects.create_superuser("foo", "myemail@test.com", "pass")
+        self.client.login(username="foo", password="pass")
+
+    def test_get_anonymous_user(self) -> None:
+        self.client.logout()
+        self.resp = self.client.get(self.url, follow=True)
+        self.assertEqual(self.resp.status_code, 200)
+        self.assertTemplateUsed(self.resp, "registration/login.html")
+
+    @mock.patch("news.views.publisher")
+    def test_get(self, mock_publisher) -> None:
+        mock_publisher.publish.return_value = True
+        self.resp = self.client.get(
+            self.url, data={"feed_id": "hackernews"},
+        )
+        self.assertEqual(self.resp.status_code, 200)
+        self.assertTemplateUsed(self.resp, "news/news_summary.html")
+        self.assertEqual(self.resp.context["summary"], "Loading...")
