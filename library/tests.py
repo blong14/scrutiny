@@ -104,7 +104,7 @@ class TestListView(TestCase):
         self.assertEqual(self.response.status_code, 200)
         self.assertEqual(len(self.response.context["items"]), 1)
         self.assertListResponseContains(["world"])
-    
+
     def test_items_tag(self) -> None:
         article = self.items[3]
         self.tag = tag(article=article, value="python", user=self.user)

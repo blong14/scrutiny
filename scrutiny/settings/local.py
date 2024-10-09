@@ -192,10 +192,10 @@ LOGGING = {
             "handlers": ["console"],
         },
         # Uncomment for RMQ logs
-        #"": {
+        # "": {
         #    "level": "DEBUG",
         #    "handlers": ["console"],
-        #},
+        # },
     },
 }
 
