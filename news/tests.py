@@ -127,7 +127,8 @@ class TestNewsSummaryView(TestCase):
     def test_get(self, mock_publisher) -> None:
         mock_publisher.publish.return_value = True
         self.resp = self.client.get(
-            self.url, data={"feed_id": "hackernews"},
+            self.url,
+            data={"feed_id": "hackernews"},
         )
         self.assertEqual(self.resp.status_code, 200)
         self.assertTemplateUsed(self.resp, "news/news_summary.html")
