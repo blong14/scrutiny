@@ -1,6 +1,6 @@
 aiohttp==3.11.11
 aio-pika==9.5.3
-Django==5.1.4
+Django==5.1.5
 django-cockroachdb==5.1
 djlint==1.36.3
 feedparser==6.0.11
