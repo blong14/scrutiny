@@ -1,7 +1,7 @@
 black==24.10.0
 coverage==7.6.9
 djlint==1.36.3
-ipython==8.30.0
+ipython==8.32.0
 # locust==2.31.8
 pika-stubs==0.1.3
 pytest==8.3.4
