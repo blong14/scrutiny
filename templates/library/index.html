@@ -23,6 +23,11 @@
         <h1>My Library</h1>
     </section>
     <section>
+        <turbo-frame id="sync-detail" src="{% url 'job_detail' 'library_sync' %}">
+        <p>Loading..</p>
+        </turbo-frame>
+    </section>
+    <section>
         <form action="{% url 'library.list_view' %}"
               method="get"
               data-turbo-frame="library-list">
