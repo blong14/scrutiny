@@ -1,4 +1,4 @@
-aiohttp==3.11.12
+aiohttp==3.12.14
 aio-pika==9.5.4
 Django==5.2.3
 django-cockroachdb==5.2
