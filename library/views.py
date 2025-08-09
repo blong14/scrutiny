@@ -1,3 +1,4 @@
+import datetime
 import json
 import logging
 from http import HTTPStatus
@@ -24,6 +25,16 @@ class IndexView(auth.LoginRequiredMixin, generic.TemplateView):
                 logging.exception("library sync published failed - skipping")
                 messages.error(request, "Ooops, not able to publish library sync.")
         return resp
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.update(
+            {
+                "last_sync": datetime.datetime.utcnow(),
+                "status": "success",
+            }
+        )
+        return context
 
 
 class TagListView(auth.LoginRequiredMixin, generic.ListView):
