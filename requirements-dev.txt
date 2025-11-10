@@ -1,5 +1,5 @@
 black==25.1.0
-coverage==7.10.2
+coverage==7.11.3
 djlint==1.36.4
 ipython==9.4.0
 # locust==2.31.8
