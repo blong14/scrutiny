@@ -3,7 +3,7 @@ aio-pika==9.5.4
 Django==5.2.3
 django-cockroachdb==5.2
 djlint==1.36.4
-feedparser==6.0.11
+feedparser==6.0.12
 pika==1.3.2
 psycopg[binary]==3.2.4
 pyjwt==2.10.1
